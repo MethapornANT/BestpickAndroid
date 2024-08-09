@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:text="Continue with Email/phone"
+                    android:text="Continue with Email"
                     android:textColor="#000000" />
             </LinearLayout>
 
@@ -156,7 +156,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:text="Continue with google"
+                    android:text="Continue with Google"
                     android:textColor="#000000" />
             </LinearLayout>
 
@@ -186,7 +186,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="70dp"
                     android:layout_marginRight="20dp"
-                    app:srcCompat="@drawable/google" />
+                    app:srcCompat="@drawable/facebook" />
 
                 <TextView
                     android:id="@+id/textView4"
@@ -194,7 +194,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:text="Continue with google"
+                    android:text="Continue with Facebook"
                     android:textColor="#000000" />
             </LinearLayout>
 
