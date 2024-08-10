@@ -9,10 +9,13 @@
     android:background="@color/white"
     >
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/logo_splash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/logosplash" />
+        app:lottie_rawRes="@raw/welcomeblack"
+        app:lottie_autoPlay="true"
+        android:layout_centerInParent="true" />
+
 
 </RelativeLayout>
