@@ -80,7 +80,7 @@
                 android:layout_height="50dp"
                 android:id="@+id/password"
                 android:background="@drawable/custom_edittext"
-                android:inputType="Password"
+
                 android:padding="8dp"
                 android:hint="Enter your Password"
                 android:textSize="13sp"
@@ -150,7 +150,8 @@
                 android:background="@drawable/custom_edittext"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
-                android:padding="5dp">
+                android:padding="5dp"
+                android:onClick="onFacebookLoginClick">
 
                 <ImageView
                     android:layout_width="30dp"
