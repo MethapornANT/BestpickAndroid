@@ -9,12 +9,16 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import kotlin.concurrent.thread
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Thread.sleep(2000)
+        installSplashScreen()
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -22,16 +26,18 @@ class LoginActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
-        StrictMode.setThreadPolicy(policy)
     }
 
-    fun onFacebookLoginClick(view: View) {
+    fun Forgetpass(view: View) {
         // Intent to navigate to the new page
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, Forget_Password_Activity::class.java)
         startActivity(intent)
     }
-
+    fun onclickRegister(view: View) {
+        // Intent to navigate to the new page
+        val intent = Intent(this, RegisterActivity::class.java)
+        startActivity(intent)
+    }
 }
 
 

@@ -8,6 +8,7 @@
     android:gravity="center"
     tools:context=".LoginActivity"
     android:orientation="vertical"
+    android:background="#E7F6FF"
     >
 
     <androidx.cardview.widget.CardView
@@ -88,7 +89,7 @@
 
             <Button
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="50dp"
                 android:text="Login"
                 android:id="@+id/loginButton"
                 android:textSize="18sp"
@@ -104,7 +105,9 @@
                 android:text="ForgetPassword?"
                 android:textColor="#FF0000"
                 android:textSize="12sp"
-                android:textStyle="italic" />
+                android:textStyle="italic"
+                android:onClick="Forgetpass"
+                />
 
             <TextView
                 android:layout_width="match_parent"
@@ -188,7 +191,8 @@
                     android:text="register"
                     android:textColor="#FF0000"
                     android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:onClick="onclickRegister"/>
             </LinearLayout>
 
             <TextView
