@@ -60,7 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:textSize="13sp"
-                android:id="@+id/textusername"
+                android:id="@+id/Email"
                 android:background="@drawable/custom_edittext"
                 android:padding="8dp"
                 android:hint="Enter your username"/>
@@ -80,7 +80,7 @@
                 android:layout_height="50dp"
                 android:id="@+id/password"
                 android:background="@drawable/custom_edittext"
-                android:inputType="textPassword"
+                android:inputType="Password"
                 android:padding="8dp"
                 android:hint="Enter your Password"
                 android:textSize="13sp"
@@ -96,14 +96,15 @@
                 android:background="@drawable/custom_iconlogin" />
 
             <TextView
+                android:id="@+id/forgetpass"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="end"
                 android:layout_marginTop="5dp"
+                android:text="ForgetPassword?"
                 android:textColor="#FF0000"
                 android:textSize="12sp"
-                android:layout_gravity="end"
-                android:text="ForgetPassword?"
-                android:textStyle="italic"/>
+                android:textStyle="italic" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -117,51 +118,53 @@
                 android:textColor="@color/black"/>
 
             <LinearLayout
+                android:id="@+id/loginfacebook"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:orientation="horizontal"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/custom_edittext"
-                android:padding="5dp"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:padding="5dp">
 
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/facebook"
-                    android:scaleType="centerInside"/>
+                    android:scaleType="centerInside"
+                    android:src="@drawable/facebook" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Facebook"
-                    android:textColor="@color/black"
                     android:layout_gravity="center_vertical"
-                    android:paddingStart="20dp"/>
+                    android:paddingStart="20dp"
+                    android:text="Facebook"
+                    android:textColor="@color/black" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/logingoogle"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:orientation="horizontal"
                 android:layout_marginTop="5dp"
                 android:background="@drawable/custom_edittext"
-                android:padding="5dp"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:padding="5dp">
 
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/google"
-                    android:scaleType="centerInside"/>
+                    android:scaleType="centerInside"
+                    android:src="@drawable/google" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Google"
-                    android:textColor="@color/black"
                     android:layout_gravity="center_vertical"
-                    android:paddingStart="20dp"/>
+                    android:paddingStart="20dp"
+                    android:text="Google"
+                    android:textColor="@color/black" />
             </LinearLayout>
 
             <LinearLayout
@@ -178,12 +181,13 @@
                     android:textSize="15sp"/>
 
                 <TextView
+                    android:id="@+id/register"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="register"
-                    android:textStyle="bold"
                     android:textColor="#FF0000"
-                    android:textSize="15sp"/>
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <TextView
