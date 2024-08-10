@@ -2,6 +2,7 @@ package com.example.reviewhub
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Looper
 import android.os.StrictMode
 import android.view.View
 import android.widget.Button
@@ -26,6 +27,8 @@ class LoginActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+
     }
 
     fun Forgetpass(view: View) {
