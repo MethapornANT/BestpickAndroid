@@ -6,8 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    tools:context=".RegisterActivity"
-    >
+    android:orientation="vertical"
+    tools:context=".RegisterActivity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -33,7 +33,6 @@
                 android:textStyle="bold"
                 android:textColor="@color/black"/>
 
-
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,20 +45,20 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 android:id="@+id/registerusername"
                 android:background="@drawable/custom_edittext"
                 android:padding="8dp"
-                android:hint="Enter you Email"/>
+                android:hint="Enter your Email"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Example ReviewHub@gmail.com"
+                android:text="Example: ReviewHub@gmail.com"
                 android:layout_marginTop="1dp"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:textColor="#C2C2C2"/>
 
             <TextView
@@ -78,18 +77,19 @@
                 android:background="@drawable/custom_edittext"
                 android:inputType="textPassword"
                 android:padding="8dp"
-                android:hint="Enter you Password"
-                android:textSize="13dp"
+                android:hint="Enter your Password"
+                android:textSize="13sp"
                 android:textColor="@color/black"
                 android:drawablePadding="8dp"/>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Must have at least 6 character"
+                android:text="Must have at least 6 characters"
                 android:layout_marginTop="1dp"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:layout_marginLeft="10sp"
+                android:layout_marginStart="10dp"
                 android:textColor="#C2C2C2"/>
 
             <TextView
@@ -104,24 +104,33 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:id="@+id/registerpasswordconfiam"
+                android:id="@+id/registerpasswordconfirm"
                 android:background="@drawable/custom_edittext"
                 android:inputType="textPassword"
                 android:padding="8dp"
-                android:hint="Enter you Password"
-                android:textSize="13dp"
+                android:hint="Confirm your Password"
+                android:textSize="13sp"
                 android:textColor="@color/black"
                 android:drawablePadding="8dp"/>
 
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Create New Account"
+                android:text="Create New"
                 android:id="@+id/btnregister"
                 android:textSize="18sp"
                 android:layout_marginTop="30dp"
-                android:background="@drawable/custom_iconlogin" />
+                android:background="@drawable/custom_iconlogin"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textColor="#FF0000"
+                android:textSize="12sp"
+                android:text="Have an Account?"
+                android:textStyle="italic"
+                android:layout_gravity="end"/>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
