@@ -58,7 +58,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun performLogin(email: String, password: String) {
         thread {
-            val url = "http://192.168.1.111:3000/login"
+            val url = "http://192.168.1.109:3000/login"
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
@@ -128,7 +128,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun googleSignIn(token: String?) {
         token?.let {
-            val url = "http://192.168.1.111:4000/google-signin"
+            val url = "http://192.168.1.109:4000/google-signin"
             val client = OkHttpClient()
             val requestBody: RequestBody = FormBody.Builder()
                 .add("token", it)
@@ -173,8 +173,12 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
-    fun onClickRegister(view: View) {
+    fun onclickRegister(view: View) {
         val intent = Intent(this, RegisterActivity::class.java)
+        startActivity(intent)
+    }
+    fun onclickForgetpass(view: View){
+        val intent = Intent(this, Forget_Password_Activity::class.java)
         startActivity(intent)
     }
 }
