@@ -37,6 +37,7 @@ import okhttp3.RequestBody
 import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import org.json.JSONException
 import kotlinx.coroutines.withContext as withContext1
 
 class LoginActivity : AppCompatActivity() {
@@ -139,42 +140,58 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleLoginResponse(response: okhttp3.Response, responseBody: String) {
-        if (response.isSuccessful) {
-            val obj = JSONObject(responseBody)
-            val message = obj.optString("message", "")
 
-            when {
-                message.contains("Too many failed login attempts") -> {
-                    Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
-                }
-                message.contains("No user found") -> {
-                    Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
-                }
-                message.contains("Password is incorrect") -> {
-                    Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
-                }
-                message.contains("Authentication successful") -> {
-                    val token = obj.optString("token", "")
-                    val user = obj.optJSONObject("user")
-                    if (token.isNotEmpty() && user != null) {
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.putExtra("TOKEN", token)
-                        intent.putExtra("USER", user.toString())
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        Toast.makeText(applicationContext, "Error: Missing token or user data", Toast.LENGTH_LONG).show()
+    private fun handleLoginResponse(response: okhttp3.Response, responseBody: String) {
+        try {
+            if (response.isSuccessful) {
+                val obj = JSONObject(responseBody)
+                val message = obj.optString("message", "")
+
+                when {
+                    message.contains("Too many failed login attempts") -> {
+                        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
+                    }
+                    message.contains("No user found") -> {
+                        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
+                    }
+                    message.contains("Password is incorrect") -> {
+                        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
+                    }
+                    message.contains("Authentication successful") -> {
+                        val token = obj.optString("token", "")
+                        val user = obj.optJSONObject("user")
+                        Log.d("LoginResponse", "Token: $token, User: $user")
+                        if (token.isNotEmpty()) {
+                            val intent = Intent(this, MainActivity::class.java)
+                            intent.putExtra("TOKEN", token)
+                            intent.putExtra("USER", user.toString())
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            Toast.makeText(applicationContext, "Error: Missing token or user data", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                    else -> {
+                        Toast.makeText(applicationContext, "Unknown response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
-                else -> {
-                    Toast.makeText(applicationContext, "Unknown response: $message", Toast.LENGTH_LONG).show()
+            } else {
+                // Parse the responseBody for error message
+                val errorMessage = try {
+                    val errorObj = JSONObject(responseBody)
+                    errorObj.optString("message", "Unknown error")
+                } catch (e: JSONException) {
+                    "Unknown error"
                 }
+
+                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
-        } else {
-            Toast.makeText(applicationContext, "Can't connect with server. Status code: ${response.code}", Toast.LENGTH_LONG).show()
+        } catch (e: JSONException) {
+            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
+
+
 
     private fun onFacebookLoginClick(view: View) {
         val loginManager = LoginManager.getInstance()
@@ -198,16 +215,19 @@ class LoginActivity : AppCompatActivity() {
     private fun handleFacebookAccessToken(token: AccessToken) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Get Firebase Auth Credential using the token
                 val credential = FacebookAuthProvider.getCredential(token.token)
                 val firebaseAuth = FirebaseAuth.getInstance()
                 val authResult = firebaseAuth.signInWithCredential(credential).await()
 
+                // Extract user information
                 val user = authResult.user
                 val userId = user?.uid ?: ""
                 val email = user?.email ?: ""
                 val name = user?.displayName ?: ""
                 val picture = user?.photoUrl?.toString() ?: ""
 
+                // Send user data to your server
                 val url = "http://192.168.1.109:3000/facebook-signin"
                 val client = OkHttpClient()
                 val requestBody: RequestBody = FormBody.Builder()
@@ -221,30 +241,13 @@ class LoginActivity : AppCompatActivity() {
                     .post(requestBody)
                     .build()
 
+                // Execute the request and handle the response
                 val response = client.newCall(request).execute()
                 val responseBody = response.body?.string() ?: ""
 
+                // Handle server response
                 withContext1(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        Log.d("FacebookSignIn", "Server Response: $responseBody")
-                        val jsonObject = JSONObject(responseBody)
-                        val message = jsonObject.optString("message", "")
-                        val jwtToken = jsonObject.optString("token", "")
-
-                        Log.d("FacebookSignIn", "JWT Token: $jwtToken")
-                        Log.d("FacebookSignIn", "User Info: User ID: $userId, Email: $email, Name: $name, Picture: $picture")
-
-                        if (message.contains("successful")) {
-                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                            intent.putExtra("TOKEN", jwtToken)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            Toast.makeText(this@LoginActivity, message, Toast.LENGTH_LONG).show()
-                        }
-                    } else {
-                        Toast.makeText(this@LoginActivity, "Server error: ${response.message}", Toast.LENGTH_LONG).show()
-                    }
+                    handleFacebookSignInResponse(response, responseBody)
                 }
             } catch (e: Exception) {
                 withContext1(Dispatchers.Main) {
@@ -254,6 +257,42 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun handleFacebookSignInResponse(response: okhttp3.Response, responseBody: String) {
+        try {
+            if (response.isSuccessful) {
+                val jsonObject = JSONObject(responseBody)
+                val message = jsonObject.optString("message", "")
+                val jwtToken = jsonObject.optString("token", "")
+
+                Log.d("FacebookSignIn", "JWT Token: $jwtToken")
+
+                if (message.contains("successfully")) {
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    intent.putExtra("TOKEN", jwtToken)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this@LoginActivity, message, Toast.LENGTH_LONG).show()
+                }
+            } else {
+                val errorBody = responseBody // Use responseBody directly
+                try {
+                    val errorJson = JSONObject(errorBody)
+                    val errorMessage = errorJson.optString("error", "Unknown error")
+                    Toast.makeText(this@LoginActivity, "Server error: $errorMessage", Toast.LENGTH_LONG).show()
+                } catch (e: JSONException) {
+                    // Fallback if errorBody is not valid JSON
+                    Toast.makeText(this@LoginActivity, "Server error: $errorBody", Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: JSONException) {
+            Toast.makeText(this@LoginActivity, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+
+
 
     fun onGoogleLoginClick(view: View) {
         googleSignInClient.signOut().addOnCompleteListener {
@@ -311,24 +350,35 @@ class LoginActivity : AppCompatActivity() {
 
                     withContext1(Dispatchers.Main) {
                         if (response.isSuccessful) {
-                            Log.d("GoogleSignIn", "Server Response: $responseBody")
-                            val jsonObject = JSONObject(responseBody)
-                            val message = jsonObject.optString("message", "")
-                            val jwtToken = jsonObject.optString("token", "")
+                            try {
+                                val jsonObject = JSONObject(responseBody)
+                                val message = jsonObject.optString("message", "")
+                                val jwtToken = jsonObject.optString("token", "")
 
-                            Log.d("GoogleSignIn", "JWT Token: $jwtToken")
-                            Log.d("GoogleSignIn", "User Info: User ID: $userId, Email: $email, Name: $name, Picture: $picture")
+                                Log.d("GoogleSignIn", "JWT Token: $jwtToken")
+                                Log.d("GoogleSignIn", "User Info: User ID: $userId, Email: $email, Name: $name, Picture: $picture")
 
-                            if (message.contains("successful")) {
-                                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                                intent.putExtra("TOKEN", jwtToken)
-                                startActivity(intent)
-                                finish()
-                            } else {
-                                Toast.makeText(this@LoginActivity, message, Toast.LENGTH_LONG).show()
+                                if (message.contains("successfully")) {
+                                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                                    intent.putExtra("TOKEN", jwtToken)
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    Toast.makeText(this@LoginActivity, message, Toast.LENGTH_LONG).show()
+                                }
+                            } catch (e: JSONException) {
+                                Log.e("GoogleSignIn", "JSON Parsing error: ${e.message}")
+                                Toast.makeText(this@LoginActivity, "Error parsing server response: ${e.message}", Toast.LENGTH_LONG).show()
                             }
                         } else {
-                            Toast.makeText(this@LoginActivity, "Server error: ${response.message}", Toast.LENGTH_LONG).show()
+                            // Extract and handle error message from response
+                            val errorBody = try {
+                                val errorObj = JSONObject(responseBody)
+                                errorObj.optString("error", "Unknown error")
+                            } catch (e: JSONException) {
+                                "Unknown error"
+                            }
+                            Toast.makeText(this@LoginActivity, "Server error: $errorBody", Toast.LENGTH_LONG).show()
                         }
                     }
                 } catch (e: Exception) {
@@ -340,6 +390,10 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
+
+
+
 
     fun onclickRegister(view: View) {
         val intent = Intent(this, RegisterActivity::class.java)
