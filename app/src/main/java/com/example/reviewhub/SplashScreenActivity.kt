@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.reviewhub.databinding.ActivitySplashScreenBinding
 
 class SplashScreenActivity : AppCompatActivity() {
