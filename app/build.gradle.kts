@@ -51,21 +51,18 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("androidx.core:core-splashscreen:1.0.0")
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.airbnb.android:lottie:6.3.0")
-    implementation ("com.google.firebase:firebase-auth:23.0.0") // Add this line
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.10")
+    implementation("com.airbnb.android:lottie:6.5.0")
+    implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation ("androidx.activity:activity-ktx:1.4.0")
-
-
+    implementation("androidx.activity:activity-ktx:1.9.1")
+    implementation("com.facebook.android:facebook-android-sdk:17.0.1")
 }
+

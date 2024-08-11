@@ -18,6 +18,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ReviewHub"
+rootProject.name = "Bestpick"
 include(":app")
  
