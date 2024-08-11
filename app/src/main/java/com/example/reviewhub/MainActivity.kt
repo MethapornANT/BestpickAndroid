@@ -14,15 +14,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        enableEdgeToEdge()  // Enables full-screen mode
+        setContentView(R.layout.activity_main)  // Sets the layout resource for this activity
 
+        // Handle window insets to avoid overlapping with system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // Set up the logout button click listener
         val logoutButton = findViewById<Button>(R.id.logout)
         logoutButton.setOnClickListener {
             performLogout()
@@ -40,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         // Redirect to the login screen
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
-        finish() // Optionally close the current activity
+        finish()  // Optionally close the current activity
     }
 
     private fun clearLocalData() {
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences: SharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
 
-        // If you use other local storage mechanisms, clear them here as well
+        // Clear other local storage mechanisms (if any)
         // For example, you might clear a database or file storage
     }
 }
