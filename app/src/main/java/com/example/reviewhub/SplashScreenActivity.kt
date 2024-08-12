@@ -2,6 +2,9 @@ package com.example.reviewhub
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.example.reviewhub.databinding.ActivitySplashScreenBinding
 
@@ -11,18 +14,16 @@ class SplashScreenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Initialize the binding object
-        binding = ActivitySplashScreenBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        // Reference views using the binding object
-        binding.logoSplash.alpha = 0f
-        binding.logoSplash.animate().setDuration(1500).alpha(1f).withEndAction {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        enableEdgeToEdge()
+//        Thread.sleep(500)
+//        installSplashScreen()
+        setContentView(R.layout.activity_splash_screen)
+        Handler(Looper.getMainLooper()).postDelayed({
+            val i = Intent(this, LoginActivity::class.java)
+            startActivity(i)
             finish()
-        }
+        }, 4000)
+
     }
+
 }

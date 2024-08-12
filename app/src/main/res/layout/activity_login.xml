@@ -81,7 +81,7 @@
                 android:layout_height="50dp"
                 android:id="@+id/password"
                 android:background="@drawable/custom_edittext"
-
+                android:inputType="textPassword"
                 android:padding="8dp"
                 android:hint="Enter your Password"
                 android:textSize="13sp"
@@ -106,7 +106,7 @@
                 android:textColor="#FF0000"
                 android:textSize="12sp"
                 android:textStyle="italic"
-                android:onClick="Forgetpass"
+                android:onClick="onclickForgetpass"
                 />
 
             <TextView
@@ -130,6 +130,7 @@
                 android:orientation="horizontal"
                 android:padding="5dp"
                 android:onClick="onFacebookLoginClick">
+
 
                 <ImageView
                     android:layout_width="30dp"
@@ -155,7 +156,8 @@
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
                 android:padding="5dp"
-                android:onClick="onGoogleLoginClick">
+                android:onClick="onGoogleLoginClick"
+                >
 
                 <ImageView
                     android:layout_width="30dp"
