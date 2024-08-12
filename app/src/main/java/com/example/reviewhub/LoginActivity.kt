@@ -267,7 +267,7 @@ class LoginActivity : AppCompatActivity() {
 
                 Log.d("FacebookSignIn", "JWT Token: $jwtToken")
 
-                if (message.contains("successfully")) {
+                if (jwtToken.isNotEmpty()) {
                     val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     intent.putExtra("TOKEN", jwtToken)
                     startActivity(intent)
@@ -358,7 +358,7 @@ class LoginActivity : AppCompatActivity() {
                                 Log.d("GoogleSignIn", "JWT Token: $jwtToken")
                                 Log.d("GoogleSignIn", "User Info: User ID: $userId, Email: $email, Name: $name, Picture: $picture")
 
-                                if (message.contains("successfully")) {
+                                if (jwtToken.isNotEmpty()) {
                                     val intent = Intent(this@LoginActivity, MainActivity::class.java)
                                     intent.putExtra("TOKEN", jwtToken)
                                     startActivity(intent)

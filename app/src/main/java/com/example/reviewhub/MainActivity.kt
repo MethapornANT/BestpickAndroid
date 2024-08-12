@@ -50,7 +50,10 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences: SharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
 
+        // Clear the token (if stored separately)
+        val tokenPrefs: SharedPreferences = getSharedPreferences("TokenPrefs", MODE_PRIVATE)
+        tokenPrefs.edit().remove("TOKEN").apply()
+
         // Clear other local storage mechanisms (if any)
-        // For example, you might clear a database or file storage
     }
 }
