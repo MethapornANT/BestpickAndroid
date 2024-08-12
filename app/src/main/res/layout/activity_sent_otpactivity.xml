@@ -33,14 +33,24 @@
                 android:textSize="30sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Plase enter code "
-                android:textSize="15sp"
-                android:layout_marginRight="10dp"
                 android:layout_marginTop="10dp"
-                android:textColor="@color/black"/>
+                android:layout_marginRight="10dp"
+                android:text="Plase enter code "
+                android:textColor="@color/black"
+                android:textSize="15sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -50,45 +60,53 @@
                 android:layout_marginTop="20dp">
 
                 <EditText
+                    android:id="@+id/otp1"
                     android:layout_width="55dp"
                     android:layout_height="70dp"
-                    android:textSize="30sp"
-                    android:text="4"
-                    android:textAlignment="center"
-                    android:background="@drawable/custom_iconlogin"
                     android:layout_margin="5dp"
-                    android:padding="8dp" />
+                    android:background="@drawable/custom_iconlogin"
+                    android:inputType="number"
+                    android:padding="8dp"
+                    android:text=""
+                    android:textAlignment="center"
+                    android:textSize="30sp" />
 
                 <EditText
+                    android:id="@+id/otp2"
                     android:layout_width="55dp"
                     android:layout_height="70dp"
-                    android:textSize="30sp"
-                    android:text="4"
+                    android:layout_margin="5dp"
                     android:layout_marginTop="10dp"
-                    android:textAlignment="center"
-                    android:layout_margin="5dp"
                     android:background="@drawable/custom_iconlogin"
-                    android:padding="8dp" />
+                    android:inputType="number"
+                    android:padding="8dp"
+                    android:text=""
+                    android:textAlignment="center"
+                    android:textSize="30sp" />
 
                 <EditText
+                    android:id="@+id/otp3"
                     android:layout_width="55dp"
                     android:layout_height="70dp"
-                    android:textSize="30sp"
                     android:layout_margin="5dp"
-                    android:textAlignment="center"
-                    android:text="4"
                     android:background="@drawable/custom_iconlogin"
-                    android:padding="8dp" />
+                    android:inputType="number"
+                    android:padding="8dp"
+                    android:text=""
+                    android:textAlignment="center"
+                    android:textSize="30sp" />
 
                 <EditText
+                    android:id="@+id/otp4"
                     android:layout_width="55dp"
                     android:layout_height="70dp"
-                    android:textAlignment="center"
-                    android:textSize="30sp"
                     android:layout_margin="5dp"
-                    android:text="4"
                     android:background="@drawable/custom_iconlogin"
-                    android:padding="8dp" />
+                    android:inputType="number"
+                    android:padding="8dp"
+                    android:text=""
+                    android:textAlignment="center"
+                    android:textSize="30sp" />
 
             </LinearLayout>
 
@@ -97,35 +115,38 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 >
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Sent in"
-                    android:textSize="15sp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginTop="10dp"
-                    android:textColor="@color/black"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="59"
-                    android:textSize="15sp"
                     android:layout_marginTop="10dp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:layout_marginRight="10dp"
+                    android:text=""
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/countdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/black"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
             <TextView
+                android:id="@+id/resent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Resend Code"
-                android:textSize="15sp"
                 android:layout_marginTop="10dp"
-                android:textStyle="bold"
                 android:gravity="center"
-                android:textColor="@color/black" />
+                android:text="Resend Code"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:onClick="onclickResend"/>
 
 
 
@@ -133,7 +154,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="Sent OTP"
-                android:id="@+id/btnregister"
+                android:id="@+id/btnsentotp"
                 android:textSize="18sp"
                 android:layout_marginTop="30dp"
                 android:background="@drawable/custom_iconlogin"/>
