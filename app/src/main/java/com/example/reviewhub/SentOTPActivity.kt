@@ -106,7 +106,7 @@ class SentOTPActivity : AppCompatActivity() {
 
         // Make network request to resend OTP
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.1.109:3000/resend-otp" // Update with your endpoint
+            val url = "http://192.168.1.117:3000/resend-otp" // Update with your endpoint
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
@@ -164,7 +164,7 @@ class SentOTPActivity : AppCompatActivity() {
 
     private fun performRegister(email: String, otp: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.1.109:3000/register/verify-otp"
+            val url = "http://192.168.1.117:3000/register/verify-otp"
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)

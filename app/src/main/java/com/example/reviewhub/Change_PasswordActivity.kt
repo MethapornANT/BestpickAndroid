@@ -55,7 +55,7 @@ class Change_PasswordActivity : AppCompatActivity() {
     }
     private fun performFrogetpass(email: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.1.109:3000/reset-password"
+            val url = "http://192.168.1.117:3000/reset-password"
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)

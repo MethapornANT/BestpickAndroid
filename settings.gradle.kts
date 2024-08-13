@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Bestpick"
 include(":app")
- 
