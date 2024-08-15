@@ -29,7 +29,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="ReviewHub"
+                android:text="BESTPICK"
                 android:id="@+id/nameapp"
                 android:textSize="36sp"
                 android:textStyle="bold"
@@ -179,7 +179,7 @@
                 android:textSize="9sp"
                 android:textAlignment="center"
                 android:layout_marginTop="20dp"
-                android:text="By proceeding, you agree to the terms of use of the Reviewhub app and confirm that you have read and understood the privacy policy."
+                android:text="By proceeding, you agree to the terms of use of the Bestpick app and confirm that you have read and understood the privacy policy."
                 android:maxLines="3"
                 android:ellipsize="end"/>
 
