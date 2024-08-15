@@ -105,10 +105,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        val facebookLoginLayout = findViewById<LinearLayout>(R.id.loginfacebook)
-        facebookLoginLayout.setOnClickListener {
-            onFacebookLoginClick(it)
-        }
     }
 
     private fun navigateToMainActivity() {
@@ -118,7 +114,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun performLogin(email: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.1.117:3000/login"
+            val url = "http://192.168.194.49:3000/login"
             val requestBody: RequestBody = FormBody.Builder()
                 .add("email", email)
                 .add("password", password)
@@ -175,91 +171,6 @@ class LoginActivity : AppCompatActivity() {
             }
         } catch (e: JSONException) {
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun onFacebookLoginClick(view: View) {
-        val loginManager = LoginManager.getInstance()
-        loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-            override fun onSuccess(result: LoginResult) {
-                handleFacebookAccessToken(result.accessToken)
-            }
-
-            override fun onCancel() {
-                Toast.makeText(this@LoginActivity, "Facebook login canceled", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onError(error: FacebookException) {
-                Log.e("FacebookLogin", "Login failed", error)
-                Toast.makeText(this@LoginActivity, "Facebook login failed: ${error.message}", Toast.LENGTH_LONG).show()
-            }
-        })
-        loginManager.logInWithReadPermissions(this, listOf("email", "public_profile"))
-    }
-
-    private fun handleFacebookAccessToken(token: AccessToken) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val credential = FacebookAuthProvider.getCredential(token.token)
-                val firebaseAuth = FirebaseAuth.getInstance()
-                val authResult = firebaseAuth.signInWithCredential(credential).await()
-                val userId = authResult.user?.uid ?: ""
-                val email = authResult.user?.email ?: ""
-                val name = authResult.user?.displayName ?: ""
-                val picture = authResult.user?.photoUrl?.toString() ?: ""
-                Log.d("FacebookSignIn", "User ID: $userId, Email: $email, Name: $name, Picture: $picture")
-
-                val url = "http://192.168.1.117:3000/facebook-signin"
-                val requestBody: RequestBody = FormBody.Builder()
-                    .add("facebookId", userId)
-
-                    .add("name", name)
-                    .add("picture", picture)
-                    .build()
-                val request = Request.Builder().url(url).post(requestBody).build()
-
-                val response = OkHttpClient().newCall(request).execute()
-                val responseBody = response.body?.string() ?: ""
-
-                withContext(Dispatchers.Main) {
-                    handleFacebookSignInResponse(response, responseBody)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e("FacebookSignIn", "Error: ${e.message}")
-                    Toast.makeText(this@LoginActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-
-
-    private fun handleFacebookSignInResponse(response: okhttp3.Response, responseBody: String) {
-        try {
-            if (response.isSuccessful) {
-                val jsonObject = JSONObject(responseBody)
-                val jwtToken = jsonObject.optString("token", "")
-
-                if (jwtToken.isNotEmpty()) {
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.putExtra("TOKEN", jwtToken)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    Toast.makeText(this@LoginActivity, "Authentication failed", Toast.LENGTH_LONG).show()
-                }
-            } else {
-                val errorMessage = try {
-                    val errorJson = JSONObject(responseBody)
-                    errorJson.optString("error", "Unknown error")
-                } catch (e: JSONException) {
-                    "Unknown error"
-                }
-                Toast.makeText(this@LoginActivity, "Server error: $errorMessage", Toast.LENGTH_LONG).show()
-            }
-        } catch (e: JSONException) {
-            Toast.makeText(this@LoginActivity, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -343,8 +254,8 @@ class LoginActivity : AppCompatActivity() {
                 val email = user?.email ?: ""
                 val name = user?.displayName ?: ""
                 val picture = user?.photoUrl?.toString() ?: ""
-
-                val url = "http://192.168.1.117:3000/google-signin"
+                Log.d("GoogleSignIn", "User ID: $userId, Email: $email, Name: $name, Picture: $picture")
+                val url = "http://192.168.194.49:3000/google-signin"
                 val requestBody: RequestBody = FormBody.Builder()
                     .add("googleId", userId)
                     .add("email", email)

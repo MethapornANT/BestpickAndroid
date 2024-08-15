@@ -45,7 +45,7 @@ class Forget_Password_Activity : AppCompatActivity() {
     }
     private fun performRegister(email: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.1.117:3000/forgot-password"
+            val url = "http://192.168.194.49:3000/forgot-password"
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
