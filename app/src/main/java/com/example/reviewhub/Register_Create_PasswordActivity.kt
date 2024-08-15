@@ -59,7 +59,7 @@ class Register_Create_PasswordActivity : AppCompatActivity() {
 
     private fun performRegister(email: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.194.49:3000/register/set-password"
+            val url = getString(R.string.root_url) + getString(R.string.setpasswordregister)
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)

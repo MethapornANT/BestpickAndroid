@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
 
         // Configure Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("741201850844-l69jb0ief835gt14ogbn9041g4b318os.apps.googleusercontent.com")
+            .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -114,7 +114,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun performLogin(email: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.194.49:3000/login"
+            val url = getString(R.string.root_url) + getString(R.string.Login)
             val requestBody: RequestBody = FormBody.Builder()
                 .add("email", email)
                 .add("password", password)
@@ -255,7 +255,7 @@ class LoginActivity : AppCompatActivity() {
                 val name = user?.displayName ?: ""
                 val picture = user?.photoUrl?.toString() ?: ""
                 Log.d("GoogleSignIn", "User ID: $userId, Email: $email, Name: $name, Picture: $picture")
-                val url = "http://192.168.194.49:3000/google-signin"
+                val url =getString(R.string.root_url) +getString(R.string.googlesignin)
                 val requestBody: RequestBody = FormBody.Builder()
                     .add("googleId", userId)
                     .add("email", email)

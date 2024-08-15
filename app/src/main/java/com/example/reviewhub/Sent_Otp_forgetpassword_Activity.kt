@@ -103,7 +103,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
         // Make network request to resend OTP
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.194.49:3000/resent-otp" // Update with your endpoint
+            val url = getString(R.string.root_url) + getString(R.string.resendotpreset) // Update with your endpoint
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
@@ -161,7 +161,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
     private fun performRegister(email: String, otp: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val url = "http://192.168.194.49:3000/verify-reset-otp"
+            val url = getString(R.string.root_url) + getString(R.string.verifyresetotp)
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
