@@ -38,9 +38,6 @@ class SentOTPActivity : AppCompatActivity() {
     private var countdownTimer: CountDownTimer? = null
 
 
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
