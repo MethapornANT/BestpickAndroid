@@ -120,38 +120,13 @@
                 android:textStyle="bold"
                 android:textColor="@color/black"/>
 
-            <LinearLayout
-                android:id="@+id/loginfacebook"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/custom_edittext"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:padding="5dp"
-                android:onClick="onFacebookLoginClick">
 
-
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="40dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/facebook" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:paddingStart="20dp"
-                    android:text="Facebook"
-                    android:textColor="@color/black" />
-            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/logingoogle"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="15dp"
                 android:background="@drawable/custom_edittext"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
