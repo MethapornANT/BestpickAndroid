@@ -39,7 +39,7 @@ class SentOTPActivity : AppCompatActivity() {
 
 
 
-    
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
