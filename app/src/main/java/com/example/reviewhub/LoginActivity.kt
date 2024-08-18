@@ -2,8 +2,11 @@
 
 package com.example.reviewhub
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -45,17 +48,42 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONException
 import org.json.JSONObject
+import android.widget.ProgressBar
+import android.widget.TextView
+
+
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
+    private lateinit var progressBar: ProgressBar
+    private lateinit var forgetPassTextView: TextView
+    private lateinit var blockingView: View
 
+
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
        //installSplashScreen()
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
+
+        progressBar = findViewById(R.id.progress_bar)
+        forgetPassTextView = findViewById(R.id.forgetpass)
+        blockingView = findViewById(R.id.viewpage)
+
+
+//        // Simulate a loading process
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            // Hide the progress bar after loading is complete
+//            progressBar.visibility = View.GONE
+//        }, 1000)
+        forgetPassTextView.setOnClickListener {
+            showLoadingAndNavigate()
+        }
+
+
 
         // Initialize Facebook SDK
         FacebookSdk.setClientToken("1021807229429436")
@@ -316,8 +344,28 @@ class LoginActivity : AppCompatActivity() {
         startActivity(Intent(this, Forget_Password_Activity::class.java))
     }
 
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         callbackManager.onActivityResult(requestCode, resultCode, data)
     }
+
+    private fun showLoadingAndNavigate() {
+        // Show the ProgressBar and the blocking view
+        progressBar.visibility = View.VISIBLE
+        forgetPassTextView.isEnabled = false // Disable the TextView to prevent multiple clicks
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            // Hide the ProgressBar and the blocking view
+            progressBar.visibility = View.GONE
+            blockingView.visibility = View.VISIBLE
+            forgetPassTextView.isEnabled = true
+
+            // Navigate to the next page (e.g., Forget_Password_Activity)
+            val intent = Intent(this, Forget_Password_Activity::class.java)
+            startActivity(intent)
+        }, 1000) // Delay of 2 seconds to simulate loading time
+    }
+
 }
+

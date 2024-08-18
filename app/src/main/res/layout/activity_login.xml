@@ -15,8 +15,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="30dp"
+
         app:cardCornerRadius="30dp"
         app:cardElevation="20dp">
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,6 +26,7 @@
             android:orientation="vertical"
             android:layout_gravity="center_horizontal"
             android:padding="40dp"
+            android:id="@+id/viewpage"
             android:background="@drawable/custom_edittext">
 
             <TextView
@@ -185,5 +188,17 @@
 
         </LinearLayout>
 
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            />
+
     </androidx.cardview.widget.CardView>
 </LinearLayout>
+
+
+
