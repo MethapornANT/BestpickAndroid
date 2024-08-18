@@ -13,7 +13,7 @@
         android:id="@+id/logo_splash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:lottie_rawRes="@raw/welcomeblack"
+        app:lottie_rawRes="@raw/hello"
         app:lottie_autoPlay="true"
         android:layout_centerInParent="true" />
 

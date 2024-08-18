@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.reviewhub.databinding.ActivitySplashScreenBinding
 
 class SplashScreenActivity : AppCompatActivity() {
@@ -15,8 +16,8 @@ class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-//        Thread.sleep(500)
-//        installSplashScreen()
+        Thread.sleep(500)
+        installSplashScreen()
         setContentView(R.layout.activity_splash_screen)
         Handler(Looper.getMainLooper()).postDelayed({
             val i = Intent(this, LoginActivity::class.java)
@@ -25,5 +26,4 @@ class SplashScreenActivity : AppCompatActivity() {
         }, 4000)
 
     }
-
 }
