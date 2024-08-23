@@ -50,7 +50,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import android.widget.ProgressBar
 import android.widget.TextView
-
+import androidx.core.os.postDelayed
 
 
 class LoginActivity : AppCompatActivity() {
@@ -60,6 +60,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var forgetPassTextView: TextView
     private lateinit var blockingView: View
+    private lateinit var LodingDialog: LoadingDialogActivity
 
 
     @SuppressLint("MissingInflatedId")
@@ -69,19 +70,17 @@ class LoginActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
 
-        progressBar = findViewById(R.id.progress_bar)
         forgetPassTextView = findViewById(R.id.forgetpass)
-        blockingView = findViewById(R.id.viewpage)
+        LodingDialog = LoadingDialogActivity(this)
 
-
-//        // Simulate a loading process
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            // Hide the progress bar after loading is complete
-//            progressBar.visibility = View.GONE
-//        }, 1000)
         forgetPassTextView.setOnClickListener {
-            showLoadingAndNavigate()
-        }
+                LodingDialog.show()
+            Handler(Looper.getMainLooper()).postDelayed({
+                LodingDialog.cancel()
+                val intent = Intent(this, Forget_Password_Activity::class.java)
+                startActivity(intent)
+                finish()
+            } ,3000) }
 
 
 
@@ -366,6 +365,5 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }, 1000) // Delay of 2 seconds to simulate loading time
     }
-
 }
 

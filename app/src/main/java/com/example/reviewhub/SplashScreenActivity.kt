@@ -18,12 +18,16 @@ class SplashScreenActivity : AppCompatActivity() {
         enableEdgeToEdge()
         Thread.sleep(500)
         installSplashScreen()
-        setContentView(R.layout.activity_splash_screen)
-        Handler(Looper.getMainLooper()).postDelayed({
-            val i = Intent(this, LoginActivity::class.java)
-            startActivity(i)
-            finish()
-        }, 4000)
 
+        // Initialize View Binding
+        binding = ActivitySplashScreenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Delay the splash screen for 4 seconds and then start the login activity
+        Handler(Looper.getMainLooper()).postDelayed({
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+        }, 2000)
     }
 }

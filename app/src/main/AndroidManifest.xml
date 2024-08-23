@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" >
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -17,11 +17,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ReviewHub"
         tools:ignore="AppLinkUrlError"
-        tools:targetApi="31" >
+        tools:targetApi="31">
+        <activity
+            android:name=".LoadingDialogActivity"
+            android:exported="false" />
         <activity
             android:name=".Register_Create_PasswordActivity"
-            android:exported="false" />
-        <!-- Meta-data for Google Sign-In -->
+            android:exported="false" /> <!-- Meta-data for Google Sign-In -->
         <meta-data
             android:name="com.google.android.gms.client_id"
             android:value="@string/server_client_id" />
@@ -31,13 +33,9 @@
 
         <activity
             android:name=".SplashScreenActivity"
-            android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".Change_PasswordActivity"
@@ -60,8 +58,14 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".LoginActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="false"
