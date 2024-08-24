@@ -13,5 +13,7 @@
     <string name="resetpassword">/reset-password</string>
     <string name="resentotpregis">/resend-otp/register</string>
     <string name="forgotpassword">/forgot-password</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
