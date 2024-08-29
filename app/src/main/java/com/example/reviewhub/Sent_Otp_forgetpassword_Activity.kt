@@ -53,7 +53,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
          otp3 = findViewById(R.id.otp3)
          otp4 = findViewById(R.id.otp4)
         sentOTPButton = findViewById(R.id.btnregister)
-         resendButton = findViewById(R.id.resent)
+        resendButton = findViewById(R.id.resendforget)
 
         val email = intent.getStringExtra("email") ?: return
         emailTextView.text = email
@@ -95,7 +95,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
     fun onclickResend(email: String) {
         // Disable the resend button to prevent multiple clicks
-        val resendButton = findViewById<TextView>(R.id.resent)
+        val resendButton = findViewById<TextView>(R.id.resendforget)
         resendButton.isEnabled = false
 
         // Start countdown timer
