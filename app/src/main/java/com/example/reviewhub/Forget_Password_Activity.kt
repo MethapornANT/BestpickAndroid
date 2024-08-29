@@ -44,23 +44,25 @@ class Forget_Password_Activity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.Email)
         val SendOTPbutton = findViewById<Button>(R.id.btnsent)
 
-//        LodingDialog = LoadingDialogActivity(this)
-//        SendOTPbutton.setOnClickListener {
-//            LodingDialog.show()
-//            val email = emailEditText.text.toString()
+        LodingDialog = LoadingDialogActivity(this)
+
+
+
+        SendOTPbutton.setOnClickListener {
+            LodingDialog.show()
+            val email = emailEditText.text.toString()
 //            Handler(Looper.getMainLooper()).postDelayed({
 //                LodingDialog.cancel()
 //                val intent = Intent(this, Sent_Otp_forgetpassword_Activity ::class.java)
 //                startActivity(intent)
 //                finish()
 //            } ,3000)
-//
-//            if (email.isEmpty()) {
-//                emailEditText.error = "Email is required"
-//            }else{
-//                performRegister(email)
-//            }
-//        }
+            if (email.isEmpty()) {
+                emailEditText.error = "Email is required"
+            }else{
+                performRegister(email)
+            }
+        }
     }
     private fun performRegister(email: String) {
         CoroutineScope(Dispatchers.IO).launch {
