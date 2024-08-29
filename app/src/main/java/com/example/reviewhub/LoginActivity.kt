@@ -57,9 +57,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
-    private lateinit var progressBar: ProgressBar
     private lateinit var forgetPassTextView: TextView
-    private lateinit var blockingView: View
     private lateinit var LodingDialog: LoadingDialogActivity
 
 
@@ -70,17 +68,17 @@ class LoginActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
 
-        forgetPassTextView = findViewById(R.id.forgetpass)
-        LodingDialog = LoadingDialogActivity(this)
-
-        forgetPassTextView.setOnClickListener {
-                LodingDialog.show()
-            Handler(Looper.getMainLooper()).postDelayed({
-                LodingDialog.cancel()
-                val intent = Intent(this, Forget_Password_Activity::class.java)
-                startActivity(intent)
-                finish()
-            } ,3000) }
+//        forgetPassTextView = findViewById(R.id.forgetpass)
+//        LodingDialog = LoadingDialogActivity(this)
+//
+//        forgetPassTextView.setOnClickListener {
+//                LodingDialog.show()
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                LodingDialog.cancel()
+//                val intent = Intent(this, Forget_Password_Activity::class.java)
+//                startActivity(intent)
+//                finish()
+//            } ,3000) }
 
 
 
@@ -347,23 +345,6 @@ class LoginActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         callbackManager.onActivityResult(requestCode, resultCode, data)
-    }
-
-    private fun showLoadingAndNavigate() {
-        // Show the ProgressBar and the blocking view
-        progressBar.visibility = View.VISIBLE
-        forgetPassTextView.isEnabled = false // Disable the TextView to prevent multiple clicks
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            // Hide the ProgressBar and the blocking view
-            progressBar.visibility = View.GONE
-            blockingView.visibility = View.VISIBLE
-            forgetPassTextView.isEnabled = true
-
-            // Navigate to the next page (e.g., Forget_Password_Activity)
-            val intent = Intent(this, Forget_Password_Activity::class.java)
-            startActivity(intent)
-        }, 1000) // Delay of 2 seconds to simulate loading time
     }
 }
 
