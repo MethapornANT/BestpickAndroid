@@ -7,10 +7,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -121,6 +123,21 @@ class LoginActivity : AppCompatActivity() {
         val loginButton = findViewById<Button>(R.id.loginButton)
         val emailEditText = findViewById<EditText>(R.id.Email)
         val passwordEditText = findViewById<EditText>(R.id.password)
+        val togglePassword = findViewById<ImageView>(R.id.togglePasswordConfirm)
+
+        togglePassword.setOnClickListener {
+            if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                // Hide password
+                passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                togglePassword.setImageResource(R.drawable.eye_hide)
+            } else {
+                // Show password
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                togglePassword.setImageResource(R.drawable.eye_open)
+            }
+            // Move the cursor to the end of the text
+            passwordEditText.setSelection(passwordEditText.text.length)
+        }
 
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString()

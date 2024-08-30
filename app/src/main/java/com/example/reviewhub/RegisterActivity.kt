@@ -41,11 +41,14 @@ class RegisterActivity : AppCompatActivity() {
             val email = emailEditText.text.toString()
             if (email.isEmpty()) {
                 emailEditText.error = "Email is required"
-            }else{
+            }else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ||
+                !email.matches(Regex(".*@(?:gmail|yahoo|outlook|hotmail|icloud)\\.com$")))
+            {
+                emailEditText.error = "Please use a valid email from common domains like Gmail, Yahoo, Outlook, etc."
+            }
+            else{
                 performRegister(email)
                 create.isEnabled = false
-
-                // Re-enable the button after the cooldown time
                 Handler(Looper.getMainLooper()).postDelayed({
                     create.isEnabled = true
                 }, cooldownTime)

@@ -2,9 +2,11 @@ package com.example.reviewhub
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +36,37 @@ class Change_PasswordActivity : AppCompatActivity() {
         val passwordEditText = findViewById<EditText>(R.id.password)
         val confirmPasswordEditText = findViewById<EditText>(R.id.conpassword)
         val button = findViewById<Button>(R.id.confirm)
+        val togglePassword1 = findViewById<ImageView>(R.id.togglePasswordConfirm1_re)
+        val togglePassword2 = findViewById<ImageView>(R.id.togglePasswordConfirm2_re)
+        // Toggle visibility for password field
+        togglePassword1.setOnClickListener {
+            if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                // Hide password
+                passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                togglePassword1.setImageResource(R.drawable.eye_hide)
+            } else {
+                // Show password
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                togglePassword1.setImageResource(R.drawable.eye_open)
+            }
+            // Move the cursor to the end of the text
+            passwordEditText.setSelection(passwordEditText.text.length)
+        }
+
+        // Toggle visibility for confirm password field
+        togglePassword2.setOnClickListener {
+            if (confirmPasswordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                // Hide confirm password
+                confirmPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                togglePassword2.setImageResource(R.drawable.eye_hide)
+            } else {
+                // Show confirm password
+                confirmPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                togglePassword2.setImageResource(R.drawable.eye_open)
+            }
+            // Move the cursor to the end of the text
+            confirmPasswordEditText.setSelection(confirmPasswordEditText.text.length)
+        }
         val email = intent.getStringExtra("email") ?: run {
             Toast.makeText(this, "No email found", Toast.LENGTH_SHORT).show()
             finish()

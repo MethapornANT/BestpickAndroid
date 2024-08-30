@@ -38,7 +38,7 @@ class Forget_Password_Activity : AppCompatActivity() {
         }
         val emailEditText = findViewById<EditText>(R.id.Email)
         val SendOTPbutton = findViewById<Button>(R.id.btnsent)
-
+        val cooldownTime = 5000L
         LodingDialog = LoadingDialogActivity(this)
 
 
@@ -54,8 +54,15 @@ class Forget_Password_Activity : AppCompatActivity() {
 //            } ,3000)
             if (email.isEmpty()) {
                 emailEditText.error = "Email is required"
+            }else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() || !email.matches(Regex(".*@(?:gmail|yahoo|outlook|hotmail|icloud)\\.com$")))
+            {
+                emailEditText.error = "Please use a valid email from common domains like Gmail, Yahoo, Outlook, etc."
             }else{
                 performRegister(email)
+                SendOTPbutton.isEnabled = false
+                Handler(Looper.getMainLooper()).postDelayed({
+                    SendOTPbutton.isEnabled = true
+                }, cooldownTime)
             }
         }
     }
