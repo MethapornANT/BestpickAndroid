@@ -8,7 +8,7 @@
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".RegisterActivity"
-    android:background="#E7F6FF">
+    android:background="@color/white">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -67,6 +67,7 @@
                 android:layout_height="60dp"
                 android:text="Create Account"
                 android:id="@+id/btnregister"
+                android:textColor="@color/white"
                 android:textSize="18sp"
                 android:layout_marginTop="30dp"
                 android:background="@drawable/custom_iconlogin"/>
