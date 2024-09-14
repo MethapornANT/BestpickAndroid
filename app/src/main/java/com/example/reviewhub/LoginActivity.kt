@@ -3,6 +3,7 @@
 package com.example.reviewhub
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -81,7 +82,6 @@ class LoginActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
             } ,3000) }
-
 
 
         // Initialize Facebook SDK
@@ -348,6 +348,7 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         callbackManager.onActivityResult(requestCode, resultCode, data)
     }
+
 
     private fun showLoadingAndNavigate() {
         // Show the ProgressBar and the blocking view

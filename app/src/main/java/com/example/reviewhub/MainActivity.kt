@@ -8,7 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.firebase.auth.FirebaseAuth
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,35 +25,53 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Set up the logout button click listener
-        val logoutButton = findViewById<Button>(R.id.logout)
-        logoutButton.setOnClickListener {
-            performLogout()
+//        val logoutButton = findViewById<Button>(R.id.logout)
+//        logoutButton.setOnClickListener {
+//            performLogout()
+//        }
+//    }
+//
+//    private fun performLogout() {
+//        // Sign out from Firebase Authentication
+//        val firebaseAuth = FirebaseAuth.getInstance()
+//        firebaseAuth.signOut()
+//
+//        // Clear shared preferences or any other local data
+//        clearLocalData()
+//
+//        // Redirect to the login screen
+//        val intent = Intent(this, LoginActivity::class.java)
+//        startActivity(intent)
+//        finish()  // Optionally close the current activity
+
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            val selectedFragment = when (item.itemId) {
+                R.id.home -> HomeFragment()
+                R.id.search -> SearchFragment()
+
+                else -> HomeFragment()
+            }
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, selectedFragment)
+                .commit()
+            true
         }
     }
 
-    private fun performLogout() {
-        // Sign out from Firebase Authentication
-        val firebaseAuth = FirebaseAuth.getInstance()
-        firebaseAuth.signOut()
 
-        // Clear shared preferences or any other local data
-        clearLocalData()
 
-        // Redirect to the login screen
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finish()  // Optionally close the current activity
+        private fun clearLocalData() {
+            // Clear shared preferences (if used)
+            val sharedPreferences: SharedPreferences =
+                getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            sharedPreferences.edit().clear().apply()
+
+            // Clear the token (if stored separately)
+            val tokenPrefs: SharedPreferences = getSharedPreferences("TokenPrefs", MODE_PRIVATE)
+            tokenPrefs.edit().remove("TOKEN").apply()
+
+
+        }
     }
-
-    private fun clearLocalData() {
-        // Clear shared preferences (if used)
-        val sharedPreferences: SharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().clear().apply()
-
-        // Clear the token (if stored separately)
-        val tokenPrefs: SharedPreferences = getSharedPreferences("TokenPrefs", MODE_PRIVATE)
-        tokenPrefs.edit().remove("TOKEN").apply()
-
-        // Clear other local storage mechanisms (if any)
-    }
-}
