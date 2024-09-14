@@ -8,7 +8,7 @@
     android:gravity="center"
     tools:context=".LoginActivity"
     android:orientation="vertical"
-    android:background="#E7F6FF"
+    android:background="@color/white"
     >
 
     <androidx.cardview.widget.CardView
@@ -107,13 +107,14 @@
         </LinearLayout>
 
             <Button
+                android:id="@+id/loginButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:text="Login"
-                android:id="@+id/loginButton"
-                android:textSize="18sp"
                 android:layout_marginTop="30dp"
-                android:background="@drawable/custom_iconlogin" />
+                android:background="@drawable/custom_iconlogin"
+                android:text="Login"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/forgetpass"
