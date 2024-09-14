@@ -2,6 +2,8 @@ package com.example.reviewhub
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -34,12 +36,22 @@ class RegisterActivity : AppCompatActivity() {
         }
         val emailEditText = findViewById<EditText>(R.id.registerusername)
         val create = findViewById<Button>(R.id.btnregister)
+        val cooldownTime = 5000L
         create.setOnClickListener {
             val email = emailEditText.text.toString()
             if (email.isEmpty()) {
                 emailEditText.error = "Email is required"
-            }else{
+            }else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ||
+                !email.matches(Regex(".*@(?:gmail|yahoo|outlook|hotmail|icloud)\\.com$")))
+            {
+                emailEditText.error = "Please use a valid email from common domains like Gmail, Yahoo, Outlook, etc."
+            }
+            else{
                 performRegister(email)
+                create.isEnabled = false
+                Handler(Looper.getMainLooper()).postDelayed({
+                    create.isEnabled = true
+                }, cooldownTime)
             }
         }
 

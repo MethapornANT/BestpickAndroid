@@ -3,15 +3,16 @@
 package com.example.reviewhub
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -58,9 +59,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
-    private lateinit var progressBar: ProgressBar
     private lateinit var forgetPassTextView: TextView
-    private lateinit var blockingView: View
     private lateinit var LodingDialog: LoadingDialogActivity
 
 
@@ -71,17 +70,18 @@ class LoginActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
 
-        forgetPassTextView = findViewById(R.id.forgetpass)
-        LodingDialog = LoadingDialogActivity(this)
+//        forgetPassTextView = findViewById(R.id.forgetpass)
+//        LodingDialog = LoadingDialogActivity(this)
+//
+//        forgetPassTextView.setOnClickListener {
+//                LodingDialog.show()
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                LodingDialog.cancel()
+//                val intent = Intent(this, Forget_Password_Activity::class.java)
+//                startActivity(intent)
+//                finish()
+//            } ,3000) }
 
-        forgetPassTextView.setOnClickListener {
-                LodingDialog.show()
-            Handler(Looper.getMainLooper()).postDelayed({
-                LodingDialog.cancel()
-                val intent = Intent(this, Forget_Password_Activity::class.java)
-                startActivity(intent)
-                finish()
-            } ,3000) }
 
 
         // Initialize Facebook SDK
@@ -116,13 +116,28 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Set up views and listeners
-        setupViews()
+        //setupViews()
     }
 
     private fun setupViews() {
         val loginButton = findViewById<Button>(R.id.loginButton)
         val emailEditText = findViewById<EditText>(R.id.Email)
         val passwordEditText = findViewById<EditText>(R.id.password)
+        val togglePassword = findViewById<ImageView>(R.id.togglePasswordConfirm)
+
+        togglePassword.setOnClickListener {
+            if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                // Hide password
+                passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                togglePassword.setImageResource(R.drawable.eye_hide)
+            } else {
+                // Show password
+                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                togglePassword.setImageResource(R.drawable.eye_open)
+            }
+            // Move the cursor to the end of the text
+            passwordEditText.setSelection(passwordEditText.text.length)
+        }
 
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString()
@@ -281,15 +296,11 @@ class LoginActivity : AppCompatActivity() {
                 val user = authResult.user
                 val userId = user?.uid ?: ""
                 val email = user?.email ?: ""
-                val name = user?.displayName ?: ""
-                val picture = user?.photoUrl?.toString() ?: ""
-                Log.d("GoogleSignIn", "User ID: $userId, Email: $email, Name: $name, Picture: $picture")
+                Log.d("GoogleSignIn", "User ID: $userId, Email: $email")
                 val url =getString(R.string.root_url) +getString(R.string.googlesignin)
                 val requestBody: RequestBody = FormBody.Builder()
                     .add("googleId", userId)
                     .add("email", email)
-                    .add("name", name)
-                    .add("picture", picture)
                     .build()
                 val request = Request.Builder().url(url).post(requestBody).build()
 
@@ -347,24 +358,6 @@ class LoginActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         callbackManager.onActivityResult(requestCode, resultCode, data)
-    }
-
-
-    private fun showLoadingAndNavigate() {
-        // Show the ProgressBar and the blocking view
-        progressBar.visibility = View.VISIBLE
-        forgetPassTextView.isEnabled = false // Disable the TextView to prevent multiple clicks
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            // Hide the ProgressBar and the blocking view
-            progressBar.visibility = View.GONE
-            blockingView.visibility = View.VISIBLE
-            forgetPassTextView.isEnabled = true
-
-            // Navigate to the next page (e.g., Forget_Password_Activity)
-            val intent = Intent(this, Forget_Password_Activity::class.java)
-            startActivity(intent)
-        }, 1000) // Delay of 2 seconds to simulate loading time
     }
 }
 

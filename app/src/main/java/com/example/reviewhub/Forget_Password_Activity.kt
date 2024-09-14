@@ -51,12 +51,12 @@ class Forget_Password_Activity : AppCompatActivity() {
         SendOTPbutton.setOnClickListener {
             LodingDialog.show()
             val email = emailEditText.text.toString()
-            Handler(Looper.getMainLooper()).postDelayed({
-                LodingDialog.cancel()
-                val intent = Intent(this, Sent_Otp_forgetpassword_Activity ::class.java)
-                startActivity(intent)
-                finish()
-            } ,3000)
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                LodingDialog.cancel()
+//                val intent = Intent(this, Sent_Otp_forgetpassword_Activity ::class.java)
+//                startActivity(intent)
+//                finish()
+//            } ,3000)
             if (email.isEmpty()) {
                 emailEditText.error = "Email is required"
             }else{
