@@ -36,7 +36,7 @@
                 android:id="@+id/nameapp"
                 android:textSize="36sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/blue"
                 android:textAlignment="center"/>
 
             <TextView
@@ -67,7 +67,7 @@
                 android:id="@+id/Email"
                 android:background="@drawable/custom_edittext"
                 android:padding="8dp"
-                android:hint="Enter your username"/>
+                android:hint="Enter your email"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -87,7 +87,7 @@
 
             <EditText
                 android:id="@+id/password"
-                android:layout_width="231dp"
+                android:layout_width="245dp"
                 android:layout_height="50dp"
                 android:background="@drawable/custom_edittext"
                 android:hint="Enter your Password"
@@ -98,11 +98,12 @@
 
             <ImageView
                 android:id="@+id/togglePasswordConfirm"
-                android:layout_width="42dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:contentDescription="Toggle Confirm Password Visibility"
-                android:padding="10dp"
+                android:padding="5dp"
                 android:src="@drawable/eye_hide" />
+
 
         </LinearLayout>
 

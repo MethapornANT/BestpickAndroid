@@ -7,14 +7,15 @@
     tools:context=".HomeFragment">
 
     <!-- AppBarLayout for Toolbar and Tabs -->
+
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         android:background="@color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:layout_scrollFlags="scroll|enterAlways">
 
-        <!-- Toolbar with Menu Icon -->
+
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,43 +25,49 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginLeft="0dp"
-                android:background="@drawable/profiletest" />
+                android:background="@drawable/rounded_image"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/profiletest" />
 
             <EditText
                 android:layout_width="260dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:textSize="15sp"
+                android:background="@drawable/custom_edittext"
+                android:drawableStart="@drawable/baseline_search_home"
+                android:drawablePadding="8dp"
                 android:hint="Search"
                 android:paddingStart="10dp"
-                android:drawableStart="@drawable/baseline_search_home"
-                android:background="@drawable/custom_edittext"
-                android:drawablePadding="8dp" />
+                android:textSize="15sp" />
 
-            <TextView
+            <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:background="@drawable/baseline_menu"
+                android:layout_gravity="end"
                 android:layout_marginEnd="20dp"
-                android:layout_gravity="end" />
+                android:src="@drawable/baseline_menu"
+                app:menu="@menu/navbar_home" />
+
+
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- TabLayout for 'Following' and 'For You' Tabs -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="200dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
             android:background="@color/white"
             app:tabIndicatorColor="@color/black"
             app:tabSelectedTextColor="@color/black"
-            app:tabTextColor="@color/black" >
+            app:tabTextColor="@color/black">
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_following"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="following" />
+                android:text="follow" />
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_foryou"
