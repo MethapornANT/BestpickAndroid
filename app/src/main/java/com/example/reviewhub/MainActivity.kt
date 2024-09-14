@@ -24,26 +24,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Set up the logout button click listener
-//        val logoutButton = findViewById<Button>(R.id.logout)
-//        logoutButton.setOnClickListener {
-//            performLogout()
-//        }
-//    }
-//
-//    private fun performLogout() {
-//        // Sign out from Firebase Authentication
-//        val firebaseAuth = FirebaseAuth.getInstance()
-//        firebaseAuth.signOut()
-//
-//        // Clear shared preferences or any other local data
-//        clearLocalData()
-//
-//        // Redirect to the login screen
-//        val intent = Intent(this, LoginActivity::class.java)
-//        startActivity(intent)
-//        finish()  // Optionally close the current activity
-
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         bottomNavigationView.setOnItemSelectedListener { item ->
@@ -71,7 +51,5 @@ class MainActivity : AppCompatActivity() {
             // Clear the token (if stored separately)
             val tokenPrefs: SharedPreferences = getSharedPreferences("TokenPrefs", MODE_PRIVATE)
             tokenPrefs.edit().remove("TOKEN").apply()
-
-
         }
     }
