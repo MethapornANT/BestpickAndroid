@@ -296,15 +296,11 @@ class LoginActivity : AppCompatActivity() {
                 val user = authResult.user
                 val userId = user?.uid ?: ""
                 val email = user?.email ?: ""
-                val name = user?.displayName ?: ""
-                val picture = user?.photoUrl?.toString() ?: ""
-                Log.d("GoogleSignIn", "User ID: $userId, Email: $email, Name: $name, Picture: $picture")
+                Log.d("GoogleSignIn", "User ID: $userId, Email: $email")
                 val url =getString(R.string.root_url) +getString(R.string.googlesignin)
                 val requestBody: RequestBody = FormBody.Builder()
                     .add("googleId", userId)
                     .add("email", email)
-                    .add("name", name)
-                    .add("picture", picture)
                     .build()
                 val request = Request.Builder().url(url).post(requestBody).build()
 
