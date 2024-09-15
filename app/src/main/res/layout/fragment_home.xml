@@ -1,28 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:background="@color/white"
     tools:context=".HomeFragment">
 
     <!-- AppBarLayout for Toolbar and Tabs -->
-
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/menuhome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:layout_scrollFlags="scroll|enterAlways">
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
-
+        <!-- Toolbar with scroll flags -->
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            android:padding="10dp">
+            android:padding="10dp"
+            app:layout_scrollFlags="scroll|enterAlways">
 
             <ImageView
                 android:layout_width="40dp"
@@ -48,43 +46,41 @@
                 android:layout_height="30dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="20dp"
-                android:src="@drawable/baseline_menu"
-                app:menu="@menu/navbar_home" />
-
-
+                android:src="@drawable/baseline_menu" />
         </androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="200dp"
-            android:layout_height="30dp"
             android:layout_gravity="center"
-            android:layout_marginTop="10dp"
+            android:layout_height="wrap_content"
             android:background="@color/white"
+            app:layout_scrollFlags="scroll|enterAlways"
             app:tabIndicatorColor="@color/black"
             app:tabSelectedTextColor="@color/black"
             app:tabTextColor="@color/black">
 
-            <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_following"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="follow" />
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_following"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Follow" />
 
-            <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_foryou"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="foryou" />
-        </com.google.android.material.tabs.TabLayout>
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_foryou"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="For You" />
+    </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_posts"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="0dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_post" />
+    android:id="@+id/recycler_view_posts"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:listitem="@layout/item_post" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

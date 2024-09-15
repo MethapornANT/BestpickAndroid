@@ -30,6 +30,9 @@ class MainActivity : AppCompatActivity() {
                 .commit()
         }
 
+
+
+
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         bottomNavigationView.setOnItemSelectedListener { item ->
@@ -43,6 +46,11 @@ class MainActivity : AppCompatActivity() {
                 .commit()
             true
         }
+
+
+
+
+
     }
 
     private fun clearLocalData() {

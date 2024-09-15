@@ -20,7 +20,8 @@
         android:layout_alignParentBottom="true"
         app:itemIconSize="40dp"
         app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/black"
-        android:background="?android:attr/windowBackground" />
+        app:itemIconTint="@color/bluetext"
+        android:background="?android:attr/windowBackground"
+        app:layout_scrollFlags="scroll|enterAlways"/>
 
 </RelativeLayout>
