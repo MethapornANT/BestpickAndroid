@@ -3,10 +3,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Video Player View -->
+    <VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- Photo ImageView -->
     <ImageView
         android:id="@+id/photo_slide_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/photo_description" />
+        android:visibility="gone" />
+
+    <!-- Play Icon for Video -->
+    <ImageView
+        android:id="@+id/play_icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:src="@drawable/play"
+        android:visibility="gone" />
+
+    <!-- Stop Button for Video -->
+    <ImageView
+        android:id="@+id/stop_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|left"
+        android:layout_margin="16dp"
+        android:src="@drawable/stop"
+        android:visibility="gone" />
+
+    <!-- Skip Button for Video -->
+    <ImageView
+        android:id="@+id/skip_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_video_play_icon"
+        android:visibility="gone" />
+
+    <!-- SeekBar for Video -->
+    <SeekBar
+        android:id="@+id/video_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
 </FrameLayout>
+
+
+
+
+
+

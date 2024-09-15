@@ -1,30 +1,126 @@
+package com.example.reviewhub
+
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.SeekBar
+import android.widget.VideoView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.reviewhub.R
 
-class PhotoPagerAdapter(private val photoUrls: List<String>) : RecyclerView.Adapter<PhotoPagerAdapter.PhotoViewHolder>() {
+class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) : RecyclerView.Adapter<PhotoPagerAdapter.MediaViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+    private val handler = Handler(Looper.getMainLooper())
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.photo_slide_item, parent, false)
-        return PhotoViewHolder(view)
+        return MediaViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        val photoUrl = photoUrls[position]
-        Glide.with(holder.itemView.context)
-            .load(photoUrl)
-            .placeholder(R.drawable.ic_photo_placeholder)
-            .error(R.drawable.ic_error)
-            .into(holder.imageView)
+    override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
+        val (mediaUrl, mediaType) = mediaUrls[position]
+
+        if (mediaType == "video") {
+            holder.imageView.visibility = View.GONE
+            holder.videoView.visibility = View.VISIBLE
+            holder.playIcon.visibility = View.VISIBLE
+            holder.stopButton.visibility = View.VISIBLE
+            holder.skipButton.visibility = View.VISIBLE
+            holder.seekBar.visibility = View.VISIBLE
+
+            holder.videoView.setVideoPath(mediaUrl)
+
+            // Update SeekBar with video progress
+            val updateSeekBar = object : Runnable {
+                override fun run() {
+                    if (holder.videoView.isPlaying) {
+                        holder.seekBar.progress = holder.videoView.currentPosition
+                        handler.postDelayed(this, 500)
+                    }
+                }
+            }
+
+            // Play video when play icon is clicked
+            holder.playIcon.setOnClickListener {
+                holder.playIcon.visibility = View.GONE
+                holder.videoView.start()
+                holder.seekBar.max = holder.videoView.duration
+                handler.post(updateSeekBar) // Start updating the seek bar
+            }
+
+            // Stop video when stop button is clicked
+            holder.stopButton.setOnClickListener {
+                if (holder.videoView.isPlaying) {
+                    holder.videoView.stopPlayback()
+                    holder.videoView.resume()
+                    holder.playIcon.visibility = View.VISIBLE
+                    holder.seekBar.progress = 0
+                }
+            }
+
+            // Skip forward 10 seconds when skip button is clicked
+            holder.skipButton.setOnClickListener {
+                if (holder.videoView.isPlaying) {
+                    val currentPosition = holder.videoView.currentPosition
+                    val skipPosition = currentPosition + 10000 // Skip forward 10 seconds
+                    holder.videoView.seekTo(skipPosition)
+                }
+            }
+
+            // SeekBar change listener
+            holder.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        holder.videoView.seekTo(progress)
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+
+            // Handle video playback completion
+            holder.videoView.setOnCompletionListener {
+                holder.playIcon.visibility = View.VISIBLE
+                holder.seekBar.progress = 0
+            }
+        } else {
+            // Handle photo
+            holder.imageView.visibility = View.VISIBLE
+            holder.videoView.visibility = View.GONE
+            holder.playIcon.visibility = View.GONE
+            holder.stopButton.visibility = View.GONE
+            holder.skipButton.visibility = View.GONE
+            holder.seekBar.visibility = View.GONE
+
+            Glide.with(holder.itemView.context)
+                .load(mediaUrl)
+                .placeholder(R.drawable.ic_photo_placeholder)
+                .error(R.drawable.ic_error)
+                .into(holder.imageView)
+        }
     }
 
-    override fun getItemCount(): Int = photoUrls.size
+    override fun getItemCount(): Int = mediaUrls.size
 
-    class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class MediaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.photo_slide_image_view)
+        val videoView: VideoView = itemView.findViewById(R.id.video_view)
+        val playIcon: ImageView = itemView.findViewById(R.id.play_icon)
+        val stopButton: ImageView = itemView.findViewById(R.id.stop_button)
+        val skipButton: ImageView = itemView.findViewById(R.id.skip_button)
+        val seekBar: SeekBar = itemView.findViewById(R.id.video_seek_bar)
+    }
+
+    // Release resources for VideoView if needed
+    override fun onViewRecycled(holder: MediaViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder.videoView.isPlaying) {
+            holder.videoView.stopPlayback()
+        }
+        handler.removeCallbacksAndMessages(null) // Stop updating the seek bar
     }
 }

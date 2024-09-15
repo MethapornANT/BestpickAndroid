@@ -6,7 +6,7 @@ data class Post(
     val id: Int,
     val userName: String,
     val time: String,
-    val updated_at: String?, // This field maps to the "updated_at" JSON key
+    val updated: String?, // This field maps to the "updated_at" JSON key
     val content: String,
     val userProfileUrl: String?,
 
