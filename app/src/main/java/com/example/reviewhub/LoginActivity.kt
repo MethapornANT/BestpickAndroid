@@ -116,7 +116,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Set up views and listeners
-        //setupViews()
+        setupViews()
     }
 
     private fun setupViews() {
