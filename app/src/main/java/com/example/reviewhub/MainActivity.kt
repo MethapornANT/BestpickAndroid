@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
             val selectedFragment = when (item.itemId) {
                 R.id.home -> HomeFragment()
                 R.id.search -> SearchFragment()
+                R.id.profile -> ProfileFragment()
 
                 else -> HomeFragment()
             }
