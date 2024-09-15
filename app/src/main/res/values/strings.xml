@@ -13,6 +13,11 @@
     <string name="resetpassword">/reset-password</string>
     <string name="resentotpregis">/resend-otp/register</string>
     <string name="forgotpassword">/forgot-password</string>
+    <string name="Allpost">/posts</string>
+    <string name="photo_description">This is the photo description.</string>
+    <string name="video_description">This is the video description.</string>
+    <string name="play_video_description">This is the video description.</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="large_text">
