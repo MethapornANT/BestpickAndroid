@@ -19,8 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:itemIconSize="40dp"
-        app:itemIconTint="@color/black"
         app:menu="@menu/bottom_nav_menu"
-        android:background="?android:attr/windowBackground"/>
+        app:itemIconTint="@color/black"
+        android:background="?android:attr/windowBackground" />
 
 </RelativeLayout>

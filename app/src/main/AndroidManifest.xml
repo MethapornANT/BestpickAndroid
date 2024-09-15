@@ -19,6 +19,9 @@
         tools:ignore="AppLinkUrlError"
         tools:targetApi="31">
         <activity
+            android:name=".PostAdapter"
+            android:exported="false" />
+        <activity
             android:name=".editprofile"
             android:exported="false" />
         <activity
@@ -63,13 +66,11 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-
-        </activity>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

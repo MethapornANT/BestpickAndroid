@@ -1,7 +1,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- ไอคอนที่จะแสดงเมื่อถูกเลือก -->
+    <!-- Icon when selected -->
     <item android:state_checked="true" android:drawable="@drawable/homeclick" />
-
-    <!-- ไอคอนที่จะแสดงเมื่อไม่ถูกเลือก -->
+    <!-- Icon when not selected -->
     <item android:drawable="@drawable/home" />
 </selector>

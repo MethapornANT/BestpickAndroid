@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -28,7 +29,6 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.container, HomeFragment())
                 .commit()
         }
-
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
