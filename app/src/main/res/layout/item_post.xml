@@ -1,12 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_margin="10dp"
     android:padding="10dp"
-    android:backgroundTint="@color/gray"
     android:background="@color/white">
 
+    <!-- User Info Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,6 +15,7 @@
         android:gravity="center_vertical"
         android:paddingBottom="5dp">
 
+        <!-- Profile Image -->
         <ImageView
             android:id="@+id/user_profile_image"
             android:layout_width="36dp"
@@ -25,84 +27,62 @@
             android:scaleType="centerCrop"
             android:clipToOutline="true" />
 
+        <!-- Username and Post Time -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/user_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Spider"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/post_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="5 hours ago"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/follower"
+                android:id="@+id/user_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="3dp"
-                android:gravity="center_vertical"
-                android:text="กำลังติดตาม"
-                android:textColor="@color/nightblue"
-                android:textSize="12sp"
+                android:text="Spider"
+                android:textColor="@color/black"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/post_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5 hours ago"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- Follower Text -->
+        <TextView
+            android:id="@+id/follower"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="กำลังติดตาม"
+            android:textColor="@color/nightblue"
+            android:textSize="12sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-
+    <!-- Post Content Section -->
     <TextView
         android:id="@+id/post_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="This is the post content, it can be a description or message in the post."
         android:layout_marginTop="5dp"
-
         android:textColor="@color/black"
         android:textSize="14sp"
         android:padding="5dp" />
 
-
-    <GridLayout
-        android:id="@+id/image_grid"
+    <!-- Media Slideshow Section (Photos) -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/media_view_pager"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:columnCount="3"
-        android:alignmentMode="alignMargins"
-        android:useDefaultMargins="true">
+        android:layout_height="200dp"
+        android:layout_marginTop="5dp" />
 
-        <ImageView
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:layout_rowSpan="1"
-            android:layout_columnSpan="1"
-            android:layout_columnWeight="1"
-            android:scaleType="centerCrop"
-            android:src="@drawable/profiletest" />
-
-    </GridLayout>
-
+    <!-- Action Buttons (Like & Share) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -110,11 +90,12 @@
         android:gravity="center"
         android:layout_marginTop="5dp">
 
+        <!-- Like Button -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="left"
+            android:gravity="center"
             android:orientation="horizontal"
             android:padding="5dp"
             android:background="?android:attr/selectableItemBackground">
@@ -123,15 +104,14 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/like" />
-
         </LinearLayout>
 
-
+        <!-- Share Button -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:gravity="right"
+            android:layout_weight="1"
+            android:gravity="center"
             android:orientation="horizontal"
             android:padding="5dp"
             android:background="?android:attr/selectableItemBackground">
@@ -140,8 +120,6 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/share" />
-
         </LinearLayout>
     </LinearLayout>
-
 </LinearLayout>
