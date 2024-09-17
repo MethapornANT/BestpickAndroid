@@ -18,11 +18,13 @@ class SearchFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_search, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Find and set up the logout button
         val logoutButton = view.findViewById<Button>(R.id.logout)
         logoutButton.setOnClickListener {
             performLogout()
@@ -43,12 +45,12 @@ class SearchFragment : Fragment() {
     }
 
     private fun clearLocalData() {
-        // Clear shared preferences (if used)
+        // Clear shared preferences
         val sharedPreferences: SharedPreferences =
             requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
 
-        // Clear the token (if stored separately)
+        // Clear the token if stored separately
         val tokenPrefs: SharedPreferences = requireContext().getSharedPreferences("TokenPrefs", MODE_PRIVATE)
         tokenPrefs.edit().remove("TOKEN").apply()
     }

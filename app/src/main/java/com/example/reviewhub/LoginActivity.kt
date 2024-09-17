@@ -192,12 +192,16 @@ class LoginActivity : AppCompatActivity() {
                     message.contains("Authentication successful") -> {
                         val token = obj.optString("token", "")
                         val user = obj.optJSONObject("user")
+                        val id = user?.optString("id", "")
                         if (token.isNotEmpty()) {
-                            val intent = Intent(this, MainActivity::class.java)
-                            intent.putExtra("TOKEN", token)
-                            intent.putExtra("USER", user.toString())
-                            startActivity(intent)
-                            finish()
+                            // Store token in SharedPreferences
+                            val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                            val editor = sharedPreferences.edit()
+                            editor.putString("TOKEN", token)
+                            editor.putString("USER_ID", id)
+                            editor.apply()
+                            // Navigate to MainActivity
+                            navigateToMainActivity()
                         } else {
                             Toast.makeText(applicationContext, "Error: Missing token or user data", Toast.LENGTH_LONG).show()
                         }
@@ -312,12 +316,18 @@ class LoginActivity : AppCompatActivity() {
                         try {
                             val jsonObject = JSONObject(responseBody)
                             val jwtToken = jsonObject.optString("token", "")
-
+                            val users = jsonObject.optJSONObject("user")
+                            val id = users?.optString("id", "")
+                            Log.d("GoogleSignIn", "JWT Token: $jwtToken")
                             if (jwtToken.isNotEmpty()) {
-                                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                                intent.putExtra("TOKEN", jwtToken)
-                                startActivity(intent)
-                                finish()
+                                // Store token in SharedPreferences
+                                val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("TOKEN", jwtToken)
+                                editor.putString("USER_ID", id)
+                                editor.apply()
+                                // Navigate to MainActivity
+                                navigateToMainActivity()
                             } else {
                                 Toast.makeText(this@LoginActivity, "Authentication failed", Toast.LENGTH_LONG).show()
                             }
