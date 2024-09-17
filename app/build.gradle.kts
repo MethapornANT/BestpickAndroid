@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id ("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.kapt") // Apply kapt for annotation processing
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -27,18 +28,19 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
 
-    viewBinding{
-        enable = true
+    buildFeatures {
+        viewBinding = true
     }
-
 }
 
 dependencies {
@@ -66,10 +68,8 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.1")
     implementation("com.facebook.android:facebook-android-sdk:17.0.1")
 
-    implementation ("com.github.bumptech.glide:glide:4.12.0")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    kapt("com.github.bumptech.glide:compiler:4.12.0")
 
-    implementation ("com.google.android.exoplayer:exoplayer:2.19.1")
-
+    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
 }
-
