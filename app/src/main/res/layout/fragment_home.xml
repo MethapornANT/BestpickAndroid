@@ -1,4 +1,6 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -15,7 +17,6 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
         <!-- Toolbar with scroll flags -->
-
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,65 +24,92 @@
             android:padding="10dp"
             app:layout_scrollFlags="scroll|enterAlways">
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/rounded_image"
-                android:clipToOutline="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/profiletest" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="10dp">
 
-            <EditText
-                android:layout_width="260dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:background="@drawable/custom_edittext"
-                android:drawableStart="@drawable/baseline_search_home"
-                android:drawablePadding="8dp"
-                android:hint="Search"
-                android:paddingStart="10dp"
-                android:textSize="15sp" />
+                <!-- Profile Image -->
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/rounded_image"
+                    android:clipToOutline="true"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/profiletest" />
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="end"
-                android:layout_marginEnd="20dp"
-                android:src="@drawable/baseline_menu" />
+                <!-- Search EditText -->
+                <EditText
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_edittext"
+                    android:drawableStart="@drawable/baseline_search_home"
+                    android:drawablePadding="8dp"
+                    android:hint="Search"
+                    android:paddingStart="10dp"
+                    android:textSize="15sp" />
+
+                <!-- Menu Icon -->
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="16dp"
+                    android:src="@drawable/baseline_menu" />
+            </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
+        <!-- Tab Layout -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_width="200dp"
-            android:layout_gravity="center"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:background="@color/white"
-            app:layout_scrollFlags="scroll|enterAlways"
             app:tabIndicatorColor="@color/black"
             app:tabSelectedTextColor="@color/black"
             app:tabTextColor="@color/black">
 
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/tab_following"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Follow" />
+            <com.google.android.material.tabs.TabItem
+                android:id="@+id/tab_following"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Follow" />
 
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/tab_foryou"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="For You" />
-    </com.google.android.material.tabs.TabLayout>
+            <com.google.android.material.tabs.TabItem
+                android:id="@+id/tab_foryou"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="For You" />
+        </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- SwipeRefreshLayout for pull-to-refresh functionality -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/recycler_view_posts"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="0dp"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:listitem="@layout/item_post" />
+        <!-- RecyclerView for posts -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_posts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="0dp"
+            tools:listitem="@layout/item_post" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- ProgressBar to indicate data loading -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

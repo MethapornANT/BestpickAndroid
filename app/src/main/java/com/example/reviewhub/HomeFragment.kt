@@ -1,14 +1,15 @@
 package com.example.reviewhub
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.*
@@ -19,6 +20,8 @@ class HomeFragment : Fragment() {
     private lateinit var postAdapter: PostAdapter
     private val postList = mutableListOf<Post>()
     private val client = OkHttpClient() // Use a single OkHttpClient instance
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +30,8 @@ class HomeFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
+        progressBar = view.findViewById(R.id.progress_bar)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -35,12 +40,22 @@ class HomeFragment : Fragment() {
         recyclerView.adapter = postAdapter
 
         // Fetch data from the API
-        fetchPosts()
+        fetchPosts(showLoading = true)
+
+        // Pull-to-refresh functionality
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchPosts(showLoading = false) // Show swipe refresh only, not progress bar
+        }
 
         return view
     }
 
-    private fun fetchPosts() {
+    private fun fetchPosts(showLoading: Boolean) {
+        if (showLoading) {
+            progressBar.visibility = View.VISIBLE // Show progress bar only for the first load
+        }
+        swipeRefreshLayout.isRefreshing = false // Ensure swipe refresh icon is reset
+
         val url = getString(R.string.root_url) + getString(R.string.Allpost)
 
         val request = Request.Builder()
@@ -50,6 +65,8 @@ class HomeFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 activity?.runOnUiThread {
+                    progressBar.visibility = View.GONE // Hide progress bar
+                    swipeRefreshLayout.isRefreshing = false // Ensure refreshing is stopped
                     Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -57,6 +74,8 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     activity?.runOnUiThread {
+                        progressBar.visibility = View.GONE // Hide progress bar
+                        swipeRefreshLayout.isRefreshing = false // Ensure refreshing is stopped
                         Toast.makeText(requireContext(), "Failed to fetch posts: ${response.message}", Toast.LENGTH_SHORT).show()
                     }
                     return
@@ -73,14 +92,20 @@ class HomeFragment : Fragment() {
                             postList.clear()
                             postList.addAll(posts)
                             postAdapter.notifyDataSetChanged()
+                            progressBar.visibility = View.GONE // Hide progress bar
+                            swipeRefreshLayout.isRefreshing = false // Stop refresh animation
                         }
                     } catch (e: Exception) {
                         activity?.runOnUiThread {
+                            progressBar.visibility = View.GONE // Hide progress bar
+                            swipeRefreshLayout.isRefreshing = false // Stop refresh animation
                             Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } ?: run {
                     activity?.runOnUiThread {
+                        progressBar.visibility = View.GONE // Hide progress bar
+                        swipeRefreshLayout.isRefreshing = false // Stop refresh animation
                         Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
                     }
                 }
