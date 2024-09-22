@@ -53,5 +53,11 @@ class SearchFragment : Fragment() {
         // Clear the token if stored separately
         val tokenPrefs: SharedPreferences = requireContext().getSharedPreferences("TokenPrefs", MODE_PRIVATE)
         tokenPrefs.edit().remove("TOKEN").apply()
+        // Clear the user ID if stored separately
+        val userIdPrefs: SharedPreferences = requireContext().getSharedPreferences("UserIdPrefs", MODE_PRIVATE)
+        userIdPrefs.edit().remove("USER_ID").apply()
+        // Clear the picture if stored separately
+        val picturePrefs: SharedPreferences = requireContext().getSharedPreferences("PicturePrefs", MODE_PRIVATE)
+        picturePrefs.edit().remove("PICTURE").apply()
     }
 }

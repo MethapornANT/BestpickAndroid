@@ -320,11 +320,13 @@ class LoginActivity : AppCompatActivity() {
                             val jwtToken = jsonObject.optString("token", "")
                             val users = jsonObject.optJSONObject("user")
                             val id = users?.optString("id", "")
+                            val picture = users?.optString("picture", "")
                             Log.d("GoogleSignIn", "JWT Token: $jwtToken")
                             if (jwtToken.isNotEmpty()) {
                                 // Store token in SharedPreferences
                                 val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
                                 val editor = sharedPreferences.edit()
+                                editor.putString("PICTURE", picture)
                                 editor.putString("TOKEN", jwtToken)
                                 editor.putString("USER_ID", id)
                                 editor.apply()
