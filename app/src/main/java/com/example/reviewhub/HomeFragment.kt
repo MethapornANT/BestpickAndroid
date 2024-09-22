@@ -41,8 +41,6 @@ class HomeFragment : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val token = sharedPreferences.getString("TOKEN", null)
-        val userId = sharedPreferences.getString("USER_ID", null)
         val picture = sharedPreferences.getString("PICTURE", null)
         val profileImg = view.findViewById<ImageView>(R.id.profile_image)
 

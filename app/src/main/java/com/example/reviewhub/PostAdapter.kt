@@ -1,16 +1,20 @@
 package com.example.reviewhub
 
+import android.app.Activity
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
-import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
+import okhttp3.*
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -37,18 +41,18 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
         private val postContent: TextView = itemView.findViewById(R.id.post_content)
         private val userProfileImage: ImageView = itemView.findViewById(R.id.user_profile_image)
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
-//        private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
-//        private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
+        private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
+        private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
 
         fun bind(post: Post) {
             val context = itemView.context
-            val baseUrl = context.getString(R.string.root_url) // Fetch the base URL from string resources
+            val baseUrl = context.getString(R.string.root_url)
 
             // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
             val photoUrls = post.photoUrl?.map { Pair(baseUrl + it, "photo") } ?: emptyList()
             val videoUrls = post.videoUrl?.map { Pair(baseUrl + it, "video") } ?: emptyList()
-            val mediaUrls = photoUrls + videoUrls // Combine both lists
+            val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
 
             // Set user details
@@ -73,17 +77,23 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 mediaViewPager.visibility = View.GONE
             }
 
-            // Set click listener for like and share buttons (if necessary)
-//            likeButton.setOnClickListener {
-//                // Add your like functionality here
-//            }
-//
-//            shareButton.setOnClickListener {
-//
-//            }
-        }
+            // Fetch token and userId from SharedPreferences
+            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val token = sharedPreferences.getString("TOKEN", null)
+            val userId = sharedPreferences.getString("USER_ID", null)
 
-        private fun Like(postid: Int, userId: Int){
+            // Handle like button click
+            likeButton.setOnClickListener {
+                if (token != null && userId != null) {
+                    likeUnlikePost(post.id, userId.toInt(), token, context)
+                } else {
+                    Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            shareButton.setOnClickListener {
+                sharePost(context, post)
+            }
 
         }
 
@@ -97,6 +107,49 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             context.startActivity(Intent.createChooser(intent, "Share Post via"))
         }
 
+        // Function to like or unlike a post
+        private fun likeUnlikePost(postId: Int, userId: Int, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = context.getString(R.string.root_url) + context.getString(R.string.postlikeorunlike) + postId
+            val requestBody = FormBody.Builder()
+                .add("user_id", userId.toString())
+                .build()
+
+            // Build the request
+            val request = Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            // Execute the request
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to like/unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!response.isSuccessful) {
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                            }
+
+
+
+                        } else {
+                            val message = response.body?.string() ?: "Success"
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                // Optionally, toggle like button state (e.g., change icon)
+                            }
+                        }
+                    }
+                }
+            })
+        }
 
         // Convert time string to a readable format
         private fun formatTime(timeString: String): String {
