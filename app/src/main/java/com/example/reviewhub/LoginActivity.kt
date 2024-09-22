@@ -193,10 +193,12 @@ class LoginActivity : AppCompatActivity() {
                         val token = obj.optString("token", "")
                         val user = obj.optJSONObject("user")
                         val id = user?.optString("id", "")
+                        val picture = user?.optString("picture", "")
                         if (token.isNotEmpty()) {
                             // Store token in SharedPreferences
                             val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
                             val editor = sharedPreferences.edit()
+                            editor.putString("PICTURE", picture)
                             editor.putString("TOKEN", token)
                             editor.putString("USER_ID", id)
                             editor.apply()

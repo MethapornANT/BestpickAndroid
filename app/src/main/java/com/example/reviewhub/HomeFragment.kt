@@ -1,15 +1,20 @@
 package com.example.reviewhub
 
+import android.annotation.SuppressLint
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.*
@@ -23,6 +28,7 @@ class HomeFragment : Fragment() {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -34,6 +40,23 @@ class HomeFragment : Fragment() {
         progressBar = view.findViewById(R.id.progress_bar)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)
+        val picture = sharedPreferences.getString("PICTURE", null)
+        val profileImg = view.findViewById<ImageView>(R.id.profile_image)
+
+        if (picture != null) {
+            val url = getString(R.string.root_url) + picture
+            context?.let {
+                Glide.with(it)
+                    .load(url)
+                    .circleCrop() // Apply circle crop if needed
+                    .placeholder(R.drawable.ic_launcher_background) // Placeholder image while loading
+                    .error(R.drawable.ic_error) // Error image if the loading fails
+                    .into(profileImg)
+            }
+        }
 
         // Initialize the adapter with an empty list
         postAdapter = PostAdapter(postList)

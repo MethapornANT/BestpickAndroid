@@ -1,7 +1,8 @@
 package com.example.reviewhub
 
-
-
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,12 +37,14 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
         private val postContent: TextView = itemView.findViewById(R.id.post_content)
         private val userProfileImage: ImageView = itemView.findViewById(R.id.user_profile_image)
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
+//        private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
+//        private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
 
         fun bind(post: Post) {
             val context = itemView.context
             val baseUrl = context.getString(R.string.root_url) // Fetch the base URL from string resources
 
-            // Construct full URLs
+            // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
             val photoUrls = post.photoUrl?.map { Pair(baseUrl + it, "photo") } ?: emptyList()
             val videoUrls = post.videoUrl?.map { Pair(baseUrl + it, "video") } ?: emptyList()
@@ -61,13 +64,41 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 .error(R.drawable.ic_error)
                 .into(userProfileImage)
 
-            // Set up ViewPager2 for photo and video slideshow
+            // Set up ViewPager2 for photo and video slideshow if there is any media
             if (mediaUrls.isNotEmpty()) {
                 val adapter = PhotoPagerAdapter(mediaUrls)
                 mediaViewPager.adapter = adapter
+                mediaViewPager.visibility = View.VISIBLE
+            } else {
+                mediaViewPager.visibility = View.GONE
             }
+
+            // Set click listener for like and share buttons (if necessary)
+//            likeButton.setOnClickListener {
+//                // Add your like functionality here
+//            }
+//
+//            shareButton.setOnClickListener {
+//
+//            }
         }
 
+        private fun Like(postid: Int, userId: Int){
+
+        }
+
+        // Function to share the post content
+        private fun sharePost(context: Context, post: Post) {
+            val shareText = "Check out this post from ${post.userName}:\n${post.content}"
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            context.startActivity(Intent.createChooser(intent, "Share Post via"))
+        }
+
+
+        // Convert time string to a readable format
         private fun formatTime(timeString: String): String {
             return try {
                 val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
