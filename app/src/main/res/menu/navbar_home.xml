@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/home"
+        android:id="@+id/setting"
         android:icon="@drawable/baseline_menu"
-        android:title="hi" />
+        android:title="Setting" />
     <item
-        android:id="@+id/search"
-        android:title="2" />
+        android:id="@+id/Theme"
+        android:title="Theme" />
 </menu>
 
 

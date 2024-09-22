@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -44,6 +45,30 @@ class HomeFragment : Fragment() {
         val picture = sharedPreferences.getString("PICTURE", null)
         val profileImg = view.findViewById<ImageView>(R.id.profile_image)
 
+        val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
+
+        menuImageView.setOnClickListener {
+            val popupMenu = PopupMenu(requireContext(), menuImageView)  // ใช้ requireContext() ถ้าอยู่ใน Fragment
+            popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
+
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.setting -> {
+
+                        true
+                    }
+                    R.id.Theme -> {
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popupMenu.show()
+        }
+
+
+
         if (picture != null) {
             val url = getString(R.string.root_url) + picture
             context?.let {
@@ -67,7 +92,6 @@ class HomeFragment : Fragment() {
         swipeRefreshLayout.setOnRefreshListener {
             fetchPosts(showLoading = false) // Show swipe refresh only, not progress bar
         }
-
         return view
     }
 

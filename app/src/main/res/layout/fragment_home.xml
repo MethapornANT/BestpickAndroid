@@ -8,7 +8,7 @@
     android:background="@color/white"
     tools:context=".HomeFragment">
 
-    <!-- AppBarLayout for Toolbar and Tabs -->
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/menuhome"
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
         android:background="@color/white"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
-        <!-- Toolbar with scroll flags -->
+
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -54,16 +54,19 @@
                     android:paddingStart="10dp"
                     android:textSize="15sp" />
 
-                <!-- Menu Icon -->
+
                 <ImageView
+                    android:id="@+id/menuImageView"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_marginStart="16dp"
-                    android:src="@drawable/baseline_menu" />
+                    android:src="@drawable/baseline_menu"
+                    android:contentDescription="Menu" />
+
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Tab Layout -->
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="wrap_content"
@@ -88,14 +91,14 @@
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- SwipeRefreshLayout for pull-to-refresh functionality -->
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- RecyclerView for posts -->
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"

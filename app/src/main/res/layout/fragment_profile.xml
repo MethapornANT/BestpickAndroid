@@ -17,7 +17,7 @@
                 android:id="@+id/usernametop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Spiderz"
+                android:text="#Spiderz"
                 android:textColor="@color/bluetext"
                 android:textSize="20dp" />
 
@@ -26,7 +26,8 @@
                 android:layout_height="30dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/baseline_menu"/>
+                android:src="@drawable/baseline_menu"
+                android:contentDescription="Menu"/>
 
         </androidx.appcompat.widget.Toolbar>
 
@@ -111,21 +112,21 @@
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:text="กำลังติดตาม"
+                        android:text="Following"
                         android:gravity="center"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:text="ผู้ติดตาม"
+                        android:text="Follow"
                         android:gravity="center"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:text="โพสต์"
+                        android:text="Post"
                         android:gravity="center"
                         android:textSize="14sp" />
                 </androidx.appcompat.widget.Toolbar>
@@ -149,28 +150,29 @@
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginTop="16dp"
-            android:text="แก้ไขโปรไฟล์"
+            android:background="@color/blue"
+            android:text="Edit Profile"
             android:textColor="@color/white" />
 
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_width="match_parent"
-            android:layout_gravity="center"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:background="@color/white">
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_following"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="โพสต์" />
+                android:text="post" />
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_foryou"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="บุ๊คมาร์ค" />
+                android:text="bookmark" />
         </com.google.android.material.tabs.TabLayout>
 
 

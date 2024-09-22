@@ -3,6 +3,8 @@ package com.example.reviewhub
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.MotionEvent
+import android.view.SoundEffectConstants
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -31,9 +33,9 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.container, HomeFragment())
                 .commit()
         }
-
-
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+
 
         bottomNavigationView.setOnItemSelectedListener { item ->
             val selectedFragment = when (item.itemId) {

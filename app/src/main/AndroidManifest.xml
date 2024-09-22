@@ -19,20 +19,21 @@
         tools:ignore="AppLinkUrlError"
         tools:targetApi="31">
         <activity
+            android:name=".CreateName_Activity"
+            android:exported="false" />
+        <activity
             android:name=".PostAdapter"
             android:exported="false" />
         <activity
             android:name=".editprofile"
             android:exported="false" />
         <activity
-            android:name=".profile"
-            android:exported="false" />
-        <activity
             android:name=".LoadingDialogActivity"
             android:exported="false" />
         <activity
             android:name=".Register_Create_PasswordActivity"
-            android:exported="false" /> <!-- Meta-data for Google Sign-In -->
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.gms.client_id"
             android:value="@string/server_client_id" />
@@ -66,7 +67,7 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

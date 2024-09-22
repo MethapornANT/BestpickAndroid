@@ -3,12 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".Forget_Password_Activity"
     android:gravity="center"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CreateName_Activity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -28,28 +27,15 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="ForgetPassword"
-                android:id="@+id/nameapp"
+                android:text="What You name?"
                 android:textSize="30sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
-                />
+                android:textColor="@color/black"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter you email account to reset password"
-                android:id="@+id/logintext"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="10dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Email"
-                android:id="@+id/loginemail"
+                android:text="You Nickname"
                 android:layout_marginTop="25dp"
                 android:textSize="15sp"
                 android:textStyle="bold"
@@ -59,21 +45,34 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:textSize="13sp"
-                android:id="@+id/Email"
                 android:background="@drawable/custom_edittext"
                 android:padding="8dp"
-                android:hint="Enter you email"/>
+                android:hint=" Everyone calls you?"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Error report"
+                android:textSize="10sp"
+                android:textColor="@color/red"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="You can change your name later."
+                android:layout_marginTop="30dp"
+                android:textSize="10sp"
+                android:textAlignment="center"
+                android:textColor="@color/bluetext"/>
 
             <Button
-                android:id="@+id/btnsent"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="10dp"
+                android:layout_height="60dp"
+                android:text="Ready to Start"
                 android:textColor="@color/white"
-                android:background="@drawable/custom_iconlogin"
-                android:text="Sent OTP to Email"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_iconlogin"/>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

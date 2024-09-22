@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:itemIconSize="40dp"
+        android:theme="@style/NoClickSound"
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/bluetext"
         android:background="?android:attr/windowBackground"
