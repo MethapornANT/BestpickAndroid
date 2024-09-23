@@ -16,7 +16,6 @@
         android:background="@color/white"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
-
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,7 +30,6 @@
                 android:gravity="center_vertical"
                 android:padding="10dp">
 
-                <!-- Profile Image -->
                 <ImageView
                     android:id="@+id/profile_image"
                     android:layout_width="40dp"
@@ -42,7 +40,6 @@
                     android:scaleType="centerCrop"
                     android:src="@drawable/profiletest" />
 
-                <!-- Search EditText -->
                 <EditText
                     android:layout_width="0dp"
                     android:layout_height="40dp"
@@ -66,7 +63,6 @@
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
-
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="wrap_content"
@@ -87,7 +83,7 @@
                 android:id="@+id/tab_foryou"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="For You" />
+                android:text="ForYou" />
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -107,7 +103,6 @@
             tools:listitem="@layout/item_post" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- ProgressBar to indicate data loading -->
     <ProgressBar
         android:id="@+id/progress_bar"
         style="?android:attr/progressBarStyleLarge"

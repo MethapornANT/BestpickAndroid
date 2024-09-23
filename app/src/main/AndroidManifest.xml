@@ -27,9 +27,6 @@
             android:name=".PostAdapter"
             android:exported="false" />
         <activity
-            android:name=".editprofile"
-            android:exported="false" />
-        <activity
             android:name=".LoadingDialogActivity"
             android:exported="false" />
         <activity
