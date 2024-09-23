@@ -42,37 +42,31 @@
                 android:textColor="@color/black"/>
 
             <EditText
+                android:id="@+id/txtusername"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:textSize="13sp"
                 android:background="@drawable/custom_edittext"
+                android:hint=" Everyone calls you?"
                 android:padding="8dp"
-                android:hint=" Everyone calls you?"/>
+                android:textSize="13sp" />
 
             <TextView
+                android:id="@+id/txterror"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Error report"
-                android:textSize="10sp"
-                android:textColor="@color/red"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="You can change your name later."
-                android:layout_marginTop="30dp"
-                android:textSize="10sp"
-                android:textAlignment="center"
-                android:textColor="@color/bluetext"/>
+                android:textColor="@color/red"
+                android:textSize="10sp" />
 
             <Button
+                android:id="@+id/change"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_iconlogin"
                 android:text="Ready to Start"
                 android:textColor="@color/white"
-                android:textSize="18sp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/custom_iconlogin"/>
+                android:textSize="18sp" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

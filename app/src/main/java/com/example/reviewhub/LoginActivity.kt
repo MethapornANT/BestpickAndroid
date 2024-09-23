@@ -53,6 +53,7 @@ import org.json.JSONObject
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.os.postDelayed
+import okio.IOException
 
 
 class LoginActivity : AppCompatActivity() {
@@ -194,6 +195,7 @@ class LoginActivity : AppCompatActivity() {
                         val user = obj.optJSONObject("user")
                         val id = user?.optString("id", "")
                         val picture = user?.optString("picture", "")
+                        val username = user?.optString("username", "")
                         if (token.isNotEmpty()) {
                             // Store token in SharedPreferences
                             val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
@@ -201,9 +203,17 @@ class LoginActivity : AppCompatActivity() {
                             editor.putString("PICTURE", picture)
                             editor.putString("TOKEN", token)
                             editor.putString("USER_ID", id)
+                            editor.putString("USERNAME", username)
                             editor.apply()
                             // Navigate to MainActivity
-                            navigateToMainActivity()
+                            if (username.isNullOrEmpty()) {
+                                val intent = Intent(this, CreateName_Activity::class.java)
+                                startActivity(intent)
+                                finish() // Prevents further execution of the current activity
+                            } else {
+                                navigateToMainActivity()
+                            }
+
                         } else {
                             Toast.makeText(applicationContext, "Error: Missing token or user data", Toast.LENGTH_LONG).show()
                         }
@@ -295,6 +305,7 @@ class LoginActivity : AppCompatActivity() {
     private fun googleSignIn(token: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Sign in with Firebase using Google token
                 val firebaseAuth = FirebaseAuth.getInstance()
                 val credential = GoogleAuthProvider.getCredential(token, null)
                 val authResult = firebaseAuth.signInWithCredential(credential).await()
@@ -302,14 +313,18 @@ class LoginActivity : AppCompatActivity() {
                 val user = authResult.user
                 val userId = user?.uid ?: ""
                 val email = user?.email ?: ""
+
                 Log.d("GoogleSignIn", "User ID: $userId, Email: $email")
-                val url =getString(R.string.root_url) +getString(R.string.googlesignin)
+
+                // Build request to your backend
+                val url = getString(R.string.root_url) + getString(R.string.googlesignin)
                 val requestBody: RequestBody = FormBody.Builder()
                     .add("googleId", userId)
                     .add("email", email)
                     .build()
                 val request = Request.Builder().url(url).post(requestBody).build()
 
+                // Execute request and handle the response
                 val response = OkHttpClient().newCall(request).execute()
                 val responseBody = response.body?.string() ?: ""
 
@@ -321,17 +336,32 @@ class LoginActivity : AppCompatActivity() {
                             val users = jsonObject.optJSONObject("user")
                             val id = users?.optString("id", "")
                             val picture = users?.optString("picture", "")
-                            Log.d("GoogleSignIn", "JWT Token: $jwtToken")
+                            val username = users?.optString("username", "")
+                            Log.d("GoogleSignIn", "username: $username")
+
                             if (jwtToken.isNotEmpty()) {
-                                // Store token in SharedPreferences
+                                // Store token and user info in SharedPreferences
                                 val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                                val editor = sharedPreferences.edit()
-                                editor.putString("PICTURE", picture)
-                                editor.putString("TOKEN", jwtToken)
-                                editor.putString("USER_ID", id)
-                                editor.apply()
-                                // Navigate to MainActivity
-                                navigateToMainActivity()
+                                with(sharedPreferences.edit()) {
+                                    putString("PICTURE", picture)
+                                    putString("TOKEN", jwtToken)
+                                    putString("USER_ID", id)
+                                    putString("USERNAME", username)
+                                    apply()
+                                }
+
+                                if (username == null || username.isEmpty()) {
+                                    Log.d("GoogleSignIn", "Navigating to CreateName_Activity because username is null or empty")
+                                    Log.d("GoogleSignIn", "username value before check: $username")
+                                    val intent = Intent(this@LoginActivity, CreateName_Activity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    Log.d("GoogleSignIn", "Navigating to MainActivity because username is not null or empty")
+                                    Log.d("GoogleSignIn", "username value before check: $username")
+                                    navigateToMainActivity()
+                                }
+
                             } else {
                                 Toast.makeText(this@LoginActivity, "Authentication failed", Toast.LENGTH_LONG).show()
                             }
@@ -340,6 +370,7 @@ class LoginActivity : AppCompatActivity() {
                             Toast.makeText(this@LoginActivity, "Error parsing server response: ${e.message}", Toast.LENGTH_LONG).show()
                         }
                     } else {
+                        // Handle server errors gracefully
                         val errorMessage = try {
                             val errorObj = JSONObject(responseBody)
                             errorObj.optString("error", "Unknown error")
@@ -349,6 +380,11 @@ class LoginActivity : AppCompatActivity() {
                         Toast.makeText(this@LoginActivity, "Server error: $errorMessage", Toast.LENGTH_LONG).show()
                     }
                 }
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) {
+                    Log.e("GoogleSignIn", "Network Error: ${e.message}")
+                    Toast.makeText(this@LoginActivity, "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("GoogleSignIn", "Error: ${e.message}")
@@ -357,6 +393,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
 
 
 
