@@ -51,26 +51,45 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.preference)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.airbnb.android:lottie:6.5.0")
 
+    // Firebase with BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // Google Play Services
     implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("androidx.activity:activity-ktx:1.9.1")
+
+    // Facebook SDK
     implementation("com.facebook.android:facebook-android-sdk:17.0.1")
 
+    // OkHttp and Retrofit
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Glide
     implementation("com.github.bumptech.glide:glide:4.12.0")
     kapt("com.github.bumptech.glide:compiler:4.12.0")
 
+    // ExoPlayer
     implementation("com.google.android.exoplayer:exoplayer:2.19.1")
+
+    // ImagePicker
+    implementation("com.github.Drjacky:ImagePicker:2.3.22")
+
+    // Lottie for animations
+    implementation("com.airbnb.android:lottie:6.5.0")
+
+    // MPAndroidChart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // Splashscreen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Test Dependencies
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

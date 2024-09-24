@@ -17,6 +17,7 @@
     <string name="Allpost">/posts</string>
     <string name="postlikeorunlike">/posts/like/</string>">
     <string name="userprofile">/api/users/</string>
+    <string name="userprofileupdate">/api/users/</string>
     <string name="photo_description">This is the photo description.</string>
     <string name="video_description">This is the video description.</string>
     <string name="play_video_description">This is the video description.</string>
@@ -126,5 +127,10 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string-array name="gender_array">
+        <item>Male</item>
+        <item>Female</item>
+        <item>Other</item>
+    </string-array>
 
 </resources>

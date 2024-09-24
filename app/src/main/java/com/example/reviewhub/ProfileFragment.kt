@@ -37,26 +37,28 @@ class ProfileFragment : Fragment() {
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         val editProfileButton = view.findViewById<Button>(R.id.edit_profile_button)
 
+        // Navigate to EditprofileFragment when editProfileButton is clicked
+        editProfileButton.setOnClickListener {
+            val fragmentTransaction = parentFragmentManager.beginTransaction()
+            fragmentTransaction.replace(R.id.container, EditprofileFragment())
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.commit()
+        }
 
+        // Popup menu handling
         menuImageView.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), menuImageView)
             popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
-                    R.id.setting -> {
-                        true
-                    }
-                    R.id.Theme -> {
-
-                        true
-                    }
+                    R.id.setting -> true
+                    R.id.Theme -> true
                     else -> false
                 }
             }
             popupMenu.show()
         }
-
 
         Log.d("ProfileFragment", "Token: $token")
         Log.d("ProfileFragment", "User ID: $userId")
@@ -74,7 +76,7 @@ class ProfileFragment : Fragment() {
 
         val request = Request.Builder()
             .url(url)
-            .addHeader("Authorization", "Bearer $token") // Add Authorization header
+            .addHeader("Authorization", "Bearer $token")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -93,26 +95,25 @@ class ProfileFragment : Fragment() {
                             val followerCount = jsonObject.getInt("followerCount")
                             val followingCount = jsonObject.getInt("followingCount")
                             val postCount = jsonObject.getInt("postCount")
+                            val bio = jsonObject.getString("bio")
 
                             val imgProfileUrl = rootUrl + profileImageUrl
 
                             // Update UI elements on the main thread
                             activity?.runOnUiThread {
-                                // Set username
                                 view.findViewById<TextView>(R.id.username)?.text = username
-                                view.findViewById<TextView>(R.id.usernametop)?.text = username
-
-                                // Set follower, following, and post counts
+                                view.findViewById<TextView>(R.id.back)?.text = username
                                 view.findViewById<TextView>(R.id.follower_count)?.text = followerCount.toString()
                                 view.findViewById<TextView>(R.id.following_count)?.text = followingCount.toString()
                                 view.findViewById<TextView>(R.id.post_count)?.text = postCount.toString()
+                                view.findViewById<TextView>(R.id.bio)?.text = bio
 
                                 // Load the profile image using Glide
                                 val profileImageView = view.findViewById<ImageView>(R.id.user_profile_image)
                                 Glide.with(this@ProfileFragment)
                                     .load(imgProfileUrl)
                                     .centerCrop()
-                                    .placeholder(R.drawable.ic_launcher_background) // Placeholder image
+                                    .placeholder(R.drawable.ic_launcher_background)
                                     .into(profileImageView)
                             }
                         } catch (e: Exception) {
