@@ -9,13 +9,14 @@
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:padding="16dp">
 
         <TextView
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="back"
+            android:text="Back"
             android:textColor="@color/black"
             android:textSize="15sp" />
 
@@ -64,74 +65,99 @@
         android:layout_gravity="center"
         android:layout_margin="10dp"
         android:text="Edit Photo"
-        android:textColor="@color/gray"
-        android:textSize="15dp" />
+        android:textColor="@color/white"
+        android:textSize="10dp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginTop="30dp"
         android:layout_gravity="center">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:padding="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
                 android:textSize="15dp"
                 android:textColor="@color/black"
-                android:text="Username" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:textSize="15dp"
-                android:textColor="@color/black"
-                android:text="Bio" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:textSize="15dp"
-                android:textColor="@color/black"
-                android:text="Gender" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="10dp">
+                android:text="Name" />
 
             <EditText
                 android:id="@+id/username_edit"
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
                 android:textSize="15sp"
+                android:layout_marginStart="28dp"
                 android:hint="Enter Username"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:textColor="@color/black"
+                android:text="Email" />
+
+            <TextView
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="35dp"
+                android:textSize="15sp"
+                android:hint="Email"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:textColor="@color/black"
+                android:text="Bio" />
 
             <EditText
                 android:id="@+id/bio_edit"
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="46dp"
                 android:textSize="15sp"
                 android:hint="Enter Bio"/>
+        </LinearLayout>
 
-            <!-- Replace EditText with Spinner for Gender -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:textColor="@color/black"
+                android:text="Gender" />
+
             <Spinner
                 android:id="@+id/gender_spinner"
                 android:layout_width="250dp"
+                android:layout_marginStart="20dp"
                 android:layout_height="wrap_content" />
 
+
         </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>
