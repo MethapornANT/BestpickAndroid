@@ -40,7 +40,7 @@ class ProfileFragment : Fragment() {
         // Navigate to EditprofileFragment when editProfileButton is clicked
         editProfileButton.setOnClickListener {
             val fragmentTransaction = parentFragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.container, EditprofileFragment())
+            fragmentTransaction.replace(R.id.container, PostDetailFragment())
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         }
