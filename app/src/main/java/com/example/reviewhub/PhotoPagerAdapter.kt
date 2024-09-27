@@ -14,6 +14,12 @@ import com.bumptech.glide.Glide
 class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) : RecyclerView.Adapter<PhotoPagerAdapter.MediaViewHolder>() {
 
     private val handler = Handler(Looper.getMainLooper())
+    private var itemClickListener: ((Int, String) -> Unit)? = null // Listener สำหรับคลิก (ตำแหน่ง, ประเภทสื่อ)
+
+    // ฟังก์ชันสำหรับตั้งค่า Click Listener
+    fun setOnItemClickListener(listener: (Int, String) -> Unit) {
+        itemClickListener = listener
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.photo_slide_item, parent, false)
@@ -30,6 +36,9 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) : Rec
             holder.stopButton.visibility = View.VISIBLE
             holder.skipButton.visibility = View.VISIBLE
             holder.seekBar.visibility = View.VISIBLE
+            holder.videoView.layoutParams.height = 400 * holder.itemView.resources.displayMetrics.density.toInt()
+            holder.videoView.layoutParams.width = holder.itemView.resources.displayMetrics.widthPixels
+
 
             holder.videoView.setVideoPath(mediaUrl)
 
@@ -87,6 +96,11 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) : Rec
                 holder.playIcon.visibility = View.VISIBLE
                 holder.seekBar.progress = 0
             }
+
+            // เพิ่ม Listener ให้ VideoView
+            holder.videoView.setOnClickListener {
+                itemClickListener?.invoke(position, "video") // ส่งตำแหน่งและประเภทสื่อ
+            }
         } else {
             // Handle photo
             holder.imageView.visibility = View.VISIBLE
@@ -101,6 +115,11 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) : Rec
                 .placeholder(R.drawable.ic_photo_placeholder)
                 .error(R.drawable.ic_error)
                 .into(holder.imageView)
+
+            // เพิ่ม Listener ให้ ImageView
+            holder.imageView.setOnClickListener {
+                itemClickListener?.invoke(position, "photo") // ส่งตำแหน่งและประเภทสื่อ
+            }
         }
     }
 

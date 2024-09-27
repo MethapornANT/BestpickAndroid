@@ -3,12 +3,10 @@ package com.example.reviewhub
 import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -29,13 +27,12 @@ class HomeFragment : Fragment() {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
         progressBar = view.findViewById(R.id.progress_bar)
@@ -45,37 +42,14 @@ class HomeFragment : Fragment() {
         val picture = sharedPreferences.getString("PICTURE", null)
         val profileImg = view.findViewById<ImageView>(R.id.profile_image)
 
-        val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
-
-        menuImageView.setOnClickListener {
-            val popupMenu = PopupMenu(requireContext(), menuImageView)  // ใช้ requireContext() ถ้าอยู่ใน Fragment
-            popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
-
-            popupMenu.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.setting -> {
-                        true
-                    }
-                    R.id.Theme -> {
-
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popupMenu.show()
-        }
-
-
-
         if (picture != null) {
             val url = getString(R.string.root_url) + picture
             context?.let {
                 Glide.with(it)
                     .load(url)
-                    .circleCrop() // Apply circle crop if needed
-                    .placeholder(R.drawable.ic_launcher_background) // Placeholder image while loading
-                    .error(R.drawable.ic_error) // Error image if the loading fails
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_error)
                     .into(profileImg)
             }
         }
@@ -92,6 +66,17 @@ class HomeFragment : Fragment() {
             fetchPosts(showLoading = false) // Show swipe refresh only, not progress bar
         }
         return view
+    }
+
+    // ฟังก์ชัน refreshPosts ที่จะถูกเรียกเมื่อคลิก Home สองครั้ง
+    fun refreshPosts() {
+        Toast.makeText(requireContext(), "Refreshing posts...", Toast.LENGTH_SHORT).show()
+
+        val recyclerView = view?.findViewById<RecyclerView>(R.id.recycler_view_posts)
+        recyclerView?.smoothScrollToPosition(0)
+
+        fetchPosts(showLoading = true) // ดึงข้อมูลใหม่
+
     }
 
     private fun fetchPosts(showLoading: Boolean) {

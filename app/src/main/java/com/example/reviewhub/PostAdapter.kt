@@ -4,12 +4,15 @@ import android.app.Activity
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
@@ -31,9 +34,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
         holder.bind(post)
     }
 
-    override fun getItemCount(): Int {
-        return postList.size
-    }
+    override fun getItemCount(): Int = postList.size
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val userName: TextView = itemView.findViewById(R.id.user_name)
@@ -73,17 +74,31 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 val adapter = PhotoPagerAdapter(mediaUrls)
                 mediaViewPager.adapter = adapter
                 mediaViewPager.visibility = View.VISIBLE
+
+                // ตั้งค่า OnClickListener ใน PhotoPagerAdapter
+                adapter.setOnItemClickListener { position, mediaType ->
+                    if (context is FragmentActivity) {
+                        val postDetailFragment = PostDetailFragment()
+                        val bundle = Bundle()
+                        bundle.putInt("POST_ID", post.id)
+                        postDetailFragment.arguments = bundle
+
+                        // ใช้ FragmentTransaction เพื่อเปลี่ยนไปยัง PostDetailFragment
+                        context.supportFragmentManager.beginTransaction()
+                            .replace(R.id.container, postDetailFragment)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+                }
             } else {
                 mediaViewPager.visibility = View.GONE
             }
 
-            // Fetch token and userId from SharedPreferences
-            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-            val token = sharedPreferences.getString("TOKEN", null)
-            val userId = sharedPreferences.getString("USER_ID", null)
-
             // Handle like button click
             likeButton.setOnClickListener {
+                val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                val token = sharedPreferences.getString("TOKEN", null)
+                val userId = sharedPreferences.getString("USER_ID", null)
                 if (token != null && userId != null) {
                     likeUnlikePost(post.id, userId.toInt(), token, context)
                 } else {
@@ -94,10 +109,8 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             shareButton.setOnClickListener {
                 sharePost(context, post)
             }
-
         }
 
-        // Function to share the post content
         private fun sharePost(context: Context, post: Post) {
             val shareText = "Check out this post from ${post.userName}:\n${post.content}"
             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -107,7 +120,6 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             context.startActivity(Intent.createChooser(intent, "Share Post via"))
         }
 
-        // Function to like or unlike a post
         private fun likeUnlikePost(postId: Int, userId: Int, token: String, context: Context) {
             val client = OkHttpClient()
             val url = context.getString(R.string.root_url) + context.getString(R.string.postlikeorunlike) + postId
@@ -115,14 +127,12 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 .add("user_id", userId.toString())
                 .build()
 
-            // Build the request
             val request = Request.Builder()
                 .url(url)
                 .post(requestBody)
                 .addHeader("Authorization", "Bearer $token")
                 .build()
 
-            // Execute the request
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
@@ -136,14 +146,10 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                             (context as? Activity)?.runOnUiThread {
                                 Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                             }
-
-
-
                         } else {
                             val message = response.body?.string() ?: "Success"
                             (context as? Activity)?.runOnUiThread {
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                // Optionally, toggle like button state (e.g., change icon)
                             }
                         }
                     }
@@ -151,7 +157,6 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             })
         }
 
-        // Convert time string to a readable format
         private fun formatTime(timeString: String): String {
             return try {
                 val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
@@ -161,10 +166,10 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                     val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                     outputFormat.format(date)
                 } else {
-                    timeString // Return original string if parsing fails
+                    timeString
                 }
             } catch (e: Exception) {
-                timeString // Return the original string if parsing fails
+                timeString
             }
         }
     }

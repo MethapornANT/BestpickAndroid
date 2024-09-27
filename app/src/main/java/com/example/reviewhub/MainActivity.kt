@@ -1,23 +1,28 @@
 package com.example.reviewhub
 
-import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.MotionEvent
-import android.view.SoundEffectConstants
-import android.widget.Button
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
+    // ตัวแปรสำหรับเก็บ ID ของเมนูที่ถูกคลิกครั้งล่าสุด
+    private var lastClickedItemId = -1
+    private var lastClickedTime: Long = 0
+
+    // ประกาศ Fragment แต่ละตัวเพื่อเก็บไว้
+    private lateinit var homeFragment: HomeFragment
+    private lateinit var searchFragment: SearchFragment
+    private lateinit var profileFragment: ProfileFragment
+
+    // เก็บ Fragment ปัจจุบันที่กำลังแสดง
+    private var activeFragment: Fragment? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
         // Handle window insets to avoid overlapping with system bars
@@ -27,30 +32,53 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Set the default fragment to HomeFragment when the activity is created
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, HomeFragment())
-                .commit()
-        }
+        // กำหนดค่า Fragment แต่ละตัว
+        homeFragment = HomeFragment()
+        searchFragment = SearchFragment()
+        profileFragment = ProfileFragment()
+
+        // เพิ่ม Fragment แต่ละตัวลงใน FragmentManager แต่ยังไม่แสดงทั้งหมด
+        supportFragmentManager.beginTransaction().apply {
+            add(R.id.container, homeFragment, "home").hide(homeFragment)
+            add(R.id.container, searchFragment, "search").hide(searchFragment)
+            add(R.id.container, profileFragment, "profile").hide(profileFragment)
+        }.commit()
+
+        // กำหนดค่าเริ่มต้นให้ HomeFragment เป็น Fragment เริ่มต้น
+        supportFragmentManager.beginTransaction()
+            .show(homeFragment)
+            .commit()
+        activeFragment = homeFragment
+
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-
-
         bottomNavigationView.setOnItemSelectedListener { item ->
-            val selectedFragment = when (item.itemId) {
-                R.id.home -> HomeFragment()
-                R.id.search -> SearchFragment()
-                R.id.profile -> ProfileFragment()
-
-                else -> HomeFragment()
+            val currentFragment: Fragment? = when (item.itemId) {
+                R.id.home -> {
+                    // ตรวจสอบการคลิกสองครั้งที่เมนู Home
+                    val currentTime = System.currentTimeMillis()
+                    if (lastClickedItemId == item.itemId && (currentTime - lastClickedTime) < 500) {
+                        // คลิกสองครั้งในเวลา 500 มิลลิวินาที รีเฟรชข้อมูลใน HomeFragment
+                        homeFragment.refreshPosts()
+                    }
+                    lastClickedItemId = item.itemId
+                    lastClickedTime = currentTime
+                    homeFragment
+                }
+                R.id.search -> searchFragment
+                R.id.profile -> profileFragment
+                else -> homeFragment
             }
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, selectedFragment)
-                .commit()
+
+            // แสดง Fragment ใหม่และซ่อน Fragment ปัจจุบัน
+            if (currentFragment != null && currentFragment != activeFragment) {
+                supportFragmentManager.beginTransaction().apply {
+                    activeFragment?.let { hide(it) } // ซ่อน Fragment ปัจจุบัน
+                    show(currentFragment) // แสดง Fragment ใหม่
+                }.commit()
+                activeFragment = currentFragment
+            }
             true
         }
-
     }
-
 }

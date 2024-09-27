@@ -22,6 +22,16 @@
             android:padding="10dp">
 
             <ImageView
+                android:id="@+id/back_button"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/ic_baseline_arrow_back_24"
+                android:padding="5dp"
+                android:scaleType="centerInside" />
+
+
+            <ImageView
                 android:id="@+id/Imgview"
                 android:layout_width="35dp"
                 android:layout_height="35dp"
@@ -32,6 +42,7 @@
                 android:src="@drawable/profiletest2" />
 
             <TextView
+                android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -52,10 +63,10 @@
         </androidx.appcompat.widget.Toolbar>
 
         <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/ShowImgpost"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:background="@drawable/profiletest2" />
+            android:layout_height="400dp"
+            android:layout_gravity="center" />
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
@@ -102,10 +113,12 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:background="@drawable/like"/>
+
             <TextView
+                android:id="@+id/like_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="250"/>
+                android:text="250" />
 
             <TextView
                 android:layout_width="30dp"
@@ -119,15 +132,17 @@
         </androidx.appcompat.widget.Toolbar>
 
         <TextView
+            android:id="@+id/post_content_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:textSize="16dp"
-            android:textColor="@color/black"
             android:ellipsize="end"
-            android:text="แนะนำ จอคอม 24 นิ้ว 144Hz ยี่ห้อไหนดี รุ่นไหนดี\n1 : จอคอม AOC 24G2/67 23.8IPS Gaming Monitor 144Hz\n2 : จอคอม AOC G2490VX/67 23.8 VA Gaming Monitor 144Hz\n3 : จอคอม LG Ultragear 24GN600-B 24 IPS Gaming Monitor 144Hz"/>
+            android:text="แนะนำ จอคอม 24 นิ้ว 144Hz ยี่ห้อไหนดี รุ่นไหนดี\n1 : จอคอม AOC 24G2/67 23.8IPS Gaming Monitor 144Hz\n2 : จอคอม AOC G2490VX/67 23.8 VA Gaming Monitor 144Hz\n3 : จอคอม LG Ultragear 24GN600-B 24 IPS Gaming Monitor 144Hz"
+            android:textAlignment="textStart"
+            android:textColor="@color/black"
+            android:textSize="16dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -188,24 +203,17 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
             android:orientation="horizontal">
+
             <TextView
+                android:id="@+id/comment_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_marginStart="20dp"
-                android:textSize="16dp"
-                android:textColor="@color/black"
+                android:ellipsize="end"
                 android:text="10"
-                android:ellipsize="end"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="20dp"
                 android:textColor="@color/black"
-                android:textSize="16dp"
-                android:text="Comment"
-                android:ellipsize="end"/>
+                android:textSize="16dp" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

@@ -12,5 +12,11 @@
     <color name="blue">#000080</color>
     <color name="bluetext">#0041C2</color>
     <color name="nightblue">#151B54</color>
+    <color name="green">#008000</color>
+    <color name="light_green">#90EE90</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="orange">#FFA500</color>
+    <color name="pink">#FFC0CB</color>
+
 
 </resources>
