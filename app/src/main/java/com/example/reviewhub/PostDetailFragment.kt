@@ -33,19 +33,18 @@ class PostDetailFragment : Fragment() {
             activity?.onBackPressed()
         }
 
-        // ดึง postId จาก arguments (ใช้ arguments แทน)
+        // ดึง postId จาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
         if (postId != -1) {
             fetchPostDetails(postId, view)
         } else {
-            // แสดง Toast ใน Fragment โดยใช้ context
             Toast.makeText(context, "Invalid Post ID", Toast.LENGTH_SHORT).show()
         }
         return view
     }
 
-    // ฟังก์ชันสำหรับการดึงข้อมูลโพสต์และคอมเมนต์ในฟังก์ชันเดียว
+    // ฟังก์ชันสำหรับการดึงข้อมูลโพสต์และคอมเมนต์
     private fun fetchPostDetails(postId: Int, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
@@ -92,25 +91,23 @@ class PostDetailFragment : Fragment() {
 
                         val mediaUrls = mutableListOf<Pair<String, String>>() // รายการ URL และประเภทของสื่อ
 
-                        mediaUrls.clear()
-
-
+                        // ดึง URL รูปภาพจาก photo_url โดยแยก JSON Array ชั้นในสุด
                         for (i in 0 until postImageUrls.length()) {
-                            val innerImageArray = postImageUrls.getJSONArray(i) // ดึง JSONArray ชั้นในสุด
+                            val innerImageArray = postImageUrls.getJSONArray(i)
                             for (j in 0 until innerImageArray.length()) {
-                                val imageUrl = innerImageArray.getString(j) // ดึง URL แต่ละรายการออกมา
+                                val imageUrl = innerImageArray.getString(j)
                                 mediaUrls.add(Pair(getString(R.string.root_url) + imageUrl, "photo"))
                             }
                         }
 
+                        // ดึง URL วิดีโอจาก video_url โดยแยก JSON Array ชั้นในสุด
                         for (i in 0 until postVideoUrls.length()) {
-                            val innerVideoArray = postVideoUrls.getJSONArray(i) // ดึง JSONArray ชั้นในสุด
+                            val innerVideoArray = postVideoUrls.getJSONArray(i)
                             for (j in 0 until innerVideoArray.length()) {
-                                val videoUrl = innerVideoArray.getString(j) // ดึง URL แต่ละรายการออกมา
+                                val videoUrl = innerVideoArray.getString(j)
                                 mediaUrls.add(Pair(getString(R.string.root_url) + videoUrl, "video"))
                             }
                         }
-
 
                         // อัพเดต UI บน Main Thread
                         withContext(Dispatchers.Main) {
@@ -128,9 +125,6 @@ class PostDetailFragment : Fragment() {
                             val adapter = PhotoPagerAdapter(mediaUrls)
                             viewPager.adapter = adapter
 
-                            adapter.setOnItemClickListener { position, mediaType ->
-                                Toast.makeText(context, "Clicked on $mediaType at position $position", Toast.LENGTH_SHORT).show()
-                            }
 
                             // ตั้งค่า RecyclerView สำหรับคอมเมนต์
                             val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)

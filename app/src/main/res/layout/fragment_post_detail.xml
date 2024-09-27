@@ -62,11 +62,15 @@
                 android:textSize="15sp" />
         </androidx.appcompat.widget.Toolbar>
 
+
+
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/ShowImgpost"
             android:layout_width="match_parent"
             android:layout_height="400dp"
             android:layout_gravity="center" />
+
+
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
