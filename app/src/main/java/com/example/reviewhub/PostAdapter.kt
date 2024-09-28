@@ -102,9 +102,9 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 val userId = sharedPreferences.getString("USER_ID", null)
                 isLiked = !isLiked
                 if (isLiked) {
-                    likeButton.setImageResource(R.drawable.add) // ไอคอนเมื่อกดแล้ว
+                    likeButton.setImageResource(R.drawable.heartclick) // ไอคอนเมื่อกดแล้ว
                 } else {
-                    likeButton.setImageResource(R.drawable.home) // ไอคอนเมื่อยังไม่กด
+                    likeButton.setImageResource(R.drawable.heart) // ไอคอนเมื่อยังไม่กด
                 }
                 if (token != null && userId != null) {
                     likeUnlikePost(post.id, userId.toInt(), token, context)
