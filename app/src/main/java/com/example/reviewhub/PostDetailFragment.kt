@@ -1,5 +1,7 @@
 package com.example.reviewhub
 
+
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +22,9 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 class PostDetailFragment : Fragment() {
 
@@ -165,7 +170,7 @@ class PostDetailFragment : Fragment() {
             val comment = comments[position]
             holder.username.text = comment.username
             holder.content.text = comment.content
-            holder.createdAt.text = comment.createdAt
+            holder.createdAt.text = formatTime(comment.createdAt)
 
                 Glide.with(this@PostDetailFragment)
                     .load(getString(R.string.root_url) + comment.profileImage)
@@ -182,6 +187,22 @@ class PostDetailFragment : Fragment() {
             val content: TextView = view.findViewById(R.id.comment_content)
             val Imageprofile: ImageView = view.findViewById(R.id.comment_profile_image)
             val createdAt: TextView = view.findViewById(R.id.comment_created_at)
+        }
+    }
+
+    private fun formatTime(timeString: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+            val date = inputFormat.parse(timeString)
+            if (date != null) {
+                val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                outputFormat.format(date)
+            } else {
+                timeString
+            }
+        } catch (e: Exception) {
+            timeString
         }
     }
 }
