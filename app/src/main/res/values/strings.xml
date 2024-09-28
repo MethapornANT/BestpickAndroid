@@ -15,6 +15,7 @@
     <string name="forgotpassword">/forgot-password</string>
     <string name="setusername">/set-username</string>
     <string name="Allpost">/posts</string>
+    <string name="check_like_status">/api/checkLikeStatus/</string>
     <string name="postdetail">/posts/</string>
     <string name="postlikeorunlike">/posts/like/</string>">
     <string name="userprofile">/api/users/</string>
