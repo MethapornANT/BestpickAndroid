@@ -70,45 +70,39 @@
             android:layout_height="400dp"
             android:layout_gravity="center" />
 
+        <LinearLayout
+            android:id="@+id/dot_indicator_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:padding="10dp">
 
-
-        <androidx.appcompat.widget.Toolbar
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:orientation="horizontal">
-
-            <TextView
+            <ImageView
                 android:layout_width="10dp"
                 android:layout_height="10dp"
-                android:textAlignment="center"
-                android:layout_gravity="center"
-                android:textStyle="bold"
-                android:background="@drawable/baseline_radio_button_checked_24"/>
+                android:layout_margin="4dp"
+                android:background="@drawable/baseline_circle_24" />
 
-            <TextView
+            <ImageView
                 android:layout_width="10dp"
                 android:layout_height="10dp"
-                android:textAlignment="center"
-                android:layout_gravity="center"
-                android:textStyle="bold"
-                android:background="@drawable/outline_radio_button_unchecked_24"/>
+                android:layout_margin="4dp"
+                android:background="@drawable/outline_circle_24" />
 
-            <TextView
+            <ImageView
                 android:layout_width="10dp"
                 android:layout_height="10dp"
-                android:textAlignment="center"
-                android:layout_gravity="center"
-                android:textStyle="bold"
-                android:background="@drawable/outline_radio_button_unchecked_24"/>
+                android:layout_margin="4dp"
+                android:background="@drawable/outline_circle_24" />
 
-
-        </androidx.appcompat.widget.Toolbar>
+        </LinearLayout>
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="10dp">
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="30dp"
@@ -122,6 +116,7 @@
                 android:id="@+id/like_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="15dp"
                 android:text="250" />
 
             <TextView
@@ -130,32 +125,28 @@
                 android:layout_gravity="end"
                 android:layout_marginEnd="10dp"
                 android:background="@drawable/share"/>
-
-
-
         </androidx.appcompat.widget.Toolbar>
 
         <TextView
             android:id="@+id/post_content_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:ellipsize="end"
-            android:text="แนะนำ จอคอม 24 นิ้ว 144Hz ยี่ห้อไหนดี รุ่นไหนดี\n1 : จอคอม AOC 24G2/67 23.8IPS Gaming Monitor 144Hz\n2 : จอคอม AOC G2490VX/67 23.8 VA Gaming Monitor 144Hz\n3 : จอคอม LG Ultragear 24GN600-B 24 IPS Gaming Monitor 144Hz"
-            android:textAlignment="textStart"
+            android:text="text"
             android:textColor="@color/black"
-            android:textSize="16dp" />
+            android:textSize="18dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="30dp"
             android:layout_marginStart="20dp"
             android:textColor="@color/bluetext"
             android:maxLines="2"
+            android:textSize="18dp"
             android:text="Compare Price By Bestpick"
             android:ellipsize="end"/>
 
@@ -170,6 +161,7 @@
                 android:layout_marginStart="20dp"
                 android:textColor="@color/black"
                 android:maxLines="2"
+                android:textSize="18dp"
                 android:text="Price : "
                 android:ellipsize="end"/>
             <TextView
@@ -178,6 +170,7 @@
                 android:layout_gravity="left"
                 android:textColor="@color/black"
                 android:text="Advice"
+                android:textSize="18dp"
                 android:ellipsize="end"/>
         </LinearLayout>
 
@@ -193,6 +186,7 @@
                 android:textColor="@color/black"
                 android:maxLines="2"
                 android:text="Price : "
+                android:textSize="18dp"
                 android:ellipsize="end"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -200,6 +194,7 @@
                 android:layout_gravity="left"
                 android:textColor="@color/black"
                 android:text="JIB"
+                android:textSize="18dp"
                 android:ellipsize="end"/>
         </LinearLayout>
         <LinearLayout
@@ -232,14 +227,13 @@
             android:layout_height="wrap_content">
             <EditText
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="45dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/custom_edittext"
-                android:drawablePadding="8dp"
                 android:hint="Comment"
-                android:paddingStart="10dp"
+                android:paddingStart="20dp"
                 android:textColor="@color/black"
-                android:textSize="15sp" />
+                android:textSize="20dp" />
         </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>

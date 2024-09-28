@@ -7,6 +7,9 @@
     <item
         android:id="@+id/Theme"
         android:title="Theme" />
+    <item
+        android:id="@+id/logout"
+        android:title="Logout" />
 </menu>
 
 

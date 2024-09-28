@@ -1,6 +1,7 @@
 package com.example.reviewhub
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.core.view.ViewCompat
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        enableEdgeToEdge()
         // Handle window insets to avoid overlapping with system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -32,12 +33,11 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // กำหนดค่า Fragment แต่ละตัว
         homeFragment = HomeFragment()
         searchFragment = SearchFragment()
         profileFragment = ProfileFragment()
 
-        // เพิ่ม Fragment แต่ละตัวลงใน FragmentManager แต่ยังไม่แสดงทั้งหมด
+
         supportFragmentManager.beginTransaction().apply {
             add(R.id.container, homeFragment, "home").hide(homeFragment)
             add(R.id.container, searchFragment, "search").hide(searchFragment)

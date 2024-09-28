@@ -1,13 +1,13 @@
 package com.example.reviewhub
 
-
-import android.annotation.SuppressLint
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -27,11 +27,16 @@ import java.util.Locale
 import java.util.TimeZone
 
 class PostDetailFragment : Fragment() {
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var dotIndicatorLayout: LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_post_detail, container, false)
+
+        // เชื่อมโยงกับ LinearLayout สำหรับแสดงจุด Indicator
+        dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
 
         // ตั้งค่า Back Button
         view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
@@ -49,7 +54,47 @@ class PostDetailFragment : Fragment() {
         return view
     }
 
-    // ฟังก์ชันสำหรับการดึงข้อมูลโพสต์และคอมเมนต์
+    private fun setupPageIndicators(totalPages: Int) {
+        val dotSize = 30
+        dotIndicatorLayout.removeAllViews()
+        for (i in 0 until totalPages) {
+            val dot = ImageView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(dotSize, dotSize).apply {
+                    setMargins(8, 0, 8, 0)
+                }
+                setImageResource(R.drawable.outline_circle_24)
+                scaleX = 1.0f // ขนาดเริ่มต้นของจุด
+                scaleY = 1.0f
+            }
+            dotIndicatorLayout.addView(dot)
+        }
+    }
+
+    private fun updatePageIndicators(selectedPosition: Int) {
+        for (i in 0 until dotIndicatorLayout.childCount) {
+            val dot = dotIndicatorLayout.getChildAt(i) as ImageView
+            if (i == selectedPosition) {
+                animateDot(dot, true) // ขยายขนาดจุดและเปลี่ยนเป็นสีที่เลือก
+                dot.setImageResource(R.drawable.baseline_circle_24) // เปลี่ยนสีเป็นจุดที่เลือก
+            } else {
+                animateDot(dot, false) // ลดขนาดจุด
+                dot.setImageResource(R.drawable.outline_circle_24) // เปลี่ยนสีเป็นจุดที่ไม่ถูกเลือก
+            }
+        }
+    }
+
+    private fun animateDot(dot: ImageView, isSelected: Boolean) {
+        val scale = if (isSelected) 1.4f else 1.0f // ขนาดเมื่อถูกเลือก
+        ObjectAnimator.ofFloat(dot, "scaleX", scale).apply {
+            duration = 300
+            start()
+        }
+        ObjectAnimator.ofFloat(dot, "scaleY", scale).apply {
+            duration = 300
+            start()
+        }
+    }
+
     private fun fetchPostDetails(postId: Int, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
@@ -67,7 +112,6 @@ class PostDetailFragment : Fragment() {
                     if (responseBody != null) {
                         val jsonObject = JSONObject(responseBody)
 
-                        // ดึงข้อมูลโพสต์และคอมเมนต์จาก JSON
                         val postContent = jsonObject.getString("content")
                         val likeCount = jsonObject.getInt("like_count")
                         val commentCount = jsonObject.getInt("comment_count")
@@ -75,7 +119,6 @@ class PostDetailFragment : Fragment() {
                         val profileImage = jsonObject.getString("picture")
                         val profileUrl = getString(R.string.root_url) + profileImage
 
-                        // ดึงข้อมูลคอมเมนต์
                         val commentsArray = jsonObject.getJSONArray("comments")
                         val comments = mutableListOf<Comment>()
 
@@ -91,13 +134,10 @@ class PostDetailFragment : Fragment() {
                             comments.add(comment)
                         }
 
-                        // ดึงข้อมูลรูปภาพและวิดีโอ
                         val postImageUrls = jsonObject.getJSONArray("photo_url")
                         val postVideoUrls = jsonObject.getJSONArray("video_url")
 
-                        val mediaUrls = mutableListOf<Pair<String, String>>() // รายการ URL และประเภทของสื่อ
-
-                        // ดึง URL รูปภาพจาก photo_url โดยแยก JSON Array ชั้นในสุด
+                        val mediaUrls = mutableListOf<Pair<String, String>>()
                         for (i in 0 until postImageUrls.length()) {
                             val innerImageArray = postImageUrls.getJSONArray(i)
                             for (j in 0 until innerImageArray.length()) {
@@ -106,7 +146,6 @@ class PostDetailFragment : Fragment() {
                             }
                         }
 
-                        // ดึง URL วิดีโอจาก video_url โดยแยก JSON Array ชั้นในสุด
                         for (i in 0 until postVideoUrls.length()) {
                             val innerVideoArray = postVideoUrls.getJSONArray(i)
                             for (j in 0 until innerVideoArray.length()) {
@@ -115,7 +154,6 @@ class PostDetailFragment : Fragment() {
                             }
                         }
 
-                        // อัพเดต UI บน Main Thread
                         withContext(Dispatchers.Main) {
                             view.findViewById<TextView>(R.id.username).text = username
                             view.findViewById<TextView>(R.id.post_content_detail).text = postContent
@@ -126,13 +164,19 @@ class PostDetailFragment : Fragment() {
                                 .load(profileUrl)
                                 .into(view.findViewById(R.id.Imgview))
 
-                            // ตั้งค่า ViewPager2 สำหรับแสดงรูปภาพและวิดีโอ
                             val viewPager = view.findViewById<ViewPager2>(R.id.ShowImgpost)
                             val adapter = PhotoPagerAdapter(mediaUrls)
                             viewPager.adapter = adapter
 
+                            setupPageIndicators(mediaUrls.size)
 
-                            // ตั้งค่า RecyclerView สำหรับคอมเมนต์
+                            viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                                override fun onPageSelected(position: Int) {
+                                    super.onPageSelected(position)
+                                    updatePageIndicators(position)
+                                }
+                            })
+
                             val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
                             recyclerView.layoutManager = LinearLayoutManager(context)
                             recyclerView.adapter = CommentAdapter(comments)
@@ -153,10 +197,8 @@ class PostDetailFragment : Fragment() {
         }
     }
 
-    // ข้อมูลคอมเมนต์
     data class Comment(val id: Int, val content: String, val username: String, val createdAt: String, val profileImage: String)
 
-    // Adapter สำหรับแสดงรายการคอมเมนต์
     inner class CommentAdapter(private val comments: List<Comment>) :
         RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
@@ -166,17 +208,15 @@ class PostDetailFragment : Fragment() {
             return CommentViewHolder(view)
         }
 
-        @SuppressLint("SuspiciousIndentation")
         override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
             val comment = comments[position]
             holder.username.text = comment.username
             holder.content.text = comment.content
             holder.createdAt.text = formatTime(comment.createdAt)
 
-                Glide.with(this@PostDetailFragment)
-                    .load(getString(R.string.root_url) + comment.profileImage)
-                    .into(holder.Imageprofile)
-
+            Glide.with(this@PostDetailFragment)
+                .load(getString(R.string.root_url) + comment.profileImage)
+                .into(holder.Imageprofile)
         }
 
         override fun getItemCount(): Int {

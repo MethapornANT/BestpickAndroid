@@ -1,12 +1,17 @@
 package com.example.reviewhub
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -14,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.*
@@ -23,7 +29,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var postAdapter: PostAdapter
     private val postList = mutableListOf<Post>()
-    private val client = OkHttpClient() // Use a single OkHttpClient instance
+    private val client = OkHttpClient()
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
 
@@ -32,7 +38,6 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
-
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
         progressBar = view.findViewById(R.id.progress_bar)
@@ -41,6 +46,61 @@ class HomeFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val picture = sharedPreferences.getString("PICTURE", null)
         val profileImg = view.findViewById<ImageView>(R.id.profile_image)
+        val searchEditText = view.findViewById<EditText>(R.id.searchEditText)
+
+        searchEditText.setOnClickListener {
+            // สร้าง ValueAnimator สำหรับขยายขนาด
+            val animator = ValueAnimator.ofInt(searchEditText.width, 1000) // ขยายจากความกว้างปัจจุบันไป 800px
+            animator.duration = 400 // ระยะเวลาของแอนิเมชัน (300ms)
+
+            // กำหนดการเปลี่ยนแปลงของ layoutParams ขณะขยาย
+            animator.addUpdateListener { animation ->
+                val value = animation.animatedValue as Int
+                val layoutParams = searchEditText.layoutParams
+                layoutParams.width = value
+                searchEditText.layoutParams = layoutParams
+            }
+
+            // เริ่มการแอนิเมชัน
+            animator.start()
+        }
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val shrinkAnimator = ValueAnimator.ofInt(
+                    searchEditText.width,
+                    300
+                ) // ขยายจากความกว้าง 800px กลับไป 300px
+                shrinkAnimator.duration = 300
+
+                shrinkAnimator.addUpdateListener { animation ->
+                    val value = animation.animatedValue as Int
+                    val layoutParams = searchEditText.layoutParams
+                    layoutParams.width = value
+                    searchEditText.layoutParams = layoutParams
+                }
+
+                shrinkAnimator.start()
+            }
+        }
+
+        val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
+        menuImageView.setOnClickListener {
+            val popupMenu = PopupMenu(requireContext(), menuImageView)
+            popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
+
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.setting -> true
+                    R.id.Theme -> true
+                    R.id.logout -> {
+                        performLogout()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popupMenu.show()
+        }
 
         if (picture != null) {
             val url = getString(R.string.root_url) + picture
@@ -141,4 +201,35 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
+    private fun performLogout() {
+        // Sign out from Firebase Authentication
+        val firebaseAuth = FirebaseAuth.getInstance()
+        firebaseAuth.signOut()
+        // Clear shared preferences or any other local data
+        clearLocalData()
+        // Redirect to the login screen
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        startActivity(intent)
+        // Close the current activity
+        requireActivity().finish()
+    }
+
+    private fun clearLocalData() {
+        // Clear shared preferences
+        val sharedPreferences: SharedPreferences =
+            requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        sharedPreferences.edit().clear().apply()
+
+        // Clear the token if stored separately
+        val tokenPrefs: SharedPreferences = requireContext().getSharedPreferences("TokenPrefs", MODE_PRIVATE)
+        tokenPrefs.edit().remove("TOKEN").apply()
+        // Clear the user ID if stored separately
+        val userIdPrefs: SharedPreferences = requireContext().getSharedPreferences("UserIdPrefs", MODE_PRIVATE)
+        userIdPrefs.edit().remove("USER_ID").apply()
+        // Clear the picture if stored separately
+        val picturePrefs: SharedPreferences = requireContext().getSharedPreferences("PicturePrefs", MODE_PRIVATE)
+        picturePrefs.edit().remove("PICTURE").apply()
+    }
+
 }

@@ -44,7 +44,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
         private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
-
+        var isLiked = false
         fun bind(post: Post) {
             val context = itemView.context
             val baseUrl = context.getString(R.string.root_url)
@@ -99,6 +99,12 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
                 val token = sharedPreferences.getString("TOKEN", null)
                 val userId = sharedPreferences.getString("USER_ID", null)
+                isLiked = !isLiked
+                if (isLiked) {
+                    likeButton.setImageResource(R.drawable.add) // ไอคอนเมื่อกดแล้ว
+                } else {
+                    likeButton.setImageResource(R.drawable.home) // ไอคอนเมื่อยังไม่กด
+                }
                 if (token != null && userId != null) {
                     likeUnlikePost(post.id, userId.toInt(), token, context)
                 } else {
