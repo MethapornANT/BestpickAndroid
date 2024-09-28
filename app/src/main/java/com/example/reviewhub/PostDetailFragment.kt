@@ -80,7 +80,8 @@ class PostDetailFragment : Fragment() {
                                 id = commentObject.getInt("id"),
                                 content = commentObject.getString("content"),
                                 username = commentObject.getString("username"),
-                                createdAt = commentObject.getString("created_at")
+                                createdAt = commentObject.getString("created_at"),
+                                profileImage = commentObject.getString("user_profile")
                             )
                             comments.add(comment)
                         }
@@ -148,7 +149,7 @@ class PostDetailFragment : Fragment() {
     }
 
     // ข้อมูลคอมเมนต์
-    data class Comment(val id: Int, val content: String, val username: String, val createdAt: String)
+    data class Comment(val id: Int, val content: String, val username: String, val createdAt: String, val profileImage: String)
 
     // Adapter สำหรับแสดงรายการคอมเมนต์
     inner class CommentAdapter(private val comments: List<Comment>) :
@@ -165,6 +166,11 @@ class PostDetailFragment : Fragment() {
             holder.username.text = comment.username
             holder.content.text = comment.content
             holder.createdAt.text = comment.createdAt
+
+                Glide.with(this@PostDetailFragment)
+                    .load(getString(R.string.root_url) + comment.profileImage)
+                    .into(holder.Imageprofile)
+
         }
 
         override fun getItemCount(): Int {
@@ -174,6 +180,7 @@ class PostDetailFragment : Fragment() {
         inner class CommentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val username: TextView = view.findViewById(R.id.comment_username)
             val content: TextView = view.findViewById(R.id.comment_content)
+            val Imageprofile: ImageView = view.findViewById(R.id.comment_profile_image)
             val createdAt: TextView = view.findViewById(R.id.comment_created_at)
         }
     }
