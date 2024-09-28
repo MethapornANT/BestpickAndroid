@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import okhttp3.*
+import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -141,13 +142,15 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    val message = JSONObject(jsonResponse).getString("message")
+
                     response.use {
                         if (!response.isSuccessful) {
                             (context as? Activity)?.runOnUiThread {
                                 Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                             }
                         } else {
-                            val message = response.body?.string() ?: "Success"
                             (context as? Activity)?.runOnUiThread {
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
