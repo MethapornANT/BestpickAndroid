@@ -166,6 +166,7 @@ class PostDetailFragment : Fragment() {
             return CommentViewHolder(view)
         }
 
+        @SuppressLint("SuspiciousIndentation")
         override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
             val comment = comments[position]
             holder.username.text = comment.username

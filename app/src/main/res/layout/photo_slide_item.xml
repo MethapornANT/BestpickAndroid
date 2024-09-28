@@ -8,6 +8,7 @@
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:visibility="gone" />
 
     <!-- Photo ImageView -->
@@ -15,7 +16,8 @@
         android:id="@+id/photo_slide_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
         android:visibility="gone" />
 
     <!-- Play Icon for Video -->
@@ -56,11 +58,12 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
+    <!-- Page Indicator -->
     <TextView
         android:id="@+id/page_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_gravity="top|end"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
         android:padding="4dp"
@@ -71,9 +74,3 @@
         android:visibility="visible" />
 
 </FrameLayout>
-
-
-
-
-
-
