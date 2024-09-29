@@ -60,15 +60,16 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
     private fun setupVideo(holder: MediaViewHolder, mediaUrl: String) {
         holder.videoView.visibility = View.VISIBLE
-        holder.playIcon.visibility = View.GONE // ซ่อน playIcon เริ่มต้น
+        holder.playIcon.visibility = View.GONE
         holder.seekBar.visibility = View.VISIBLE
         holder.timeVideo.visibility = View.VISIBLE
 
-        // ตั้งค่า AudioManager เพื่อเพิ่มระดับเสียงสูงสุด
+        // ใช้ระดับเสียงตามที่ผู้ใช้ตั้งไว้ในอุปกรณ์
         val audioManager = holder.itemView.context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0)
+        val userVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val volumeRatio = userVolume.toFloat() / maxVolume.toFloat()
 
-        // ตั้งค่าวิดีโอและกำหนด AudioAttributes
         holder.videoView.setVideoPath(mediaUrl)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val audioAttributes = AudioAttributes.Builder()
@@ -78,8 +79,9 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
             holder.videoView.setAudioAttributes(audioAttributes)
         }
 
-        // เริ่มเล่นวิดีโอเมื่อโหลดเสร็จ
-        holder.videoView.setOnPreparedListener {
+        holder.videoView.setOnPreparedListener { mediaPlayer ->
+            // ปรับระดับเสียงของ MediaPlayer ตามอัตราส่วนที่ได้จากการตั้งค่าของผู้ใช้
+            mediaPlayer.setVolume(volumeRatio, volumeRatio)
             holder.videoView.start()
             holder.seekBar.max = holder.videoView.duration
             updateSeekBar(holder)
@@ -89,7 +91,6 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
             holder.timeVideo.text = formatTime(0) + " / " + formatTime(totalTime)
         }
 
-        // กำหนดคลิกที่ videoView เพื่อหยุดหรือเล่นวิดีโอ
         holder.videoView.setOnClickListener {
             if (holder.videoView.isPlaying) {
                 holder.videoView.pause()
@@ -105,7 +106,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     holder.videoView.seekTo(progress)
-                    holder.timeVideo.text = formatTime(progress) + " / " + formatTime(holder.videoView.duration) // อัปเดตเวลาปัจจุบันเมื่อเลื่อน SeekBar
+                    holder.timeVideo.text = formatTime(progress) + " / " + formatTime(holder.videoView.duration)
                 }
             }
 
@@ -116,7 +117,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
         holder.videoView.setOnCompletionListener {
             holder.playIcon.visibility = View.VISIBLE
             holder.seekBar.progress = 0
-            holder.timeVideo.text = formatTime(0) + " / " + formatTime(holder.videoView.duration)  // รีเซ็ตเวลาหลังจบวิดีโอ
+            holder.timeVideo.text = formatTime(0) + " / " + formatTime(holder.videoView.duration)
             handler.removeCallbacksAndMessages(null)
         }
     }
@@ -145,7 +146,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
     private fun updateSeekBar(holder: MediaViewHolder) {
         holder.seekBar.progress = holder.videoView.currentPosition
-        holder.timeVideo.text = formatTime(holder.videoView.currentPosition) + " / " + formatTime(holder.videoView.duration)  // แสดงเวลาปัจจุบันขณะเล่น
+        holder.timeVideo.text = formatTime(holder.videoView.currentPosition) + " / " + formatTime(holder.videoView.duration)
         if (holder.videoView.isPlaying) {
             handler.postDelayed({ updateSeekBar(holder) }, 100)
         }
@@ -153,7 +154,6 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
     override fun onViewRecycled(holder: MediaViewHolder) {
         super.onViewRecycled(holder)
-        // หยุดการเล่นวิดีโอและลบ handler callback เมื่อ view ถูกรีไซเคิล
         if (holder.videoView.isPlaying) {
             holder.videoView.stopPlayback()
         }

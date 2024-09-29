@@ -145,10 +145,19 @@ class HomeFragment : Fragment() {
         }
         swipeRefreshLayout.isRefreshing = false // Ensure swipe refresh icon is reset
 
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences?.getString("TOKEN", null)
+
+        if (token == null) {
+            Toast.makeText(requireContext(), "Token not found. Please login again.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val url = getString(R.string.root_url) + getString(R.string.Allpost)
 
         val request = Request.Builder()
             .url(url)
+            .addHeader("Authorization", "Bearer $token") // ส่ง token ใน header
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -177,30 +186,30 @@ class HomeFragment : Fragment() {
                         val posts: List<Post> = gson.fromJson(jsonResponse, postType)
 
                         activity?.runOnUiThread {
-                            // Update the postList and notify the adapter
                             postList.clear()
                             postList.addAll(posts)
                             postAdapter.notifyDataSetChanged()
-                            progressBar.visibility = View.GONE // Hide progress bar
-                            swipeRefreshLayout.isRefreshing = false // Stop refresh animation
+                            progressBar.visibility = View.GONE
+                            swipeRefreshLayout.isRefreshing = false
                         }
                     } catch (e: Exception) {
                         activity?.runOnUiThread {
-                            progressBar.visibility = View.GONE // Hide progress bar
-                            swipeRefreshLayout.isRefreshing = false // Stop refresh animation
+                            progressBar.visibility = View.GONE
+                            swipeRefreshLayout.isRefreshing = false
                             Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } ?: run {
                     activity?.runOnUiThread {
-                        progressBar.visibility = View.GONE // Hide progress bar
-                        swipeRefreshLayout.isRefreshing = false // Stop refresh animation
+                        progressBar.visibility = View.GONE
+                        swipeRefreshLayout.isRefreshing = false
                         Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         })
     }
+
 
     private fun performLogout() {
         // Sign out from Firebase Authentication

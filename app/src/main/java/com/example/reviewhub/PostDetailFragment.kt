@@ -1,6 +1,8 @@
 package com.example.reviewhub
 
 import android.animation.ObjectAnimator
+import android.app.Activity
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,9 +21,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import org.json.JSONObject
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -43,14 +45,21 @@ class PostDetailFragment : Fragment() {
             activity?.onBackPressed()
         }
 
+        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)
+
         // ดึง postId จาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
         if (postId != -1) {
-            fetchPostDetails(postId, view)
+            if (token != null && userId != null) {
+                fetchPostDetails(postId, token, userId.toInt(), view)
+            }
         } else {
-            Toast.makeText(context, "Invalid Post ID", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
         }
+
         return view
     }
 
@@ -58,12 +67,12 @@ class PostDetailFragment : Fragment() {
         val dotSize = 30
         dotIndicatorLayout.removeAllViews()
         for (i in 0 until totalPages) {
-            val dot = ImageView(context).apply {
+            val dot = ImageView(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(dotSize, dotSize).apply {
                     setMargins(8, 0, 8, 0)
                 }
                 setImageResource(R.drawable.outline_circle_24)
-                scaleX = 1.0f // ขนาดเริ่มต้นของจุด
+                scaleX = 1.0f
                 scaleY = 1.0f
             }
             dotIndicatorLayout.addView(dot)
@@ -74,17 +83,17 @@ class PostDetailFragment : Fragment() {
         for (i in 0 until dotIndicatorLayout.childCount) {
             val dot = dotIndicatorLayout.getChildAt(i) as ImageView
             if (i == selectedPosition) {
-                animateDot(dot, true) // ขยายขนาดจุดและเปลี่ยนเป็นสีที่เลือก
-                dot.setImageResource(R.drawable.baseline_circle_24) // เปลี่ยนสีเป็นจุดที่เลือก
+                animateDot(dot, true)
+                dot.setImageResource(R.drawable.baseline_circle_24)
             } else {
-                animateDot(dot, false) // ลดขนาดจุด
-                dot.setImageResource(R.drawable.outline_circle_24) // เปลี่ยนสีเป็นจุดที่ไม่ถูกเลือก
+                animateDot(dot, false)
+                dot.setImageResource(R.drawable.outline_circle_24)
             }
         }
     }
 
     private fun animateDot(dot: ImageView, isSelected: Boolean) {
-        val scale = if (isSelected) 1.4f else 1.0f // ขนาดเมื่อถูกเลือก
+        val scale = if (isSelected) 1.4f else 1.0f
         ObjectAnimator.ofFloat(dot, "scaleX", scale).apply {
             duration = 300
             start()
@@ -95,13 +104,14 @@ class PostDetailFragment : Fragment() {
         }
     }
 
-    private fun fetchPostDetails(postId: Int, view: View) {
+    private fun fetchPostDetails(postId: Int, token: String, userId: Int, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
             val url = getString(R.string.root_url) + getString(R.string.postdetail) + postId
 
             val request = Request.Builder()
                 .url(url)
+                .addHeader("Authorization", "Bearer $token")
                 .build()
 
             try {
@@ -178,20 +188,99 @@ class PostDetailFragment : Fragment() {
                             })
 
                             val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
-                            recyclerView.layoutManager = LinearLayoutManager(context)
+                            recyclerView.layoutManager = LinearLayoutManager(requireContext())
                             recyclerView.adapter = CommentAdapter(comments)
+
+                            // เรียก `checkLikeStatus` เพื่อตรวจสอบสถานะการกดไลค์
+                            checkLikeStatus(postId, userId, token, view)
+
+                            // ตั้งค่า Like Button
+                            val likeButton = view.findViewById<ImageView>(R.id.like_button)
+                            likeButton.setOnClickListener {
+                                if (token != null) {
+                                    likeUnlikePost(postId, userId, token)
+                                }
+                            }
                         }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Failed to load post details", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Failed to load post details", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     Log.e("PostDetailFragment", "Error: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    private fun likeUnlikePost(postId: Int, userId: Int?, token: String) {
+        val client = OkHttpClient()
+        val url = requireContext().getString(R.string.root_url) + requireContext().getString(R.string.postlikeorunlike) + postId
+        val requestBody = FormBody.Builder()
+            .add("user_id", userId.toString())
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (requireActivity() as? Activity)?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to like/unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        (requireActivity() as? Activity)?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        checkLikeStatus(postId, userId ?: 0, token, requireView())
+                    }
+                }
+            }
+        })
+    }
+
+    private fun checkLikeStatus(postId: Int, userId: Int, token: String, view: View) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val client = OkHttpClient()
+            val url = "${requireContext().getString(R.string.root_url)}${requireContext().getString(R.string.check_like_status)}$postId/$userId"
+
+            val request = Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    if (responseBody != null) {
+                        val jsonObject = JSONObject(responseBody)
+                        val isLiked = jsonObject.getBoolean("isLiked")
+
+                        withContext(Dispatchers.Main) {
+                            val likeButton = view.findViewById<ImageView>(R.id.like_button)
+                            likeButton.setImageResource(if (isLiked) R.drawable.heartclick else R.drawable.heart)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Failed to check like status: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -215,7 +304,7 @@ class PostDetailFragment : Fragment() {
             holder.createdAt.text = formatTime(comment.createdAt)
 
             Glide.with(this@PostDetailFragment)
-                .load(getString(R.string.root_url) + comment.profileImage)
+                .load(requireContext().getString(R.string.root_url) + comment.profileImage)
                 .into(holder.Imageprofile)
         }
 

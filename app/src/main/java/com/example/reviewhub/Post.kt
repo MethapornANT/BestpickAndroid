@@ -8,6 +8,7 @@ data class Post(
     val time: String,
     val updated: String?, // This field maps to the "updated_at" JSON key
     val content: String,
+    val is_liked: Boolean,
     val userProfileUrl: String?,
 
     @SerializedName("photo_url")

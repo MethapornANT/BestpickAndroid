@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -46,6 +45,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
         private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
         var isLiked = false
+
         fun bind(post: Post) {
             val context = itemView.context
             val baseUrl = context.getString(R.string.root_url)
@@ -76,7 +76,6 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 mediaViewPager.adapter = adapter
                 mediaViewPager.visibility = View.VISIBLE
 
-                // ตั้งค่า OnClickListener ใน PhotoPagerAdapter
                 adapter.setOnItemClickListener { position, mediaType ->
                     if (context is FragmentActivity) {
                         val postDetailFragment = PostDetailFragment()
@@ -84,7 +83,6 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                         bundle.putInt("POST_ID", post.id)
                         postDetailFragment.arguments = bundle
 
-                        // ใช้ FragmentTransaction เพื่อเปลี่ยนไปยัง PostDetailFragment
                         context.supportFragmentManager.beginTransaction()
                             .replace(R.id.container, postDetailFragment)
                             .addToBackStack(null)
@@ -95,16 +93,21 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 mediaViewPager.visibility = View.GONE
             }
 
-            // Handle like button click
+            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val token = sharedPreferences.getString("TOKEN", null)
+            val userId = sharedPreferences.getString("USER_ID", null)
+
+            // เรียก API เพื่อตรวจสอบสถานะการกดไลค์ของโพสต์
+            if (token != null && userId != null) {
+                checkLikeStatus(post.id, userId.toInt(), token, context)
+            }
+
             likeButton.setOnClickListener {
-                val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                val token = sharedPreferences.getString("TOKEN", null)
-                val userId = sharedPreferences.getString("USER_ID", null)
                 isLiked = !isLiked
                 if (isLiked) {
-                    likeButton.setImageResource(R.drawable.heartclick) // ไอคอนเมื่อกดแล้ว
+                    likeButton.setImageResource(R.drawable.heartclick)
                 } else {
-                    likeButton.setImageResource(R.drawable.heart) // ไอคอนเมื่อยังไม่กด
+                    likeButton.setImageResource(R.drawable.heart)
                 }
                 if (token != null && userId != null) {
                     likeUnlikePost(post.id, userId.toInt(), token, context)
@@ -125,6 +128,36 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 putExtra(Intent.EXTRA_TEXT, shareText)
             }
             context.startActivity(Intent.createChooser(intent, "Share Post via"))
+        }
+
+        // ฟังก์ชันเรียก API เพื่อตรวจสอบสถานะการกดไลค์
+        private fun checkLikeStatus(postId: Int, userId: Int, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}${context.getString(R.string.check_like_status)}$postId/$userId"
+
+            val request = Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer $token") // ส่ง token ใน header
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to check like status: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    val isPostLiked = JSONObject(jsonResponse).getBoolean("isLiked")
+
+                    (context as? Activity)?.runOnUiThread {
+                        isLiked = isPostLiked
+                        likeButton.setImageResource(if (isLiked) R.drawable.heartclick else R.drawable.heart)
+                    }
+                }
+            })
         }
 
         private fun likeUnlikePost(postId: Int, userId: Int, token: String, context: Context) {
