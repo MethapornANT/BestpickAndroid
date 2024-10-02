@@ -1,11 +1,15 @@
 package com.example.reviewhub
 
+import android.animation.Animator
+import android.animation.AnimatorInflater
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,11 +18,14 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.animation.addListener
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -50,7 +57,7 @@ class HomeFragment : Fragment() {
 
         searchEditText.setOnClickListener {
             // สร้าง ValueAnimator สำหรับขยายขนาด
-            val animator = ValueAnimator.ofInt(searchEditText.width, 1000) // ขยายจากความกว้างปัจจุบันไป 800px
+            val animator = ValueAnimator.ofInt(searchEditText.width, 750) // ขยายจากความกว้างปัจจุบันไป 800px
             animator.duration = 400 // ระยะเวลาของแอนิเมชัน (300ms)
 
             // กำหนดการเปลี่ยนแปลงของ layoutParams ขณะขยาย
@@ -60,6 +67,21 @@ class HomeFragment : Fragment() {
                 layoutParams.width = value
                 searchEditText.layoutParams = layoutParams
             }
+
+            animator.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    val navController = findNavController()
+                    navController.navigate(R.id.searchFragment)
+
+                    // รอให้ Navigation เสร็จสิ้นแล้วค่อยกำหนดสถานะของเมนูใน BottomNavigationView
+                    requireActivity().runOnUiThread {
+                        val bottomNavigationView = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                        bottomNavigationView.menu.findItem(R.id.search).isChecked = true
+                    }
+                }
+            })
+
+
 
             // เริ่มการแอนิเมชัน
             animator.start()
