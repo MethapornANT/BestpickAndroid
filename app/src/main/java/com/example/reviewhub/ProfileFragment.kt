@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Button
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import okhttp3.*
 import org.json.JSONObject
@@ -39,10 +40,8 @@ class ProfileFragment : Fragment() {
 
         // Navigate to EditprofileFragment when editProfileButton is clicked
         editProfileButton.setOnClickListener {
-            val fragmentTransaction = parentFragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.container, EditprofileFragment())
-            fragmentTransaction.addToBackStack(null)
-            fragmentTransaction.commit()
+            val navController = findNavController()
+            navController.navigate(R.id.editprofileFragment)
         }
 
         // Popup menu handling

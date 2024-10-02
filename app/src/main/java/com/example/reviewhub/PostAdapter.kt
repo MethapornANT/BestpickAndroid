@@ -84,7 +84,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                         postDetailFragment.arguments = bundle
 
                         context.supportFragmentManager.beginTransaction()
-                            .replace(R.id.container, postDetailFragment)
+                            .replace(R.id.nav_host_fragment, postDetailFragment)
                             .addToBackStack(null)
                             .commit()
                     }

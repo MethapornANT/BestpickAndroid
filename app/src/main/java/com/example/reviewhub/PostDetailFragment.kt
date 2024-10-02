@@ -12,11 +12,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,6 +38,15 @@ class PostDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_post_detail, container, false)
+
+        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            bottomNav?.visibility = View.VISIBLE
+            parentFragmentManager.popBackStack()
+        }
+
 
         // เชื่อมโยงกับ LinearLayout สำหรับแสดงจุด Indicator
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
@@ -59,6 +70,8 @@ class PostDetailFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
         }
+
+
 
         return view
     }
