@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
         // ฟังการเปลี่ยนแปลงเส้นทางการนำทางเพื่อแสดงหรือซ่อน BottomNavigationView
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment -> {
-                    // แสดง BottomNavigationView ในหน้า Home, Search, Profile
+                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.addPostFragment -> {
+                    // แสดง BottomNavigationView ในหน้า Home, Search, Profile และ Add Post
                     bottomNavigationView.visibility = View.VISIBLE
                 }
                 else -> {
@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.home -> navController.navigate(R.id.homeFragment)
                     R.id.search -> navController.navigate(R.id.searchFragment)
                     R.id.profile -> navController.navigate(R.id.profileFragment)
+                    R.id.add -> navController.navigate(R.id.addPostFragment) // เพิ่มการนำทางไปยัง Add Post
                 }
             }
 
