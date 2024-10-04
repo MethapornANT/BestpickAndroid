@@ -2,9 +2,10 @@
     <string name="app_name">Bestpick</string>
     <string name="server_client_id">741201850844-l69jb0ief835gt14ogbn9041g4b318os.apps.googleusercontent.com</string>
     <string name="facebook_app_id">1021807229429436</string>
-    <string name="root_url">http://10.13.3.253:3000</string>
+    <string name="root_url">http://192.168.1.104:3000</string>
     <string name="googlesignin">/google-signin</string>
     <string name="Login">/login</string>
+    <string name="Search">/search</string>
     <string name="register">/register/email</string>
     <string name="resendotpreset">/resent-otp/reset-password</string>
     <string name="registerotp">/register/verify-otp</string>
@@ -17,7 +18,6 @@
     <string name="Allpost">/posts</string>
     <string name="check_like_status">/api/checkLikeStatus/</string>
     <string name="postdetail">/posts/</string>
-    <string name="Search">/search</string>
     <string name="postlikeorunlike">/posts/like/</string>">
     <string name="userprofile">/api/users/</string>
     <string name="userprofileupdate">/api/users/</string>

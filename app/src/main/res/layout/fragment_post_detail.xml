@@ -62,8 +62,6 @@
                 android:textSize="15sp" />
         </androidx.appcompat.widget.Toolbar>
 
-
-
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/ShowImgpost"
             android:layout_width="match_parent"
@@ -236,9 +234,4 @@
         </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
-
-
-
-
-
 </androidx.core.widget.NestedScrollView>

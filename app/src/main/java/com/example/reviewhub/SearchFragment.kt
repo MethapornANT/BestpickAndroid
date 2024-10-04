@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,6 +24,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
+import android.animation.ObjectAnimator
+import android.view.animation.DecelerateInterpolator
+
 
 class SearchFragment : Fragment(), OnItemClickListener { // Implement OnItemClickListener
 
@@ -41,12 +45,21 @@ class SearchFragment : Fragment(), OnItemClickListener { // Implement OnItemClic
         searchEditText = view.findViewById(R.id.search_edit_text)
         recyclerView = view.findViewById(R.id.recycler_view_search_results)
         progressBar = view.findViewById(R.id.progress_bar)
-
+        searchEditText = view.findViewById(R.id.search_edit_text)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
 
         // กำหนด Adapter พร้อมส่ง `this` เป็น Listener
         searchAdapter = SearchAdapter(searchResults, this)
         recyclerView.adapter = searchAdapter
+
+
+        searchEditText.translationX = 1000f // เลื่อนไปขวานอกจอ
+        ObjectAnimator.ofFloat(searchEditText, "translationX", 0f).apply {
+            duration = 500 // กำหนดเวลา 500 มิลลิวินาที
+            interpolator = DecelerateInterpolator() // ให้ความเร็วลดลงเมื่อถึงจุดสุดท้าย
+            start()
+        }
 
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -99,7 +112,7 @@ class SearchFragment : Fragment(), OnItemClickListener { // Implement OnItemClic
     }
 
 
-    // กำหนด Action เมื่อผู้ใช้คลิกที่ `postId`
+
     override fun onItemClick(postId: Int) {
         // สร้าง Bundle สำหรับส่งข้อมูล `POST_ID` ไปยัง `PostDetailFragment`
         val bundle = Bundle().apply {
