@@ -180,7 +180,7 @@ class PostDetailFragment : Fragment() {
                         withContext(Dispatchers.Main) {
                             view.findViewById<TextView>(R.id.username).text = username
                             view.findViewById<TextView>(R.id.post_content_detail).text = postContent
-                            view.findViewById<TextView>(R.id.like_count).text = "Likes: $likeCount"
+                            view.findViewById<TextView>(R.id.like_count).text = ": $likeCount"
                             view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
 
                             Glide.with(this@PostDetailFragment)

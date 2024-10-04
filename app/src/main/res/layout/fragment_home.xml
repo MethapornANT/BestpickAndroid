@@ -93,6 +93,7 @@
             android:layout_height="match_parent"
             android:padding="0dp"
             tools:listitem="@layout/item_post" />
+
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ProgressBar

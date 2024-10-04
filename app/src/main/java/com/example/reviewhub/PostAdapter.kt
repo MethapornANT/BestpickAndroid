@@ -101,7 +101,6 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             if (token != null && userId != null) {
                 checkLikeStatus(post.id, userId.toInt(), token, context)
             }
-
             likeButton.setOnClickListener {
                 isLiked = !isLiked
                 if (isLiked) {
