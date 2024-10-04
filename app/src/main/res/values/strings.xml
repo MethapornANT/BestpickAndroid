@@ -17,6 +17,7 @@
     <string name="Allpost">/posts</string>
     <string name="check_like_status">/api/checkLikeStatus/</string>
     <string name="postdetail">/posts/</string>
+    <string name="Search">/search</string>
     <string name="postlikeorunlike">/posts/like/</string>">
     <string name="userprofile">/api/users/</string>
     <string name="userprofileupdate">/api/users/</string>
