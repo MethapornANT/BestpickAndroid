@@ -39,6 +39,7 @@
         <activity
             android:name=".Register_Create_PasswordActivity"
             android:exported="false" />
+        <activity android:name=".SearchFragment" />
 
         <meta-data
             android:name="com.google.android.gms.client_id"

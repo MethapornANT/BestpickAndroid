@@ -1,63 +1,165 @@
 package com.example.reviewhub
 
-import android.content.Context.MODE_PRIVATE
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.google.firebase.auth.FirebaseAuth
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import java.io.IOException
 
-class SearchFragment : Fragment() {
+class SearchFragment : Fragment(), OnItemClickListener { // Implement OnItemClickListener
+
+    private lateinit var searchEditText: EditText
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var searchAdapter: SearchAdapter
+    private val searchResults = mutableListOf<SearchResult>()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false)
+        val view = inflater.inflate(R.layout.fragment_search, container, false)
+
+        searchEditText = view.findViewById(R.id.search_edit_text)
+        recyclerView = view.findViewById(R.id.recycler_view_search_results)
+        progressBar = view.findViewById(R.id.progress_bar)
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // กำหนด Adapter พร้อมส่ง `this` เป็น Listener
+        searchAdapter = SearchAdapter(searchResults, this)
+        recyclerView.adapter = searchAdapter
+
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s.toString().trim()
+                if (query.isNotEmpty()) {
+                    performSearch(query)
+                } else {
+                    searchResults.clear()
+                    searchAdapter.notifyDataSetChanged()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // Find and set up the logout button
-        val logoutButton = view.findViewById<Button>(R.id.logout)
-        logoutButton.setOnClickListener {
-            performLogout()
+    private fun performSearch(query: String) {
+        progressBar.visibility = View.VISIBLE
+
+        val url = getString(R.string.root_url) + getString(R.string.Search) + "?query=$query"
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                activity?.runOnUiThread {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string() ?: ""
+                val results = parseResults(body)
+
+                activity?.runOnUiThread {
+                    searchResults.clear()
+                    searchResults.addAll(results)
+                    searchAdapter.notifyDataSetChanged()
+                    progressBar.visibility = View.GONE
+                }
+            }
+        })
+    }
+
+
+    // กำหนด Action เมื่อผู้ใช้คลิกที่ `postId`
+    override fun onItemClick(postId: Int) {
+        // สร้าง Bundle สำหรับส่งข้อมูล `POST_ID` ไปยัง `PostDetailFragment`
+        val bundle = Bundle().apply {
+            putInt("POST_ID", postId)
         }
+
+        // ใช้ NavController เพื่อนำทางจาก SearchFragment ไปยัง PostDetailFragment พร้อมส่ง `postId`
+        findNavController().navigate(R.id.action_searchFragment_to_postDetailFragment, bundle)
     }
 
-    private fun performLogout() {
-        // Sign out from Firebase Authentication
-        val firebaseAuth = FirebaseAuth.getInstance()
-        firebaseAuth.signOut()
-        // Clear shared preferences or any other local data
-        clearLocalData()
-        // Redirect to the login screen
-        val intent = Intent(requireContext(), LoginActivity::class.java)
-        startActivity(intent)
-        // Close the current activity
-        requireActivity().finish()
+
+
+
+    private fun parseResults(json: String): List<SearchResult> {
+        val jsonObject = Gson().fromJson(json, JsonObject::class.java)
+        val resultsArray = jsonObject.getAsJsonArray("results") ?: return emptyList()
+
+        val searchResults = mutableListOf<SearchResult>()
+        resultsArray.forEach { element ->
+            val userObject = element.asJsonObject
+
+            val userId = if (userObject.has("user_id") && !userObject.get("user_id").isJsonNull) {
+                userObject.get("user_id").asInt
+            } else {
+                -1 // กำหนดค่า default ถ้าไม่มี user_id
+            }
+
+            val username = if (userObject.has("username") && !userObject.get("username").isJsonNull) {
+                userObject.get("username").asString
+            } else {
+                "Unknown User"
+            }
+
+            // เพิ่มข้อมูลผู้ใช้
+            searchResults.add(SearchResult(userId = userId, username = username))
+
+            // ตรวจสอบว่า `posts` มีอยู่ใน `userObject` หรือไม่
+            if (userObject.has("posts") && !userObject.get("posts").isJsonNull) {
+                val postsArray = userObject.getAsJsonArray("posts")
+                postsArray.forEach { postElement ->
+                    val postObject = postElement.asJsonObject
+                    val postId = if (postObject.has("post_id") && !postObject.get("post_id").isJsonNull) {
+                        postObject.get("post_id").asInt
+                    } else {
+                        -1 // กำหนดค่า default ถ้าไม่มี post_id
+                    }
+
+                    val content = if (postObject.has("content_preview") && !postObject.get("content_preview").isJsonNull) {
+                        postObject.get("content_preview").asString
+                    } else {
+                        "No Content"
+                    }
+
+                    // เพิ่มข้อมูลโพสต์ในรูปแบบ SearchResult
+                    searchResults.add(SearchResult(userId = userId, username = username, postId = postId, content = content))
+                }
+            }
+        }
+        return searchResults
     }
 
-    private fun clearLocalData() {
-        // Clear shared preferences
-        val sharedPreferences: SharedPreferences =
-            requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().clear().apply()
-
-        // Clear the token if stored separately
-        val tokenPrefs: SharedPreferences = requireContext().getSharedPreferences("TokenPrefs", MODE_PRIVATE)
-        tokenPrefs.edit().remove("TOKEN").apply()
-        // Clear the user ID if stored separately
-        val userIdPrefs: SharedPreferences = requireContext().getSharedPreferences("UserIdPrefs", MODE_PRIVATE)
-        userIdPrefs.edit().remove("USER_ID").apply()
-        // Clear the picture if stored separately
-        val picturePrefs: SharedPreferences = requireContext().getSharedPreferences("PicturePrefs", MODE_PRIVATE)
-        picturePrefs.edit().remove("PICTURE").apply()
-    }
 }
+

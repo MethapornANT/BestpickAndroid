@@ -22,7 +22,7 @@
             android:background="@color/white"
             android:orientation="horizontal"
             android:padding="10dp"
-            app:layout_scrollFlags="scroll|enterAlways">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                 <ImageView
                     android:id="@+id/profile_image"
