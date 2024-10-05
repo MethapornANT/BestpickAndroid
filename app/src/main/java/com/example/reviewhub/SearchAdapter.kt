@@ -33,7 +33,7 @@ class SearchAdapter(
 
     // ViewHolder สำหรับจัดการการแสดงผลของแต่ละ Item
     class ContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val usernameTextView: TextView = itemView.findViewById(R.id.username)
+        val usernameTextView: TextView = itemView.findViewById(R.id.usernamesearch)
         val mainImageView: ImageView = itemView.findViewById(R.id.main_image)
         val profileImageView: ImageView = itemView.findViewById(R.id.profile_image)
         val titleTextView: TextView = itemView.findViewById(R.id.title_text_view)

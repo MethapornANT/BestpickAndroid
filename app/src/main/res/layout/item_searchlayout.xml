@@ -36,6 +36,7 @@
             android:src="@drawable/profiletest" />
 
         <TextView
+            android:id="@+id/usernamesearch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Name"
@@ -58,5 +59,11 @@
             android:text="TITLE"
             android:textColor="@color/black"
             android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="8dp"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
