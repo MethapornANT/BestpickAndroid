@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- TextView สำหรับแสดงชื่อผู้ใช้งาน -->
     <TextView
         android:id="@+id/username_text_view"
         android:layout_width="match_parent"
@@ -15,7 +14,6 @@
         android:textStyle="bold"
         android:paddingBottom="4dp" />
 
-    <!-- TextView สำหรับแสดงตัวอย่างโพสต์ของผู้ใช้งาน (แสดงหลายบรรทัด) -->
     <TextView
         android:id="@+id/posts_text_view"
         android:layout_width="match_parent"
