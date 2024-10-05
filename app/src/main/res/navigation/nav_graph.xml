@@ -12,6 +12,16 @@
         android:label="Home" />
 
     <fragment
+        android:id="@+id/addPostFragment"
+        android:name="com.example.reviewhub.AddPostFragment"
+        android:label="Add" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.reviewhub.NotificationsFragment"
+        android:label="Notifications" />
+
+    <fragment
         android:id="@+id/searchFragment"
         android:name="com.example.reviewhub.SearchFragment"
         android:label="Search">
@@ -42,4 +52,5 @@
         android:id="@+id/editprofileFragment"
         android:name="com.example.reviewhub.EditprofileFragment"
         android:label="Edit Profile" />
+
 </navigation>

@@ -258,12 +258,25 @@ class PostDetailFragment : Fragment() {
                             Toast.makeText(requireContext(), "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        checkLikeStatus(postId, userId ?: 0, token, requireView())
+                        // ดึงข้อมูลไลค์ใหม่จาก JSON response
+                        val responseBody = response.body?.string()
+                        val jsonObject = responseBody?.let { JSONObject(it) }
+                        val newLikeCount = jsonObject?.getInt("likeCount") ?: 0
+
+                        (requireActivity() as? Activity)?.runOnUiThread {
+                            // อัปเดตสถานะการไลค์ใน UI
+                            checkLikeStatus(postId, userId ?: 0, token, requireView())
+
+                            // อัปเดตจำนวนไลค์ใน TextView
+                            val likeCountTextView = requireView().findViewById<TextView>(R.id.like_count)
+                            likeCountTextView.text = ": $newLikeCount"
+                        }
                     }
                 }
             }
         })
     }
+
 
     private fun checkLikeStatus(postId: Int, userId: Int, token: String, view: View) {
         CoroutineScope(Dispatchers.IO).launch {

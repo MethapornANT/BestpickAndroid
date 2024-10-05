@@ -27,6 +27,6 @@
         app:itemIconSize="35dp"
         android:theme="@style/NoClickSound"
         app:menu="@menu/bottom_nav_menu"
-        android:background="?android:attr/windowBackground"
-        app:layout_scrollFlags="scroll|enterAlways"/>
-</RelativeLayout>
+        android:background="?android:attr/windowBackground"/>
+
+    </RelativeLayout>
