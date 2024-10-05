@@ -108,6 +108,7 @@ class EditprofileFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
             imageUri = data?.data
+            Log.d("ProfileFragment", "Selected image URI: $imageUri")
             profileImageView.setImageURI(imageUri) // Show the selected image in the ImageView
         }
     }
