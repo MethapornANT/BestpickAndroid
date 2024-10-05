@@ -11,33 +11,38 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
+        <!-- ใช้ LinearLayout แทน Toolbar เพื่อวาง Search Bar -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:gravity="center_vertical">
 
+            <!-- Search EditText -->
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/search_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_margin="20dp"
                 android:background="@drawable/custom_edittext"
                 android:drawableStart="@drawable/baseline_search_home"
                 android:drawablePadding="8dp"
                 android:hint="Search People or Posts"
                 android:paddingStart="10dp"
-                android:layout_gravity="end"/>
+                android:layout_gravity="center"
+                android:paddingEnd="10dp" />
 
-        </androidx.appcompat.widget.Toolbar>
+        </LinearLayout>
 
+        <!-- RecyclerView สำหรับแสดงผลการค้นหา -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_search_results"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
             android:clipToPadding="false"
-            android:scrollbars="horizontal"
             tools:listitem="@layout/item_searchlayout" />
 
-
+        <!-- ProgressBar สำหรับแสดงสถานะการโหลดข้อมูล -->
         <ProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
