@@ -26,7 +26,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
-        return PostViewHolder(view)
+        return PostViewHolder(view, this) // ส่งตัวแปร adapter เข้าไปใน ViewHolder
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -36,15 +36,18 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
 
     override fun getItemCount(): Int = postList.size
 
-    class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class PostViewHolder(itemView: View, private val adapter: PostAdapter) : RecyclerView.ViewHolder(itemView) { // รับ adapter เป็น parameter
         private val userName: TextView = itemView.findViewById(R.id.user_name)
+        private val follower: TextView = itemView.findViewById(R.id.follower)
         private val postTime: TextView = itemView.findViewById(R.id.post_time)
+        private val title: TextView = itemView.findViewById(R.id.title)
         private val postContent: TextView = itemView.findViewById(R.id.post_content)
         private val userProfileImage: ImageView = itemView.findViewById(R.id.user_profile_image)
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
         private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
         var isLiked = false
+        var isFollowing = false
 
         fun bind(post: Post) {
             val context = itemView.context
@@ -60,7 +63,14 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             // Set user details
             postTime.text = formatTime(displayTime)
             userName.text = post.userName
-            postContent.text = post.content
+            title.text = post.title
+            postContent.text = if (post.content.length > 40) {
+                post.content.substring(0, 40) + "....."
+            } else {
+                post.content
+            }
+
+
 
             // Load profile image using the full URL
             Glide.with(context)
@@ -100,6 +110,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             // เรียก API เพื่อตรวจสอบสถานะการกดไลค์ของโพสต์
             if (token != null && userId != null) {
                 checkLikeStatus(post.id, userId.toInt(), token, context)
+                checkFollowStatus(post.userId, userId.toInt(), token, context)
             }
             likeButton.setOnClickListener {
                 isLiked = !isLiked
@@ -110,6 +121,15 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 }
                 if (token != null && userId != null) {
                     likeUnlikePost(post.id, userId.toInt(), token, context)
+                } else {
+                    Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            // กำหนดการคลิกปุ่มติดตาม/เลิกติดตาม
+            follower.setOnClickListener {
+                if (token != null && userId != null) {
+                    followUnfollowUser(post.userId, userId.toInt(), token, context)
                 } else {
                     Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
                 }
@@ -197,6 +217,81 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 }
             })
         }
+
+        // ฟังก์ชันตรวจสอบสถานะการติดตาม
+        private fun checkFollowStatus(followingId: Int, userId: Int, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/api/users/$userId/follow/$followingId/status"
+
+            val request = Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to check follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    if (!jsonResponse.isNullOrEmpty()) {
+                        val isUserFollowing = JSONObject(jsonResponse).getBoolean("isFollowing")
+                        (context as? Activity)?.runOnUiThread {
+                            isFollowing = isUserFollowing
+                            follower.text = if (isFollowing) "Following" else "Follow"
+                        }
+                    } else {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to get follow status", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        }
+
+        // ฟังก์ชันติดตาม/เลิกติดตาม
+        private fun followUnfollowUser(followingId: Int, userId: Int, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/api/users/$userId/follow/$followingId"
+            val requestBody = FormBody.Builder().build()
+
+            val request = Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to follow/unfollow user: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    if (!jsonResponse.isNullOrEmpty()) {
+                        val message = JSONObject(jsonResponse).getString("message")
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            isFollowing = !isFollowing
+                            follower.text = if (isFollowing) "Following" else "Follow"
+
+                            adapter.notifyItemChanged(adapterPosition)
+                        }
+                    } else {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to update follow status", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        }
+
 
         private fun formatTime(timeString: String): String {
             return try {

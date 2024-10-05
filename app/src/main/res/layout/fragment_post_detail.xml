@@ -53,7 +53,17 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/save_button"
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="2024-10-06 15:30"
+                android:textSize="12sp"
+                android:textColor="@color/black" />
+
+
+            <TextView
+                android:id="@+id/follower"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
@@ -126,7 +136,7 @@
         </androidx.appcompat.widget.Toolbar>
 
         <TextView
-            android:id="@+id/post_content_detail"
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
@@ -137,6 +147,7 @@
             android:textSize="18dp" />
 
         <TextView
+            android:id="@+id/detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
