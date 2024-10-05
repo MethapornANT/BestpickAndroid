@@ -36,12 +36,14 @@
             android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:scrollbars="vertical"
-            tools:listitem="@layout/item_searchlayout" />
+            tools:listitem="@layout/item_search_result" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Refesh You Page"/>
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:text="No Data"/>
 
         <ProgressBar
             android:id="@+id/progress_bar"

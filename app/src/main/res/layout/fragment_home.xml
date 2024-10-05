@@ -58,8 +58,8 @@
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
             android:layout_gravity="center"
             android:background="@color/white"
             app:layout_scrollFlags="scroll|enterAlways"
@@ -71,13 +71,13 @@
                 android:id="@+id/tab_following"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Follow" />
+                android:text="FORYOU" />
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_foryou"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ForYou" />
+                android:text="FOLLOW" />
         </com.google.android.material.tabs.TabLayout>
 
     </com.google.android.material.appbar.AppBarLayout>

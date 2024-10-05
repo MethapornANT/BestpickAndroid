@@ -35,7 +35,7 @@ class SearchAdapter(
     class ContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val usernameTextView: TextView = itemView.findViewById(R.id.username)
         val mainImageView: ImageView = itemView.findViewById(R.id.main_image)
-        val profileImageView: ImageView = itemView.findViewById(R.id.Imgviewprofilesearch)
+        val profileImageView: ImageView = itemView.findViewById(R.id.profile_image)
         val titleTextView: TextView = itemView.findViewById(R.id.title_text_view)
         val contentTextView: TextView = itemView.findViewById(R.id.content) // เชื่อมโยง `content` ใน XML
 

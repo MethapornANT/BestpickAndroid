@@ -58,22 +58,22 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="vertical">
-
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Like your post"
             android:layout_gravity="center"
-            android:textStyle="bold"
-            android:textColor="@color/bluetext"
-            android:textSize="16sp" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Like your post"
+                android:layout_gravity="center"
+                android:textStyle="bold"
+                android:textColor="@color/bluetext"
+                android:textSize="16sp" />
 
 
-            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
