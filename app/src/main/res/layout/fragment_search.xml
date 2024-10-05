@@ -35,7 +35,6 @@
             android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:scrollbars="horizontal"
-            app:orientation="horizontal"
             tools:listitem="@layout/item_searchlayout" />
 
 
