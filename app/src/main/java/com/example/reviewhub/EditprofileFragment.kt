@@ -227,50 +227,69 @@ class EditprofileFragment : Fragment() {
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    val jsonResponse = response.body?.string()
+                    val responseBody = response.body
+                    val jsonResponse = responseBody?.string()
 
-                    try {
-                        // Parse the jsonResponse string into a JSONObject
-                        val jsonObject = JSONObject(jsonResponse)
-                        val profileImg = jsonObject.getString("profileImage")
+                    if (!jsonResponse.isNullOrEmpty()) {
+                        try {
+                            // Parse the jsonResponse string into a JSONObject
+                            val jsonObject = JSONObject(jsonResponse)
+                            val profileImg = jsonObject.getString("profileImage")
 
-                        // Log the profile image URL or path
-                        Log.d("ProfileFragment", "Profile Image: $profileImg")
+                            // Log the profile image URL or path
+                            Log.d("ProfileFragment", "Profile Image: $profileImg")
 
-                        // Optionally: Store the profile image in SharedPreferences or update the UI
-                        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-                        editor.putString("PICTURE", profileImg)
-                        editor.apply()
-                        requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                            // Check if imageUri is not null, indicating that the user has changed the profile image
+                            if (imageUri != null) {
+                                // Save the new profile image URL to SharedPreferences only if the image is changed
+                                val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("PICTURE", profileImg)
+                                Log.d("ProfileFragment", "Profile Image saved to SharedPreferences: $profileImg")
+                                editor.apply()
+                            }
+
+
+
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                            }
+                            requireActivity().onBackPressed()
+                        } catch (e: Exception) {
+                            // Log any errors in parsing
+                            Log.e("ProfileFragment", "Error parsing JSON response: ${e.message}")
                         }
-
-                    } catch (e: Exception) {
-                        // Log any errors in parsing
-                        Log.e("ProfileFragment", "Error parsing JSON response: ${e.message}")
+                    } else {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "Error: Empty response from server", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } else {
                     // Extract error message from the response
                     val errorBody = response.body?.string()
-                    try {
-                        val jsonObject = JSONObject(errorBody)
-                        val errorMessage = jsonObject.getString("error")
+                    if (!errorBody.isNullOrEmpty()) {
+                        try {
+                            val jsonObject = JSONObject(errorBody)
+                            val errorMessage = jsonObject.getString("error")
 
-                        requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(requireContext(), "Error updating profile", Toast.LENGTH_SHORT).show()
+                            }
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } else {
                         requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error updating profile", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Error: Empty error response from server", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
+
         })
     }
-
-
 
 }
