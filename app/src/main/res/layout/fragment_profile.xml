@@ -11,9 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="16dp">
-
+        android:orientation="vertical">
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
@@ -205,8 +203,8 @@
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="16dp"
-            android:layout_gravity="center" />
+
+            tools:listitem="@layout/item_profilemypost"/>
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

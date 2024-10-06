@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class Post(
     val id: Int,
     val userName: String,
+    val userId: Int,
+    val title : String,
     val time: String,
     val updated: String?, // This field maps to the "updated_at" JSON key
     val content: String,

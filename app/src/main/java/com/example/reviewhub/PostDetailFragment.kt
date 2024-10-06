@@ -2,6 +2,7 @@ package com.example.reviewhub
 
 import android.animation.ObjectAnimator
 import android.app.Activity
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
@@ -33,6 +34,10 @@ import java.util.TimeZone
 class PostDetailFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var dotIndicatorLayout: LinearLayout
+    private lateinit var follower: TextView
+    private var followingId: Int = -1
+
+    private var isLiked: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -59,7 +64,7 @@ class PostDetailFragment : Fragment() {
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
-
+        follower = view.findViewById<TextView>(R.id.follower)
         // ดึง postId จาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
@@ -69,6 +74,14 @@ class PostDetailFragment : Fragment() {
             }
         } else {
             Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
+        }
+
+        follower.setOnClickListener {
+            if (token != null && userId != null) {
+                followUser(userId.toInt(), followingId, token)
+                val actionType = if (follower.text == "Following") "follow" else "unfollow"
+                recordInteraction(postId, actionType, null, token, requireContext())
+            }
         }
 
 
@@ -117,6 +130,76 @@ class PostDetailFragment : Fragment() {
         }
     }
 
+    // ฟังก์ชันสำหรับเรียก API ติดตาม/เลิกติดตาม
+    private fun followUser(userId: Int, followingId: Int, token: String) {
+        val client = OkHttpClient()
+        val url = "${getString(R.string.root_url)}/api/users/$userId/follow/$followingId"
+
+        val request = Request.Builder()
+            .url(url)
+            .post(RequestBody.create(null, ByteArray(0))) // ส่ง Body ว่างสำหรับการ POST
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (requireActivity() as? Activity)?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to follow/unfollow user", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (response.isSuccessful) {
+                        (requireActivity() as? Activity)?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Follow status changed successfully", Toast.LENGTH_SHORT).show()
+                            checkFollowStatus(userId, followingId, token)
+                        }
+                    } else {
+                        (requireActivity() as? Activity)?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Failed: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    // ฟังก์ชันสำหรับเช็คสถานะการติดตามผู้ใช้
+    private fun checkFollowStatus(userId: Int, followingId: Int, token: String) {
+        val client = OkHttpClient()
+        val url = "${getString(R.string.root_url)}/api/users/$userId/follow/$followingId/status"
+
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    if (responseBody != null) {
+                        val jsonObject = JSONObject(responseBody)
+                        val isFollowing = jsonObject.getBoolean("isFollowing")
+
+                        withContext(Dispatchers.Main) {
+                            // อัปเดตข้อความของ `follower` ตามสถานะการติดตาม
+                            follower.text = if (isFollowing) "Following" else "Follow"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Error checking follow status", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     private fun fetchPostDetails(postId: Int, token: String, userId: Int, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
@@ -136,9 +219,12 @@ class PostDetailFragment : Fragment() {
                         val jsonObject = JSONObject(responseBody)
 
                         val postContent = jsonObject.getString("content")
+                        val title = jsonObject.getString("Title")
                         val likeCount = jsonObject.getInt("like_count")
                         val commentCount = jsonObject.getInt("comment_count")
                         val username = jsonObject.getString("username")
+                        followingId = jsonObject.getInt("user_id")
+                        val time = jsonObject.getString("updated_at")
                         val profileImage = jsonObject.getString("picture")
                         val profileUrl = getString(R.string.root_url) + profileImage
 
@@ -179,9 +265,12 @@ class PostDetailFragment : Fragment() {
 
                         withContext(Dispatchers.Main) {
                             view.findViewById<TextView>(R.id.username).text = username
-                            view.findViewById<TextView>(R.id.post_content_detail).text = postContent
+                            view.findViewById<TextView>(R.id.title).text = title
+                            view.findViewById<TextView>(R.id.detail).text = postContent
+                            view.findViewById<TextView>(R.id.time).text = formatTime(time)
                             view.findViewById<TextView>(R.id.like_count).text = ": $likeCount"
                             view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
+                            checkFollowStatus(userId, followingId, token)
 
                             Glide.with(this@PostDetailFragment)
                                 .load(profileUrl)
@@ -207,13 +296,24 @@ class PostDetailFragment : Fragment() {
                             // เรียก `checkLikeStatus` เพื่อตรวจสอบสถานะการกดไลค์
                             checkLikeStatus(postId, userId, token, view)
 
-                            // ตั้งค่า Like Button
                             val likeButton = view.findViewById<ImageView>(R.id.like_button)
                             likeButton.setOnClickListener {
                                 if (token != null) {
-                                    likeUnlikePost(postId, userId, token)
+                                    // ตรวจสอบสถานะปัจจุบันของการกดไลค์
+                                    if (isLiked) {
+                                        // หากปัจจุบันอยู่ในสถานะไลค์ เมื่อคลิกจะเป็นการ unlike
+                                        likeUnlikePost(postId, userId, token)
+                                        recordInteraction(postId, "unlike", null, token, requireContext())
+                                    } else {
+                                        // หากยังไม่ไลค์ เมื่อคลิกจะเป็นการ like
+                                        likeUnlikePost(postId, userId, token)
+                                        recordInteraction(postId, "like", null, token, requireContext())
+                                    }
+                                } else {
+                                    Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
                                 }
                             }
+
                         }
                     }
                 } else {
@@ -295,7 +395,7 @@ class PostDetailFragment : Fragment() {
                     val responseBody = response.body?.string()
                     if (responseBody != null) {
                         val jsonObject = JSONObject(responseBody)
-                        val isLiked = jsonObject.getBoolean("isLiked")
+                        isLiked = jsonObject.getBoolean("isLiked")
 
                         withContext(Dispatchers.Main) {
                             val likeButton = view.findViewById<ImageView>(R.id.like_button)
@@ -312,7 +412,7 @@ class PostDetailFragment : Fragment() {
         }
     }
 
-    data class Comment(val id: Int, val content: String, val username: String, val createdAt: String, val profileImage: String)
+    data class Comment(val id: Int,val content: String, val username: String, val createdAt: String, val profileImage: String)
 
     inner class CommentAdapter(private val comments: List<Comment>) :
         RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
@@ -346,6 +446,7 @@ class PostDetailFragment : Fragment() {
         }
     }
 
+
     private fun formatTime(timeString: String): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
@@ -360,5 +461,53 @@ class PostDetailFragment : Fragment() {
         } catch (e: Exception) {
             timeString
         }
+    }
+
+    private fun recordInteraction(postId: Int, actionType: String, content: String? = null, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}${context.getString(R.string.interactions)}"
+
+        // สร้าง body ของ request
+        val requestBody = FormBody.Builder()
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .apply {
+                if (content != null) {
+                    add("content", content)
+                }
+            }
+            .build()
+
+        // สร้าง request พร้อมแนบ token ใน header
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        // ส่ง request ไปยังเซิร์ฟเวอร์
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        val jsonResponse = response.body?.string()
+                        val message = JSONObject(jsonResponse).getString("message")
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
     }
 }

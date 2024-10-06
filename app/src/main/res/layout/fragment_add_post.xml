@@ -2,56 +2,89 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginBottom="30dp"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
     tools:context=".AddPostFragment">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/menuhome"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+        android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/menuhome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal"
-            android:padding="10dp">
+            android:background="@color/white"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
-            <ImageView
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_marginEnd="10dp"
-                android:background="@drawable/ic_baseline_arrow_back_24"
-                android:padding="5dp"
-                android:scaleType="centerInside" />
 
+            <androidx.appcompat.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/ic_baseline_arrow_back_24"
+                    android:textColor="@color/black"
+                    android:layout_gravity="left"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="POST"
-                    android:textSize="18dp"
+                    android:text="Create"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="@color/black"
                     android:layout_gravity="center"/>
-        </androidx.appcompat.widget.Toolbar>
 
-            <ImageView
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:src="@drawable/priceedit"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp" />
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="POST"
+                    android:textColor="@color/white"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="10dp"
+                    android:backgroundTint="@color/blue" />
+            </androidx.appcompat.widget.Toolbar>
 
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:hint="Title"
+            android:textStyle="bold"
+            android:layout_margin="10dp"
+            android:imeOptions="actionDone"
+            android:background="@color/white" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Photo"
+            android:textColor="@color/black"
+            android:layout_gravity="end"
+            android:layout_margin="10dp"
+            android:backgroundTint="@color/white" />
+
+
+        <ImageView
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            android:background="@drawable/profiletest2"
+            android:layout_gravity="center" />
 
         <LinearLayout
             android:id="@+id/dot_indicator_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="20dp"
             android:layout_gravity="center"
             android:padding="10dp">
 
@@ -75,43 +108,38 @@
 
         </LinearLayout>
 
+
+
+
+        <LinearLayout
+            android:id="@+id/postdetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:hint="Detail"
+            android:imeOptions="actionDone"
+            android:background="@color/white"/>
+
             <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
-                android:layout_marginEnd="30dp"
-                android:ellipsize="end"
-                android:hint="Interesting title"/>
-
-        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="30dp"
-            android:ellipsize="end"
-            android:hint="Detail"/>
 
+            android:padding="12dp"
+            android:hint="Enter Product Nunmber for Check Price" />
 
-        <EditText
-            android:layout_marginTop="100dp"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="30dp"
-            android:ellipsize="end"
-            android:hint="# Tag" />
+            android:layout_alignParentBottom="true">
 
+        </RelativeLayout>
+        </LinearLayout>
 
-        <EditText
-            android:layout_marginTop="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="30dp"
-            android:background="@drawable/priceedit"
-            android:ellipsize="end"
-            android:hint="Full name of the product" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+        x
+    </LinearLayout>
 </androidx.core.widget.NestedScrollView>
