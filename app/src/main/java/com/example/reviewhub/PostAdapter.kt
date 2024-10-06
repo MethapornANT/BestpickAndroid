@@ -70,6 +70,10 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 post.content
             }
 
+            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val token = sharedPreferences.getString("TOKEN", null)
+            val userId = sharedPreferences.getString("USER_ID", null)
+
 
 
             // Load profile image using the full URL
@@ -92,7 +96,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                         val bundle = Bundle()
                         bundle.putInt("POST_ID", post.id)
                         postDetailFragment.arguments = bundle
-
+                        recordInteraction(post.id, "view", null, token!!, context)
                         context.supportFragmentManager.beginTransaction()
                             .replace(R.id.nav_host_fragment, postDetailFragment)
                             .addToBackStack(null)
@@ -103,9 +107,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 mediaViewPager.visibility = View.GONE
             }
 
-            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-            val token = sharedPreferences.getString("TOKEN", null)
-            val userId = sharedPreferences.getString("USER_ID", null)
+
 
             // เรียก API เพื่อตรวจสอบสถานะการกดไลค์ของโพสต์
             if (token != null && userId != null) {
@@ -121,6 +123,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 }
                 if (token != null && userId != null) {
                     likeUnlikePost(post.id, userId.toInt(), token, context)
+                    recordInteraction(post.id, if (isLiked) "like" else "unlike", null, token, context)
                 } else {
                     Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
                 }
@@ -129,11 +132,15 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             // กำหนดการคลิกปุ่มติดตาม/เลิกติดตาม
             follower.setOnClickListener {
                 if (token != null && userId != null) {
+                    // ทำการ Follow/Unfollow ผู้ใช้
                     followUnfollowUser(post.userId, userId.toInt(), token, context)
+                    // บันทึก Interaction ใหม่ โดยใช้ "follow" หรือ "unfollow" แทน
+                    recordInteraction(post.id, if (isFollowing) "follow" else "unfollow", null, token, context)
                 } else {
                     Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
                 }
             }
+
 
             shareButton.setOnClickListener {
                 sharePost(context, post)
@@ -308,5 +315,54 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 timeString
             }
         }
+
+        private fun recordInteraction(postId: Int, actionType: String, content: String? = null, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}${context.getString(R.string.interactions)}"
+
+            // สร้าง body ของ request
+            val requestBody = FormBody.Builder()
+                .add("post_id", postId.toString())
+                .add("action_type", actionType)
+                .apply {
+                    if (content != null) {
+                        add("content", content)
+                    }
+                }
+                .build()
+
+            // สร้าง request พร้อมแนบ token ใน header
+            val request = Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            // ส่ง request ไปยังเซิร์ฟเวอร์
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!response.isSuccessful) {
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            val jsonResponse = response.body?.string()
+                            val message = JSONObject(jsonResponse).getString("message")
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
     }
 }
