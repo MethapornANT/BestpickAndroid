@@ -37,6 +37,8 @@ class PostDetailFragment : Fragment() {
     private lateinit var follower: TextView
     private var followingId: Int = -1
 
+    private var isLiked: Boolean = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -77,6 +79,8 @@ class PostDetailFragment : Fragment() {
         follower.setOnClickListener {
             if (token != null && userId != null) {
                 followUser(userId.toInt(), followingId, token)
+                val actionType = if (follower.text == "Following") "follow" else "unfollow"
+                recordInteraction(postId, actionType, null, token, requireContext())
             }
         }
 
@@ -292,13 +296,24 @@ class PostDetailFragment : Fragment() {
                             // เรียก `checkLikeStatus` เพื่อตรวจสอบสถานะการกดไลค์
                             checkLikeStatus(postId, userId, token, view)
 
-                            // ตั้งค่า Like Button
                             val likeButton = view.findViewById<ImageView>(R.id.like_button)
                             likeButton.setOnClickListener {
                                 if (token != null) {
-                                    likeUnlikePost(postId, userId, token)
+                                    // ตรวจสอบสถานะปัจจุบันของการกดไลค์
+                                    if (isLiked) {
+                                        // หากปัจจุบันอยู่ในสถานะไลค์ เมื่อคลิกจะเป็นการ unlike
+                                        likeUnlikePost(postId, userId, token)
+                                        recordInteraction(postId, "unlike", null, token, requireContext())
+                                    } else {
+                                        // หากยังไม่ไลค์ เมื่อคลิกจะเป็นการ like
+                                        likeUnlikePost(postId, userId, token)
+                                        recordInteraction(postId, "like", null, token, requireContext())
+                                    }
+                                } else {
+                                    Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
                                 }
                             }
+
                         }
                     }
                 } else {
@@ -380,7 +395,7 @@ class PostDetailFragment : Fragment() {
                     val responseBody = response.body?.string()
                     if (responseBody != null) {
                         val jsonObject = JSONObject(responseBody)
-                        val isLiked = jsonObject.getBoolean("isLiked")
+                        isLiked = jsonObject.getBoolean("isLiked")
 
                         withContext(Dispatchers.Main) {
                             val likeButton = view.findViewById<ImageView>(R.id.like_button)
@@ -446,5 +461,53 @@ class PostDetailFragment : Fragment() {
         } catch (e: Exception) {
             timeString
         }
+    }
+
+    private fun recordInteraction(postId: Int, actionType: String, content: String? = null, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}${context.getString(R.string.interactions)}"
+
+        // สร้าง body ของ request
+        val requestBody = FormBody.Builder()
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .apply {
+                if (content != null) {
+                    add("content", content)
+                }
+            }
+            .build()
+
+        // สร้าง request พร้อมแนบ token ใน header
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        // ส่ง request ไปยังเซิร์ฟเวอร์
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        val jsonResponse = response.body?.string()
+                        val message = JSONObject(jsonResponse).getString("message")
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
     }
 }
