@@ -2,6 +2,7 @@ package com.example.reviewhub
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        enableEdgeToEdge()
         // จัดการการแสดงผลเต็มจอด้วย WindowInsetsCompat
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         // ฟังการเปลี่ยนแปลงเส้นทางการนำทางเพื่อแสดงหรือซ่อน BottomNavigationView
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment -> {
+                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment ,R.id.notificationsFragment -> {
                     // แสดง BottomNavigationView ในหน้า Home, Search, Profile
                     bottomNavigationView.visibility = View.VISIBLE
                 }
@@ -65,6 +66,8 @@ class MainActivity : AppCompatActivity() {
                     R.id.home -> navController.navigate(R.id.homeFragment)
                     R.id.search -> navController.navigate(R.id.searchFragment)
                     R.id.profile -> navController.navigate(R.id.profileFragment)
+                    R.id.add -> navController.navigate(R.id.addPostFragment)
+                    R.id.notification -> navController.navigate(R.id.notificationsFragment)
                 }
             }
 

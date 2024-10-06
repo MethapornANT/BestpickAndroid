@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     kapt("com.github.bumptech.glide:compiler:4.12.0")
 
+
     // ExoPlayer
     implementation("com.google.android.exoplayer:exoplayer:2.19.1")
 
