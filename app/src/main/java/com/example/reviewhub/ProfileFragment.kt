@@ -12,6 +12,9 @@ import android.widget.Button
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import okhttp3.*
 import org.json.JSONObject
@@ -37,12 +40,14 @@ class ProfileFragment : Fragment() {
         val userId = sharedPreferences.getString("USER_ID", null)
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         val editProfileButton = view.findViewById<Button>(R.id.edit_profile_button)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
 
         // Navigate to EditprofileFragment when editProfileButton is clicked
         editProfileButton.setOnClickListener {
             val navController = findNavController()
             navController.navigate(R.id.editprofileFragment)
         }
+
 
         // Popup menu handling
         menuImageView.setOnClickListener {

@@ -49,43 +49,13 @@ class HomeFragment : Fragment() {
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
         progressBar = view.findViewById(R.id.progress_bar)
 
+
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val picture = sharedPreferences.getString("PICTURE", null)
         val profileImg = view.findViewById<ImageView>(R.id.profile_image)
         val searchEditText = view.findViewById<EditText>(R.id.searchEditText)
 
-        searchEditText.setOnClickListener {
-            // สร้าง ValueAnimator สำหรับขยายขนาด
-            val animator = ValueAnimator.ofInt(searchEditText.width, 750) // ขยายจากความกว้างปัจจุบันไป 800px
-            animator.duration = 400 // ระยะเวลาของแอนิเมชัน (300ms)
-
-            // กำหนดการเปลี่ยนแปลงของ layoutParams ขณะขยาย
-            animator.addUpdateListener { animation ->
-                val value = animation.animatedValue as Int
-                val layoutParams = searchEditText.layoutParams
-                layoutParams.width = value
-                searchEditText.layoutParams = layoutParams
-            }
-
-            animator.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    val navController = findNavController()
-                    navController.navigate(R.id.searchFragment)
-
-                    // รอให้ Navigation เสร็จสิ้นแล้วค่อยกำหนดสถานะของเมนูใน BottomNavigationView
-                    requireActivity().runOnUiThread {
-                        val bottomNavigationView = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
-                        bottomNavigationView.menu.findItem(R.id.search).isChecked = true
-                    }
-                }
-            })
-
-
-
-            // เริ่มการแอนิเมชัน
-            animator.start()
-        }
         searchEditText.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
                 val shrinkAnimator = ValueAnimator.ofInt(
