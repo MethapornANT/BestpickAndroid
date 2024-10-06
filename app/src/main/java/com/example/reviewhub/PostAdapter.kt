@@ -70,6 +70,10 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 post.content
             }
 
+            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val token = sharedPreferences.getString("TOKEN", null)
+            val userId = sharedPreferences.getString("USER_ID", null)
+
 
 
             // Load profile image using the full URL
@@ -92,7 +96,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                         val bundle = Bundle()
                         bundle.putInt("POST_ID", post.id)
                         postDetailFragment.arguments = bundle
-
+                        recordInteraction(post.id, "view", null, token!!, context)
                         context.supportFragmentManager.beginTransaction()
                             .replace(R.id.nav_host_fragment, postDetailFragment)
                             .addToBackStack(null)
@@ -103,9 +107,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 mediaViewPager.visibility = View.GONE
             }
 
-            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-            val token = sharedPreferences.getString("TOKEN", null)
-            val userId = sharedPreferences.getString("USER_ID", null)
+
 
             // เรียก API เพื่อตรวจสอบสถานะการกดไลค์ของโพสต์
             if (token != null && userId != null) {
