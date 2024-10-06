@@ -4,11 +4,8 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +14,10 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import java.io.*
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
 
 class AddPostFragment : Fragment() {
 
@@ -28,6 +28,7 @@ class AddPostFragment : Fragment() {
     private lateinit var backButton: ImageView
     private lateinit var selectMediaButton: Button
     private lateinit var dotIndicatorLayout: LinearLayout
+    private lateinit var deleteButton: ImageView // เปลี่ยนเป็น ImageView สำหรับปุ่มลบ
     private val client = OkHttpClient()
 
     override fun onCreateView(
@@ -43,6 +44,7 @@ class AddPostFragment : Fragment() {
         val submitButton = view.findViewById<Button>(R.id.submitButton)
         backButton = view.findViewById(R.id.ic_baseline_arrow_back_24)
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
+        deleteButton = view.findViewById(R.id.deleteButton)
 
         setupSpinner()
 
@@ -56,9 +58,7 @@ class AddPostFragment : Fragment() {
 
         viewPager.adapter = ImagePagerAdapter(selectedMedia)
 
-        submitButton.setOnClickListener {
-            uploadPost()
-        }
+        submitButton.setOnClickListener { uploadPost() }
 
         backButton.setOnClickListener {
             val intent = Intent(requireContext(), MainActivity::class.java)
@@ -71,8 +71,19 @@ class AddPostFragment : Fragment() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 updateDotIndicator(position)
+                deleteButton.visibility = if (selectedMedia.isNotEmpty()) View.VISIBLE else View.GONE
             }
         })
+
+        deleteButton.setOnClickListener {
+            val currentPosition = viewPager.currentItem
+            if (selectedMedia.isNotEmpty() && currentPosition < selectedMedia.size) {
+                selectedMedia.removeAt(currentPosition)
+                viewPager.adapter?.notifyDataSetChanged()
+                setupDotIndicator()
+                deleteButton.visibility = if (selectedMedia.isEmpty()) View.GONE else View.VISIBLE
+            }
+        }
 
         return view
     }
@@ -99,6 +110,7 @@ class AddPostFragment : Fragment() {
                 }
                 viewPager.adapter?.notifyDataSetChanged()
                 setupDotIndicator()
+                deleteButton.visibility = if (selectedMedia.isEmpty()) View.GONE else View.VISIBLE
             }
         }
     }
@@ -158,7 +170,7 @@ class AddPostFragment : Fragment() {
             if (file != null) {
                 val mimeType = requireContext().contentResolver.getType(uri)
                 val fieldName = if (mimeType?.startsWith("video") == true) "video" else "photo"
-                val mediaType = if (fieldName == "video") "video/mp4".toMediaTypeOrNull() else "image/jpg".toMediaTypeOrNull()
+                val mediaType = mimeType?.toMediaTypeOrNull()
                 requestBody.addFormDataPart(fieldName, file.name, RequestBody.create(mediaType, file))
             }
         }
@@ -188,7 +200,6 @@ class AddPostFragment : Fragment() {
                         activity?.finish()
                     } else {
                         val errorBody = response.body?.string() ?: "เกิดข้อผิดพลาดที่ไม่ทราบ"
-                        Log.e("AddPostFragment", "Error creating post: ${response.code}, Body: $errorBody")
                         Toast.makeText(requireContext(), "ไม่สามารถสร้างโพสต์ได้: ${response.message}, Body: $errorBody", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -197,21 +208,15 @@ class AddPostFragment : Fragment() {
     }
 
     private fun getFileFromUri(uri: Uri): File? {
+        val contentResolver: ContentResolver = requireContext().contentResolver
         return try {
-            val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
+            val inputStream: InputStream? = contentResolver.openInputStream(uri)
             val fileType = requireContext().contentResolver.getType(uri)
             val fileExtension = if (fileType?.startsWith("video") == true) ".mp4" else ".jpg"
             val file = File(requireContext().cacheDir, "temp_file_${System.currentTimeMillis()}$fileExtension")
 
-            if (fileExtension == ".jpg") {
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                file.outputStream().use { outputStream ->
-                    bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                }
-            } else {
-                file.outputStream().use { outputStream ->
-                    inputStream?.copyTo(outputStream)
-                }
+            file.outputStream().use { outputStream ->
+                inputStream?.copyTo(outputStream)
             }
             file
         } catch (e: FileNotFoundException) {
