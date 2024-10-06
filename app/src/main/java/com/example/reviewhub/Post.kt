@@ -8,7 +8,7 @@ data class Post(
     val userId: Int,
     val title : String,
     val time: String,
-    val updated: String?, // This field maps to the "updated_at" JSON key
+    val updated: String?,
     val content: String,
     val is_liked: Boolean,
     val userProfileUrl: String?,
@@ -17,7 +17,9 @@ data class Post(
     val photoUrl: List<String>?,
 
     @SerializedName("video_url")
-    val videoUrl: List<String>?
+    val videoUrl: List<String>?,
+    val likeCount: Int,
+    val commentCount: Int
 )
 
 

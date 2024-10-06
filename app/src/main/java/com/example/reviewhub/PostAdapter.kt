@@ -109,6 +109,30 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
 
 
 
+            userProfileImage.setOnClickListener {
+                val fragmentManager = (context as? FragmentActivity)?.supportFragmentManager
+                if (fragmentManager != null) {
+                    val transaction = fragmentManager.beginTransaction()
+                    val anotherUserFragment = AnotherUserFragment()
+
+                    // ส่งข้อมูล USER_ID ไปยัง Fragment
+                    val bundle = Bundle()
+                    bundle.putInt("USER_ID", post.userId)
+                    anotherUserFragment.arguments = bundle
+                    recordInteraction(post.id, "view_profile", null, token!!, context)
+                    // แทนที่ Fragment ปัจจุบันด้วย AnotherUserFragment
+                    transaction.replace(R.id.nav_host_fragment, anotherUserFragment)
+                    transaction.addToBackStack(null)
+                    transaction.commit()
+                }
+            }
+
+
+
+
+
+
+
             // เรียก API เพื่อตรวจสอบสถานะการกดไลค์ของโพสต์
             if (token != null && userId != null) {
                 checkLikeStatus(post.id, userId.toInt(), token, context)

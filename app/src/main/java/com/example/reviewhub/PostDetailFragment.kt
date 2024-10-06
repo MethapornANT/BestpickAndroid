@@ -1,14 +1,17 @@
 package com.example.reviewhub
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -39,6 +42,7 @@ class PostDetailFragment : Fragment() {
 
     private var isLiked: Boolean = false
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -68,6 +72,7 @@ class PostDetailFragment : Fragment() {
         // ดึง postId จาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
+
         if (postId != -1) {
             if (token != null && userId != null) {
                 fetchPostDetails(postId, token, userId.toInt(), view)
@@ -75,12 +80,34 @@ class PostDetailFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
         }
+        val Imgview = view.findViewById<ImageView>(R.id.Imgview)
+        Imgview.setOnClickListener {
+            openUserProfile(userId.toString().toInt())
+            recordInteraction(postId, "view_profile", null, token!!, requireContext())
+        }
 
         follower.setOnClickListener {
             if (token != null && userId != null) {
                 followUser(userId.toInt(), followingId, token)
                 val actionType = if (follower.text == "Following") "follow" else "unfollow"
                 recordInteraction(postId, actionType, null, token, requireContext())
+            }
+        }
+        val commentButton = view.findViewById<ImageView>(R.id.send_button)
+        val commentEditText = view.findViewById<EditText>(R.id.comment_input)
+        // กำหนดการทำงานเมื่อคลิกปุ่มส่งคอมเมนต์
+        commentButton.setOnClickListener {
+            if (token != null && userId != null) {
+                val commentContent = commentEditText.text.toString().trim()
+                if (commentContent.isNotEmpty()) {
+                    postComment(postId, userId.toInt(), commentContent, token)
+
+                    commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
+                } else {
+                    Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "Please login to comment", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -235,6 +262,7 @@ class PostDetailFragment : Fragment() {
                             val commentObject = commentsArray.getJSONObject(i)
                             val comment = Comment(
                                 id = commentObject.getInt("id"),
+                                user_id = commentObject.getInt("user_id"),
                                 content = commentObject.getString("content"),
                                 username = commentObject.getString("username"),
                                 createdAt = commentObject.getString("created_at"),
@@ -377,6 +405,46 @@ class PostDetailFragment : Fragment() {
         })
     }
 
+    // ฟังก์ชันสำหรับการส่งคอมเมนต์ไปยัง API
+    private fun postComment(postId: Int, userId: Int, content: String, token: String) {
+        val client = OkHttpClient()
+        val url = getString(R.string.root_url) + "/posts/$postId/comment"
+
+        val requestBody = FormBody.Builder()
+            .add("content", content)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (requireActivity() as? Activity)?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to post comment: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (response.isSuccessful) {
+                        (requireActivity() as? Activity)?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Comment posted successfully", Toast.LENGTH_SHORT).show()
+                            recordInteraction(postId, "comment", content, token, requireContext())
+                            fetchPostDetails(postId, token, userId, requireView()) // โหลดข้อมูลโพสต์ใหม่
+                        }
+                    } else {
+                        (requireActivity() as? Activity)?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Failed: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
+    }
+
 
     private fun checkLikeStatus(postId: Int, userId: Int, token: String, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -412,7 +480,7 @@ class PostDetailFragment : Fragment() {
         }
     }
 
-    data class Comment(val id: Int,val content: String, val username: String, val createdAt: String, val profileImage: String)
+    data class Comment(val id: Int,val user_id: Int,val content: String, val username: String, val createdAt: String, val profileImage: String)
 
     inner class CommentAdapter(private val comments: List<Comment>) :
         RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
@@ -432,6 +500,13 @@ class PostDetailFragment : Fragment() {
             Glide.with(this@PostDetailFragment)
                 .load(requireContext().getString(R.string.root_url) + comment.profileImage)
                 .into(holder.Imageprofile)
+
+
+            Log.d("CommentAdapter", "id: $id")
+            // กำหนดการคลิกที่โปรไฟล์ของผู้แสดงความคิดเห็น
+            holder.Imageprofile.setOnClickListener {
+                openUserProfile(comment.user_id)
+            }
         }
 
         override fun getItemCount(): Int {
@@ -445,6 +520,21 @@ class PostDetailFragment : Fragment() {
             val createdAt: TextView = view.findViewById(R.id.comment_created_at)
         }
     }
+
+    // ฟังก์ชันสำหรับเปิดหน้าโปรไฟล์ผู้ใช้คนนั้น
+    private fun openUserProfile(userId: Int) {
+        val fragment = AnotherUserFragment()
+        val bundle = Bundle()
+        bundle.putInt("USER_ID", userId)
+        fragment.arguments = bundle
+
+        // เปลี่ยน Fragment ปัจจุบันเป็น AnotherUserFragment
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
 
 
     private fun formatTime(timeString: String): String {
@@ -463,7 +553,7 @@ class PostDetailFragment : Fragment() {
         }
     }
 
-    private fun recordInteraction(postId: Int, actionType: String, content: String? = null, token: String, context: Context) {
+    private fun recordInteraction(postId: Int? = null, actionType: String, content: String? = null, token: String, context: Context) {
         val client = OkHttpClient()
         val url = "${context.getString(R.string.root_url)}${context.getString(R.string.interactions)}"
 

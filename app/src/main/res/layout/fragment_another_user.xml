@@ -21,6 +21,15 @@
             android:padding="8dp">
 
             <TextView
+                android:id="@+id/back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Back"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/usernameanother"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="MyProfile"
@@ -166,12 +175,12 @@
 
 
             <Button
-                android:id="@+id/edit_profile_button"
+                android:id="@+id/follower"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_margin="8dp"
                 android:background="@color/blue"
-                android:text="Edit Profile"
+                android:text="Follow"
                 android:textColor="@color/white" />
 
         </LinearLayout>
@@ -188,11 +197,6 @@
                 android:layout_height="wrap_content"
                 android:text="Posts" />
 
-            <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_foryou"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Bookmarks" />
         </com.google.android.material.tabs.TabLayout>
 
         <androidx.recyclerview.widget.RecyclerView
