@@ -90,6 +90,9 @@ class PostDetailFragment : Fragment() {
             if (token != null && userId != null) {
                 followUser(userId.toInt(), followingId, token)
                 val actionType = if (follower.text == "Following") "follow" else "unfollow"
+                if (actionType == "follow") {
+                    sendNotification(postId, userId.toInt(), "follow", token, requireContext())
+                }
                 recordInteraction(postId, actionType, null, token, requireContext())
             }
         }
@@ -101,7 +104,7 @@ class PostDetailFragment : Fragment() {
                 val commentContent = commentEditText.text.toString().trim()
                 if (commentContent.isNotEmpty()) {
                     postComment(postId, userId.toInt(), commentContent, token)
-
+                    sendNotification(postId, userId.toInt(), "comment", token, requireContext())
                     commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
                 } else {
                     Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
@@ -445,6 +448,46 @@ class PostDetailFragment : Fragment() {
                         (requireActivity() as? Activity)?.runOnUiThread {
                             Toast.makeText(requireContext(), "Failed: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
+                    }
+                }
+            }
+        })
+    }
+
+    private fun sendNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}/api/notifications"
+
+        // สร้าง Body ของ Request สำหรับสร้าง Notification
+        val requestBody = FormBody.Builder()
+            .add("user_id", userId.toString())
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .add("content", "User ${userId} performed action: $actionType on post $postId")
+            .build()
+
+        // สร้าง Request พร้อมแนบ Header ของ Token
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        // ส่ง Request ไปยังเซิร์ฟเวอร์
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to send notification: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                (context as? Activity)?.runOnUiThread {
+                    if (!response.isSuccessful) {
+                        Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
