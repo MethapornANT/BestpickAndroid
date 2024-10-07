@@ -300,6 +300,12 @@ class PostDetailFragment : Fragment() {
                             view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
                             checkFollowStatus(userId, followingId, token)
 
+                            if (userId == followingId) {
+                                follower.visibility = View.GONE
+                            } else {
+                                checkFollowStatus(userId, followingId, token)
+                            }
+
                             Glide.with(this@PostDetailFragment)
                                 .load(profileUrl)
                                 .into(view.findViewById(R.id.Imgview))

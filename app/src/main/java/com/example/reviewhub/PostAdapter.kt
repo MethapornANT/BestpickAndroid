@@ -73,7 +73,12 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val token = sharedPreferences.getString("TOKEN", null)
             val userId = sharedPreferences.getString("USER_ID", null)
-
+            // ตรวจสอบว่าโพสต์นี้เป็นของผู้ใช้เองหรือไม่
+            if (userId?.toInt() == post.userId) {
+                follower.visibility = View.GONE // ซ่อนปุ่ม "Follow" หากเป็นโพสต์ของผู้ใช้เอง
+            } else {
+                follower.visibility = View.VISIBLE // แสดงปุ่ม "Follow" หากเป็นโพสต์ของผู้อื่น
+            }
 
 
             // Load profile image using the full URL
@@ -164,6 +169,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                     Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
                 }
             }
+
 
 
             shareButton.setOnClickListener {
