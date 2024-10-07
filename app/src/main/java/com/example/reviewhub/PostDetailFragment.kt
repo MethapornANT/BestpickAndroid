@@ -627,15 +627,15 @@ class PostDetailFragment : Fragment() {
 
     private fun formatTime(timeString: String): String {
         return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-            val date = inputFormat.parse(timeString)
-            if (date != null) {
-                val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                outputFormat.format(date)
-            } else {
-                timeString
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
             }
+            val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
+            }
+            val date = inputFormat.parse(timeString ?: "")
+            date?.let { outputFormat.format(it) } ?: "N/A"
+
         } catch (e: Exception) {
             timeString
         }

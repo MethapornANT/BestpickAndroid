@@ -66,13 +66,18 @@ class NotificationsAdapter(private val notificationList: List<Notification>) :
         // ฟอร์แมตวันที่เพื่อให้แสดงผลอย่างถูกต้อง
         private fun formatTime(createdAt: String?): String {
             return try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault())
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
+                }
+                val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
+                }
                 val date = inputFormat.parse(createdAt ?: "")
                 date?.let { outputFormat.format(it) } ?: "N/A"
             } catch (e: Exception) {
                 "N/A"
             }
         }
+
     }
 }
