@@ -92,6 +92,8 @@ class PostDetailFragment : Fragment() {
                 val actionType = if (follower.text == "Following") "follow" else "unfollow"
                 if (actionType == "follow") {
                     sendNotification(postId, userId.toInt(), "follow", token, requireContext())
+                }else{
+                    deleteNotification(postId, userId.toInt(), "follow", token, requireContext())
                 }
                 recordInteraction(postId, actionType, null, token, requireContext())
             }
@@ -341,9 +343,11 @@ class PostDetailFragment : Fragment() {
                                         // หากปัจจุบันอยู่ในสถานะไลค์ เมื่อคลิกจะเป็นการ unlike
                                         likeUnlikePost(postId, userId, token)
                                         recordInteraction(postId, "unlike", null, token, requireContext())
+                                        deleteNotification(postId, userId, "like", token, requireContext())
                                     } else {
                                         // หากยังไม่ไลค์ เมื่อคลิกจะเป็นการ like
                                         likeUnlikePost(postId, userId, token)
+                                        sendNotification(postId, userId, "like", token, requireContext())
                                         recordInteraction(postId, "like", null, token, requireContext())
                                     }
                                 } else {
@@ -488,6 +492,41 @@ class PostDetailFragment : Fragment() {
                         Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+    private fun deleteNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}/api/notifications" // URL API ของการลบ Notification
+
+        val requestBody = FormBody.Builder()
+            .add("user_id", userId.toString())
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .delete(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to delete notification: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                (context as? Activity)?.runOnUiThread {
+                    if (!response.isSuccessful) {
+                        Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Notification deleted successfully", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
