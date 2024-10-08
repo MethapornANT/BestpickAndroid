@@ -90,6 +90,11 @@ class PostDetailFragment : Fragment() {
             if (token != null && userId != null) {
                 followUser(userId.toInt(), followingId, token)
                 val actionType = if (follower.text == "Following") "follow" else "unfollow"
+                if (actionType == "follow") {
+                    sendNotification(postId, userId.toInt(), "follow", token, requireContext())
+                }else{
+                    deleteNotification(postId, userId.toInt(), "follow", token, requireContext())
+                }
                 recordInteraction(postId, actionType, null, token, requireContext())
             }
         }
@@ -101,7 +106,7 @@ class PostDetailFragment : Fragment() {
                 val commentContent = commentEditText.text.toString().trim()
                 if (commentContent.isNotEmpty()) {
                     postComment(postId, userId.toInt(), commentContent, token)
-
+                    sendNotification(postId, userId.toInt(), "comment", token, requireContext())
                     commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
                 } else {
                     Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
@@ -338,9 +343,11 @@ class PostDetailFragment : Fragment() {
                                         // หากปัจจุบันอยู่ในสถานะไลค์ เมื่อคลิกจะเป็นการ unlike
                                         likeUnlikePost(postId, userId, token)
                                         recordInteraction(postId, "unlike", null, token, requireContext())
+                                        deleteNotification(postId, userId, "like", token, requireContext())
                                     } else {
                                         // หากยังไม่ไลค์ เมื่อคลิกจะเป็นการ like
                                         likeUnlikePost(postId, userId, token)
+                                        sendNotification(postId, userId, "like", token, requireContext())
                                         recordInteraction(postId, "like", null, token, requireContext())
                                     }
                                 } else {
@@ -451,6 +458,81 @@ class PostDetailFragment : Fragment() {
         })
     }
 
+    private fun sendNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}/api/notifications"
+
+        // สร้าง Body ของ Request สำหรับสร้าง Notification
+        val requestBody = FormBody.Builder()
+            .add("user_id", userId.toString())
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .add("content", "User ${userId} performed action: $actionType on post $postId")
+            .build()
+
+        // สร้าง Request พร้อมแนบ Header ของ Token
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        // ส่ง Request ไปยังเซิร์ฟเวอร์
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to send notification: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                (context as? Activity)?.runOnUiThread {
+                    if (!response.isSuccessful) {
+                        Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+    private fun deleteNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}/api/notifications" // URL API ของการลบ Notification
+
+        val requestBody = FormBody.Builder()
+            .add("user_id", userId.toString())
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .delete(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to delete notification: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                (context as? Activity)?.runOnUiThread {
+                    if (!response.isSuccessful) {
+                        Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Notification deleted successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+
 
     private fun checkLikeStatus(postId: Int, userId: Int, token: String, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -545,15 +627,15 @@ class PostDetailFragment : Fragment() {
 
     private fun formatTime(timeString: String): String {
         return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-            val date = inputFormat.parse(timeString)
-            if (date != null) {
-                val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                outputFormat.format(date)
-            } else {
-                timeString
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
             }
+            val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
+            }
+            val date = inputFormat.parse(timeString ?: "")
+            date?.let { outputFormat.format(it) } ?: "N/A"
+
         } catch (e: Exception) {
             timeString
         }

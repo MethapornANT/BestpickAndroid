@@ -147,14 +147,18 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 isLiked = !isLiked
                 if (isLiked) {
                     likeButton.setImageResource(R.drawable.heartclick)
+                    if (token != null && userId != null) {
+                        likeUnlikePost(post.id, userId.toInt(), token, context)
+                        sendNotification(post.id, userId.toInt(), "like", token, context)
+                        recordInteraction(post.id, "like", null, token, context)
+                    }
                 } else {
                     likeButton.setImageResource(R.drawable.heart)
-                }
-                if (token != null && userId != null) {
-                    likeUnlikePost(post.id, userId.toInt(), token, context)
-                    recordInteraction(post.id, if (isLiked) "like" else "unlike", null, token, context)
-                } else {
-                    Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
+                    if (token != null && userId != null) {
+                        likeUnlikePost(post.id, userId.toInt(), token, context)
+                        deleteNotification(post.id, userId.toInt(), "like", token, context) // เพิ่มฟังก์ชันลบแจ้งเตือน
+                        recordInteraction(post.id, "unlike", null, token, context)
+                    }
                 }
             }
 
@@ -163,8 +167,13 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 if (token != null && userId != null) {
                     // ทำการ Follow/Unfollow ผู้ใช้
                     followUnfollowUser(post.userId, userId.toInt(), token, context)
-                    // บันทึก Interaction ใหม่ โดยใช้ "follow" หรือ "unfollow" แทน
-                    recordInteraction(post.id, if (isFollowing) "follow" else "unfollow", null, token, context)
+                    if (!isFollowing) {
+                        sendNotification(post.id, userId.toInt(), "follow", token, context)
+                        recordInteraction(post.id, "follow", null, token, context)
+                    } else {
+                        deleteNotification(post.id, userId.toInt(), "follow", token, context) // เพิ่มฟังก์ชันลบแจ้งเตือน
+                        recordInteraction(post.id, "unfollow", null, token, context)
+                    }
                 } else {
                     Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
                 }
@@ -332,19 +341,98 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
 
         private fun formatTime(timeString: String): String {
             return try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-                val date = inputFormat.parse(timeString)
-                if (date != null) {
-                    val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                    outputFormat.format(date)
-                } else {
-                    timeString
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
                 }
+                val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
+                }
+                val date = inputFormat.parse(timeString ?: "")
+                date?.let { outputFormat.format(it) } ?: "N/A"
+
             } catch (e: Exception) {
                 timeString
             }
         }
+
+        private fun deleteNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/api/notifications" // URL API ของการลบ Notification
+
+            val requestBody = FormBody.Builder()
+                .add("user_id", userId.toString())
+                .add("post_id", postId.toString())
+                .add("action_type", actionType)
+                .build()
+
+            val request = Request.Builder()
+                .url(url)
+                .delete(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to delete notification: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    (context as? Activity)?.runOnUiThread {
+                        if (!response.isSuccessful) {
+                            Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Notification deleted successfully", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        }
+
+
+
+        private fun sendNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/api/notifications"
+
+            // สร้าง Body ของ Request สำหรับสร้าง Notification
+            val requestBody = FormBody.Builder()
+                .add("user_id", userId.toString())
+                .add("post_id", postId.toString())
+                .add("action_type", actionType)
+                .add("content", "User ${userId} performed action: $actionType on post $postId")
+                .build()
+
+            // สร้าง Request พร้อมแนบ Header ของ Token
+            val request = Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            // ส่ง Request ไปยังเซิร์ฟเวอร์
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to send notification: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    (context as? Activity)?.runOnUiThread {
+                        if (!response.isSuccessful) {
+                            Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        }
+
 
         private fun recordInteraction(postId: Int, actionType: String, content: String? = null, token: String, context: Context) {
             val client = OkHttpClient()
