@@ -88,6 +88,7 @@ class EditprofileFragment : Fragment() {
         view.findViewById<TextView>(R.id.save_button).setOnClickListener {
             if (userId != null) {
                 updateUserProfile(userId, token)
+                requireActivity().onBackPressed()
             }
         }
 

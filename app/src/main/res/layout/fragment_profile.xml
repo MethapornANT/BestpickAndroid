@@ -149,34 +149,32 @@
         </androidx.appcompat.widget.Toolbar>
 
 
-
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/white">
-        <TextView
-            android:id="@+id/bio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="5dp"
-            android:paddingTop="8dp"
-            android:text="MyProfile BIO"
-            android:textColor="@color/black"
-            android:textSize="14sp" />
+            android:background="@color/white"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/bio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="5dp"
+                android:paddingTop="8dp"
+                android:text="MyProfile BIO"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
 
 
-        <Button
-            android:id="@+id/edit_profile_button"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_margin="8dp"
-            android:background="@color/blue"
-            android:text="Edit Profile"
-            android:textColor="@color/white" />
+            <Button
+                android:id="@+id/edit_profile_button"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_margin="10dp"
+                android:backgroundTint="@color/blue"
+                android:text="Edit Profile"
+                android:textColor="@color/white" />
 
         </LinearLayout>
         <com.google.android.material.tabs.TabLayout
@@ -203,8 +201,7 @@
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            tools:listitem="@layout/item_profilemypost"/>
+            tools:listitem=""/>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

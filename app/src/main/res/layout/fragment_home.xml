@@ -42,17 +42,16 @@
                 android:contentDescription="Menu"
                 android:src="@drawable/baseline_menu" />
 
-            <EditText
+            <ImageView
                 android:id="@+id/searchEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:layout_gravity="end"
                 android:layout_marginRight="10dp"
                 android:background="@drawable/custom_edittext"
-                android:drawableStart="@drawable/baseline_search_home"
-                android:drawablePadding="8dp"
-                android:ellipsize="end"
-                android:paddingStart="10dp" />
+                android:src="@drawable/baseline_search_home"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
 
         </androidx.appcompat.widget.Toolbar>
 

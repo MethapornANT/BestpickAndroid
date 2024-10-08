@@ -57,84 +57,12 @@
             android:id="@+id/contentEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="12dp"
+            android:padding="15dp"
             android:hint="Title"
             android:textStyle="bold"
-            android:layout_margin="10dp"
+            android:paddingStart="30dp"
             android:imeOptions="actionDone"
-            android:background="@color/white" />
-
-        <Spinner
-            android:id="@+id/categorySpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:padding="12dp"
-            android:background="@color/white" />
-
-        <Button
-            android:id="@+id/selectPhotoButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select Photo"
-            android:textColor="@color/black"
-            android:layout_gravity="end"
-            android:layout_margin="10dp"
-            android:backgroundTint="@color/white" />
-
-        <!-- ViewPager สำหรับแสดงรูปภาพและวิดีโอที่เลือก -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:layout_gravity="center">
-
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/viewPager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/profiletest2" />
-
-            <!-- ปุ่มลบรูปภาพ/วิดีโอ -->
-            <ImageView
-                android:id="@+id/deleteButton"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/garbage_78344"
-                android:layout_gravity="end|top"
-                android:layout_margin="10dp"
-                android:visibility="gone" />
-
-        </FrameLayout>
-
-        <LinearLayout
-            android:id="@+id/dot_indicator_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:padding="10dp">
-
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/baseline_circle_24" />
-
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/outline_circle_24" />
-
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/outline_circle_24" />
-
-        </LinearLayout>
+            android:background="@color/white"/>
 
         <LinearLayout
             android:id="@+id/postdetail"
@@ -146,18 +74,68 @@
                 android:id="@+id/detailEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="12dp"
+                android:padding="15dp"
                 android:hint="Detail"
+                android:paddingStart="30dp"
                 android:imeOptions="actionDone"
                 android:background="@color/white"/>
+
+            <Spinner
+                android:id="@+id/categorySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:background="@color/white" />
 
             <EditText
                 android:id="@+id/productNumberEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
+                android:paddingStart="30dp"
+                android:layout_margin="10dp"
                 android:hint="Enter Product Number for Check Price" />
 
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/selectPhotoButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Photo"
+            android:textColor="@color/black"
+            android:layout_gravity="end"
+            android:layout_margin="20dp"
+            android:backgroundTint="@color/white" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_gravity="center">
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+            <ImageView
+                android:id="@+id/deleteButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="end|top"
+                android:layout_margin="15dp"
+                android:src="@drawable/remove"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/dot_indicator_layout"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:padding="10dp">
         </LinearLayout>
 
     </LinearLayout>

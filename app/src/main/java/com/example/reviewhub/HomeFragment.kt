@@ -17,6 +17,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.animation.addListener
 import androidx.fragment.app.Fragment
@@ -54,27 +55,13 @@ class HomeFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val picture = sharedPreferences.getString("PICTURE", null)
         val profileImg = view.findViewById<ImageView>(R.id.profile_image)
-        val searchEditText = view.findViewById<EditText>(R.id.searchEditText)
+        val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
 
-        searchEditText.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val shrinkAnimator = ValueAnimator.ofInt(
-                    searchEditText.width,
-                    300
-                ) // ขยายจากความกว้าง 800px กลับไป 300px
-                shrinkAnimator.duration = 300
-
-                shrinkAnimator.addUpdateListener { animation ->
-                    val value = animation.animatedValue as Int
-                    val layoutParams = searchEditText.layoutParams
-                    layoutParams.width = value
-                    searchEditText.layoutParams = layoutParams
-                }
-
-                shrinkAnimator.start()
-            }
+        searchEditText.setOnClickListener {
+            val navController = findNavController()
+            navController.navigate(R.id.searchFragment)
         }
-
+        
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         menuImageView.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), menuImageView)
