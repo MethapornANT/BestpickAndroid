@@ -23,12 +23,14 @@ class AddPostFragment : Fragment() {
 
     private val selectedMedia: MutableList<Uri> = mutableListOf()
     private lateinit var viewPager: ViewPager2
-    private lateinit var contentEditText: EditText
+    private lateinit var contentEditText: EditText //content
+    private lateinit var TitleEditText: EditText //Detail
     private lateinit var categorySpinner: Spinner
     private lateinit var backButton: ImageView
     private lateinit var selectMediaButton: Button
     private lateinit var dotIndicatorLayout: LinearLayout
-    private lateinit var deleteButton: ImageView // เปลี่ยนเป็น ImageView สำหรับปุ่มลบ
+    private lateinit var deleteButton: ImageView
+    private lateinit var ProductNumberEditText: EditText
     private val client = OkHttpClient()
 
     override fun onCreateView(
@@ -38,13 +40,15 @@ class AddPostFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_add_post, container, false)
 
         viewPager = view.findViewById(R.id.viewPager)
-        contentEditText = view.findViewById(R.id.contentEditText)
+        contentEditText = view.findViewById(R.id.contentEditText) //content
+        TitleEditText = view.findViewById(R.id.TitleEditText) //Title
         categorySpinner = view.findViewById(R.id.categorySpinner)
         selectMediaButton = view.findViewById(R.id.selectPhotoButton)
         val submitButton = view.findViewById<Button>(R.id.submitButton)
         backButton = view.findViewById(R.id.ic_baseline_arrow_back_24)
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
         deleteButton = view.findViewById(R.id.deleteButton)
+        ProductNumberEditText = view.findViewById(R.id.ProductNumberEditText)
 
         setupSpinner()
 
@@ -145,8 +149,30 @@ class AddPostFragment : Fragment() {
     }
 
     private fun uploadPost() {
-        if (selectedMedia.isEmpty()) {
-            Toast.makeText(requireContext(), "กรุณาเลือกมีเดียก่อนส่ง.", Toast.LENGTH_SHORT).show()
+        // อ่านค่าจากฟิลด์ต่างๆ
+        val content = contentEditText.text.toString().trim()
+        val Title = TitleEditText.text.toString().trim()
+        val category = categorySpinner.selectedItem.toString().trim()
+        val ProductNumber = ProductNumberEditText.text.toString().trim()
+
+        // ตรวจสอบว่าฟิลด์ต่างๆ ไม่ใช่ค่าว่าง
+        if (content.isEmpty()) {
+            Toast.makeText(requireContext(), "กรุณากรอกชื่อโพสต์.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (Title.isEmpty()) {
+            Toast.makeText(requireContext(), "กรุณากรอกรายละเอียด.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (category.isEmpty()) {
+            Toast.makeText(requireContext(), "กรุณาเลือกหมวดหมู่.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (ProductNumber.isEmpty()) {
+            Toast.makeText(requireContext(), "กรุณากรอกหมายเลขสินค้า.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -159,20 +185,40 @@ class AddPostFragment : Fragment() {
             return
         }
 
-        val selectedCategory = categorySpinner.selectedItem.toString()
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("user_id", id)
-            .addFormDataPart("content", contentEditText.text.toString())
-            .addFormDataPart("category", selectedCategory)
+            .addFormDataPart("content", content)
+            .addFormDataPart("Title", Title)
+            .addFormDataPart("category", category)
+            .addFormDataPart("ProductNumber", ProductNumber)
+
+        // แยกประเภทไฟล์สำหรับ video และ photo
+        var videoFileName: String? = null // แยกตัวแปรสำหรับเก็บชื่อไฟล์วิดีโอ
+        val photoFileNames = mutableListOf<String>() // สร้าง List สำหรับเก็บชื่อไฟล์รูปภาพ
 
         selectedMedia.forEach { uri ->
             val file = getFileFromUri(uri)
             if (file != null) {
                 val mimeType = requireContext().contentResolver.getType(uri)
-                val fieldName = if (mimeType?.startsWith("video") == true) "video" else "photo"
                 val mediaType = mimeType?.toMediaTypeOrNull()
-                requestBody.addFormDataPart(fieldName, file.name, RequestBody.create(mediaType, file))
+                if (mimeType?.startsWith("video") == true) {
+                    videoFileName = file.name // กำหนดชื่อไฟล์วิดีโอให้กับตัวแปร videoFileName
+                    requestBody.addFormDataPart("video", file.name, RequestBody.create(mediaType, file))
+                } else {
+                    photoFileNames.add(file.name) // เพิ่มชื่อไฟล์รูปภาพใน List
+                    requestBody.addFormDataPart("photo", file.name, RequestBody.create(mediaType, file))
+                }
             }
+        }
+
+        // เพิ่มฟิลด์ video_url ในกรณีที่มีวิดีโอ
+        videoFileName?.let {
+            requestBody.addFormDataPart("video_url", it)
+        }
+
+        // เพิ่มฟิลด์ photo_url ในกรณีที่มีรูปภาพ
+        if (photoFileNames.isNotEmpty()) {
+            requestBody.addFormDataPart("photo_url", photoFileNames.joinToString(",")) // แปลง List เป็น String
         }
 
         val url = getString(R.string.root_url) + "/posts/create"
