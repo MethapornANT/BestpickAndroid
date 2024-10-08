@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
@@ -38,6 +39,8 @@ class PostDetailFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var dotIndicatorLayout: LinearLayout
     private lateinit var follower: TextView
+    private var bottomNav: BottomNavigationView? = null
+
     private var followingId: Int = -1
 
     private var isLiked: Boolean = false
@@ -48,11 +51,15 @@ class PostDetailFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_post_detail, container, false)
 
-        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        bottomNav = (activity as? MainActivity)?.findViewById(R.id.bottom_navigation)
+
+        // Hide bottom navigation when this fragment is visible
         bottomNav?.visibility = View.GONE
 
+        // Handle back press
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            bottomNav?.visibility = View.VISIBLE
+            bottomNav?.visibility = View.VISIBLE // Show bottom navigation on back
             parentFragmentManager.popBackStack()
         }
 
@@ -64,13 +71,17 @@ class PostDetailFragment : Fragment() {
         view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
             activity?.onBackPressed()
         }
-
+        val reportButton = view.findViewById<ImageView>(R.id.report)
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
         follower = view.findViewById<TextView>(R.id.follower)
         // ดึง postId จาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
+
+        reportButton.setOnClickListener {
+            showReportMenu(requireContext(), reportButton, postId, userId != null)
+        }
 
 
         if (postId != -1) {
@@ -161,6 +172,84 @@ class PostDetailFragment : Fragment() {
             start()
         }
     }
+
+
+    private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
+        val popupMenu = PopupMenu(context, anchorView)
+        popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
+
+        // Show edit and delete options only for user's own posts
+        popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
+        popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
+
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.report -> {
+                    Toast.makeText(context, "Reported as spam", Toast.LENGTH_SHORT).show()
+                    // Handle spam report action here
+                    true
+                }
+                R.id.edit_post -> {
+                    Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                    // Handle Edit Post action here (e.g., navigate to Edit screen)
+                    true
+                }
+                R.id.delete_post -> {
+                    deletePost(postId, context)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+
+    private fun deletePost(postId: Int, context: Context) {
+        val client = OkHttpClient()
+        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)
+
+        if (token != null && userId != null) {
+            val url = "${context.getString(R.string.root_url)}/posts/$postId"
+            val requestBody = FormBody.Builder()
+                .add("user_id", userId)
+                .build()
+
+            val request = Request.Builder()
+                .url(url)
+                .delete(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to delete post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    (context as? Activity)?.runOnUiThread {
+                        if (!response.isSuccessful) {
+                            val errorMessage = JSONObject(jsonResponse ?: "{}").optString("error", "Failed to delete post")
+                            Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
+                            // Instead of adding a callback, simply pop the back stack
+                            parentFragmentManager.popBackStack()
+                        }
+                    }
+                }
+            })
+        } else {
+            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     // ฟังก์ชันสำหรับเรียก API ติดตาม/เลิกติดตาม
     private fun followUser(userId: Int, followingId: Int, token: String) {

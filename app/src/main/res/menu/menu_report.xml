@@ -2,14 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Report Options -->
     <item
-        android:id="@+id/report_spam"
-        android:title="Report as Spam" />
-    <item
-        android:id="@+id/report_inappropriate"
-        android:title="Report as Inappropriate" />
-    <item
-        android:id="@+id/report_other"
-        android:title="Report for Other Reasons" />
+        android:id="@+id/report"
+        android:title="Report " />
 
     <!-- User's Own Post Options -->
     <item
