@@ -30,6 +30,7 @@ class EditprofileFragment : Fragment() {
     private lateinit var bioEditText: EditText
     private lateinit var genderSpinner: Spinner
     private lateinit var profileImageView: ImageView
+    private lateinit var email: EditText
     private var imageUri: Uri? = null
     private val client = OkHttpClient()
     var filename = ""
@@ -61,6 +62,7 @@ class EditprofileFragment : Fragment() {
         bioEditText = view.findViewById(R.id.bio_edit)
         genderSpinner = view.findViewById(R.id.gender_spinner)
         profileImageView = view.findViewById(R.id.Imgview)
+        email = view.findViewById(R.id.email_edit)
         val editImg = view.findViewById<TextView>(R.id.editImg)
 
         // Load gender array into Spinner
@@ -138,6 +140,7 @@ class EditprofileFragment : Fragment() {
                             val jsonObject = JSONObject(it)
                             val username = jsonObject.getString("username")
                             val profileImageUrl = jsonObject.getString("profileImageUrl")
+                            val emailuser = jsonObject.getString("email")
                             val bio = jsonObject.getString("bio")
                             val gender = jsonObject.getString("gender")
 
@@ -146,6 +149,7 @@ class EditprofileFragment : Fragment() {
                             // Update UI elements on the main thread
                             activity?.runOnUiThread {
                                 usernameEditText.setText(username)
+                                email.setText(emailuser)
                                 bioEditText.setText(bio)
                                 genderSpinner.setSelection(
                                     resources.getStringArray(R.array.gender_array).indexOf(gender)
