@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
     RecyclerView.Adapter<PhotoPagerAdapter.MediaViewHolder>() {
@@ -53,6 +54,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
         holder.seekBar.visibility = View.GONE
         holder.timeVideo.visibility = View.GONE
 
+        holder.imageView.setImageDrawable(null) // ล้างข้อมูลภาพใน ImageView
         holder.videoView.stopPlayback()
         holder.seekBar.progress = 0
         handler.removeCallbacksAndMessages(null)
@@ -64,7 +66,6 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
         holder.seekBar.visibility = View.VISIBLE
         holder.timeVideo.visibility = View.VISIBLE
 
-        // ใช้ระดับเสียงตามที่ผู้ใช้ตั้งไว้ในอุปกรณ์
         val audioManager = holder.itemView.context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
         val userVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -80,13 +81,10 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
         }
 
         holder.videoView.setOnPreparedListener { mediaPlayer ->
-            // ปรับระดับเสียงของ MediaPlayer ตามอัตราส่วนที่ได้จากการตั้งค่าของผู้ใช้
             mediaPlayer.setVolume(volumeRatio, volumeRatio)
             holder.videoView.start()
             holder.seekBar.max = holder.videoView.duration
             updateSeekBar(holder)
-
-            // แสดงเวลารวมของวิดีโอ
             val totalTime = holder.videoView.duration
             holder.timeVideo.text = formatTime(0) + " / " + formatTime(totalTime)
         }
@@ -124,8 +122,13 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
     private fun setupImage(holder: MediaViewHolder, mediaUrl: String) {
         holder.imageView.visibility = View.VISIBLE
+
+        // ใช้การตั้งค่า Glide ที่ปรับปรุงแล้ว
         Glide.with(holder.itemView.context)
             .load(mediaUrl)
+            .diskCacheStrategy(DiskCacheStrategy.ALL) // ใช้การจัดการ Cache
+            .override(800, 800) // กำหนดความละเอียดของภาพ
+            .fitCenter() // ปรับให้ภาพแสดงได้เต็มพื้นที่โดยไม่บิดเบี้ยว
             .into(holder.imageView)
 
         holder.imageView.setOnClickListener {
@@ -154,6 +157,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
     override fun onViewRecycled(holder: MediaViewHolder) {
         super.onViewRecycled(holder)
+        holder.imageView.setImageDrawable(null) // ล้างข้อมูลเก่า
         if (holder.videoView.isPlaying) {
             holder.videoView.stopPlayback()
         }

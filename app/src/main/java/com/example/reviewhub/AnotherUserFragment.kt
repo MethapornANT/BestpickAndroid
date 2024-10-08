@@ -11,10 +11,12 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -38,6 +40,14 @@ class AnotherUserFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_another_user, container, false)
+
+        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            bottomNav?.visibility = View.VISIBLE
+            parentFragmentManager.popBackStack()
+        }
 
         // เชื่อมโยง View กับ Layout XML
         userProfileImage = view.findViewById(R.id.user_profile_image)
