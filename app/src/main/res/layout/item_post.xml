@@ -67,14 +67,12 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <TextView
+        <ImageView
+            android:id="@+id/report"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:background="@drawable/report"
-            android:layout_marginEnd="5dp"
-            android:textColor="@color/nightblue"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:src="@drawable/report"
+            android:layout_marginEnd="5dp" />
     </LinearLayout>
 
     <TextView
