@@ -53,6 +53,7 @@ import org.json.JSONObject
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.os.postDelayed
+import com.airbnb.lottie.LottieAnimationView
 import okio.IOException
 
 
@@ -61,6 +62,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
     private lateinit var forgetPassTextView: TextView
+    private lateinit var progressBar: LottieAnimationView
 
 
     @SuppressLint("MissingInflatedId")
@@ -74,6 +76,7 @@ class LoginActivity : AppCompatActivity() {
         FacebookSdk.setClientToken("1021807229429436")
         FacebookSdk.sdkInitialize(applicationContext)
         callbackManager = CallbackManager.Factory.create()
+        progressBar = findViewById<LottieAnimationView>(R.id.lottie_loading)
 
         // Check if user is already signed in
         val firebaseAuth = FirebaseAuth.getInstance()
@@ -111,6 +114,7 @@ class LoginActivity : AppCompatActivity() {
         val passwordEditText = findViewById<EditText>(R.id.password)
         val togglePassword = findViewById<ImageView>(R.id.togglePasswordConfirm)
 
+
         togglePassword.setOnClickListener {
             if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
                 // Hide password
@@ -129,15 +133,20 @@ class LoginActivity : AppCompatActivity() {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             when {
-                email.isEmpty() -> emailEditText.error = "Email is required"
-                password.isEmpty() -> passwordEditText.error = "Password is required"
-                else -> performLogin(email, password)
+                email.isEmpty() -> emailEditText.error = "Enter Your Email"
+                password.isEmpty() -> passwordEditText.error = "Enter Your Password"
+                else -> {
+                    performLogin(email, password)
+                    progressBar.visibility = View.VISIBLE
+                }
             }
         }
+
 
     }
 
     private fun navigateToMainActivity() {
+        progressBar.visibility = View.GONE
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
@@ -217,6 +226,7 @@ class LoginActivity : AppCompatActivity() {
         } catch (e: JSONException) {
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
+        progressBar.visibility = View.GONE
     }
 
 
