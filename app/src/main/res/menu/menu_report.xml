@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Report Options -->
+    <item
+        android:id="@+id/report"
+        android:title="Report " />
+
+    <!-- User's Own Post Options -->
+    <item
+        android:id="@+id/edit_post"
+        android:title="Edit Post"
+        android:visible="false" /> <!-- Set default visibility to false -->
+    <item
+        android:id="@+id/delete_post"
+        android:title="Delete Post"
+        android:visible="false" /> <!-- Set default visibility to false -->
+</menu>
+

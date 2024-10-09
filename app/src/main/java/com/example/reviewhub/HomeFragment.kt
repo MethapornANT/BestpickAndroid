@@ -1,10 +1,5 @@
 package com.example.reviewhub
 
-import android.animation.Animator
-import android.animation.AnimatorInflater
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
-import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
@@ -13,13 +8,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
-import androidx.core.animation.addListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -42,27 +33,39 @@ class HomeFragment : Fragment() {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: LottieAnimationView
 
+    private lateinit var profileImg: ImageView // ประกาศ ImageView สำหรับโปรไฟล์
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        // Initialize view elements
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
         progressBar = view.findViewById(R.id.lottie_loading)
 
-
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val picture = sharedPreferences.getString("PICTURE", null)
-        val profileImg = view.findViewById<ImageView>(R.id.profile_image)
-        val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
+        postAdapter = PostAdapter(postList)
+        recyclerView.adapter = postAdapter
 
+
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+        // Set up click listener for search
+        val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
         searchEditText.setOnClickListener {
             val navController = findNavController()
             navController.navigate(R.id.searchFragment)
         }
-        
+
+        // Set up click listener for menu
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         menuImageView.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), menuImageView)
@@ -82,22 +85,6 @@ class HomeFragment : Fragment() {
             popupMenu.show()
         }
 
-        if (picture != null) {
-            val url = getString(R.string.root_url) + picture
-            context?.let {
-                Glide.with(it)
-                    .load(url)
-                    .circleCrop()
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_error)
-                    .into(profileImg)
-            }
-        }
-
-        // Initialize the adapter with an empty list
-        postAdapter = PostAdapter(postList)
-        recyclerView.adapter = postAdapter
-
         // Fetch data from the API
         fetchPosts(showLoading = true)
 
@@ -105,18 +92,15 @@ class HomeFragment : Fragment() {
         swipeRefreshLayout.setOnRefreshListener {
             fetchPosts(showLoading = false) // Show swipe refresh only, not progress bar
         }
-        return view
     }
+
+
 
     // ฟังก์ชัน refreshPosts ที่จะถูกเรียกเมื่อคลิก Home สองครั้ง
     fun refreshPosts() {
         Toast.makeText(requireContext(), "Refreshing posts...", Toast.LENGTH_SHORT).show()
-
-        val recyclerView = view?.findViewById<RecyclerView>(R.id.recycler_view_posts)
-        recyclerView?.smoothScrollToPosition(0)
-
-        fetchPosts(showLoading = true) // ดึงข้อมูลใหม่
-
+        view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
+        fetchPosts(showLoading = true)
     }
 
     private fun fetchPosts(showLoading: Boolean) {
@@ -137,24 +121,28 @@ class HomeFragment : Fragment() {
 
         val request = Request.Builder()
             .url(url)
-            .addHeader("Authorization", "Bearer $token") // ส่ง token ใน header
+            .addHeader("Authorization", "Bearer $token")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                activity?.runOnUiThread {
-                    progressBar.visibility = View.GONE // Hide progress bar
-                    swipeRefreshLayout.isRefreshing = false // Ensure refreshing is stopped
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    requireActivity().runOnUiThread {
+                        progressBar.visibility = View.GONE
+                        swipeRefreshLayout.isRefreshing = false
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    activity?.runOnUiThread {
-                        progressBar.visibility = View.GONE // Hide progress bar
-                        swipeRefreshLayout.isRefreshing = false // Ensure refreshing is stopped
-                        Toast.makeText(requireContext(), "Failed to fetch posts: ${response.message}", Toast.LENGTH_SHORT).show()
+                    if (isAdded) {
+                        requireActivity().runOnUiThread {
+                            progressBar.visibility = View.GONE
+                            swipeRefreshLayout.isRefreshing = false
+                            Toast.makeText(requireContext(), "Failed to fetch posts: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     return
                 }
@@ -165,60 +153,50 @@ class HomeFragment : Fragment() {
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(jsonResponse, postType)
 
-                        activity?.runOnUiThread {
-                            postList.clear()
-                            postList.addAll(posts)
-                            postAdapter.notifyDataSetChanged()
-                            progressBar.visibility = View.GONE
-                            swipeRefreshLayout.isRefreshing = false
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                postList.clear()
+                                postList.addAll(posts)
+                                postAdapter.notifyDataSetChanged()
+                                progressBar.visibility = View.GONE
+                                swipeRefreshLayout.isRefreshing = false
+                            }
                         }
                     } catch (e: Exception) {
-                        activity?.runOnUiThread {
-                            progressBar.visibility = View.GONE
-                            swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                progressBar.visibility = View.GONE
+                                swipeRefreshLayout.isRefreshing = false
+                                Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 } ?: run {
-                    activity?.runOnUiThread {
-                        progressBar.visibility = View.GONE
-                        swipeRefreshLayout.isRefreshing = false
-                        Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
+                    if (isAdded) {
+                        requireActivity().runOnUiThread {
+                            progressBar.visibility = View.GONE
+                            swipeRefreshLayout.isRefreshing = false
+                            Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
         })
     }
 
-
     private fun performLogout() {
-        // Sign out from Firebase Authentication
         val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signOut()
-        // Clear shared preferences or any other local data
         clearLocalData()
-        // Redirect to the login screen
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivity(intent)
-        // Close the current activity
         requireActivity().finish()
     }
 
     private fun clearLocalData() {
-        // Clear shared preferences
-        val sharedPreferences: SharedPreferences =
-            requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().clear().apply()
-
-        // Clear the token if stored separately
-        val tokenPrefs: SharedPreferences = requireContext().getSharedPreferences("TokenPrefs", MODE_PRIVATE)
-        tokenPrefs.edit().remove("TOKEN").apply()
-        // Clear the user ID if stored separately
-        val userIdPrefs: SharedPreferences = requireContext().getSharedPreferences("UserIdPrefs", MODE_PRIVATE)
-        userIdPrefs.edit().remove("USER_ID").apply()
-        // Clear the picture if stored separately
-        val picturePrefs: SharedPreferences = requireContext().getSharedPreferences("PicturePrefs", MODE_PRIVATE)
-        picturePrefs.edit().remove("PICTURE").apply()
+        if (isAdded) {
+            val sharedPreferences: SharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            sharedPreferences.edit().clear().apply()
+        }
     }
-
 }

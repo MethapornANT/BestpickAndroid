@@ -75,7 +75,21 @@
                 android:text="Following"
                 android:textColor="@color/bluetext"
                 android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/report"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/report"
+                android:layout_gravity="end"
+                android:layout_marginEnd="5dp"
+                android:textColor="@color/nightblue"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+
         </androidx.appcompat.widget.Toolbar>
+
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/ShowImgpost"

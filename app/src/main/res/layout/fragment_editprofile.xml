@@ -135,12 +135,15 @@
                     android:textSize="15dp" />
 
             </LinearLayout>
+
             <EditText
+                android:id="@+id/email_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:hint="Email"
                 android:background="@color/white"
+                android:enabled="false"
+                android:hint="Email"
                 android:textSize="15sp" />
 
         </LinearLayout>

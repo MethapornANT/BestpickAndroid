@@ -30,6 +30,7 @@ class EditprofileFragment : Fragment() {
     private lateinit var bioEditText: EditText
     private lateinit var genderSpinner: Spinner
     private lateinit var profileImageView: ImageView
+    private lateinit var email: EditText
     private var imageUri: Uri? = null
     private val client = OkHttpClient()
     var filename = ""
@@ -61,6 +62,7 @@ class EditprofileFragment : Fragment() {
         bioEditText = view.findViewById(R.id.bio_edit)
         genderSpinner = view.findViewById(R.id.gender_spinner)
         profileImageView = view.findViewById(R.id.Imgview)
+        email = view.findViewById(R.id.email_edit)
         val editImg = view.findViewById<TextView>(R.id.editImg)
 
         // Load gender array into Spinner
@@ -114,11 +116,118 @@ class EditprofileFragment : Fragment() {
         }
     }
 
+    // Update ฟังก์ชัน updateUserProfile
+    private fun updateUserProfile(userId: String, token: String?) {
+        val username = usernameEditText.text.toString()
+        val bio = bioEditText.text.toString()
+        val gender = genderSpinner.selectedItem.toString()
+
+        if (username.isEmpty() || bio.isEmpty() || gender.isEmpty()) {
+            if (isAdded) {
+                Toast.makeText(requireContext(), "All fields must be filled", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
+        val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("username", username)
+            .addFormDataPart("bio", bio)
+            .addFormDataPart("gender", gender)
+
+        if (imageUri != null) {
+            val inputStream = requireContext().contentResolver.openInputStream(imageUri!!)
+            val tempFile = File.createTempFile("profile_img", ".jpg", requireContext().cacheDir)
+            inputStream?.use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            val mediaType = "image/jpeg".toMediaTypeOrNull()
+            filename = tempFile.name
+            requestBodyBuilder.addFormDataPart("profileImage", tempFile.name, RequestBody.create(mediaType, tempFile))
+        }
+
+        val requestBody = requestBodyBuilder.build()
+        val url = getString(R.string.root_url) + getString(R.string.userprofileupdate) + userId + "/profile"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .put(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                if (isAdded) {
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body
+                    val jsonResponse = responseBody?.string()
+
+                    if (!jsonResponse.isNullOrEmpty()) {
+                        try {
+                            val jsonObject = JSONObject(jsonResponse)
+
+                            if (isAdded) {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                                }
+                                requireActivity().onBackPressed()
+                            }
+                        } catch (e: Exception) {
+                            Log.e("ProfileFragment", "Error parsing JSON response: ${e.message}")
+                        }
+                    } else {
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(requireContext(), "Error: Empty response from server", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                } else {
+                    val errorBody = response.body?.string()
+                    if (!errorBody.isNullOrEmpty()) {
+                        try {
+                            val jsonObject = JSONObject(errorBody)
+                            val errorMessage = jsonObject.getString("error")
+
+                            if (isAdded) {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            if (isAdded) {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(requireContext(), "Error updating profile", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    } else {
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(requireContext(), "Error: Empty error response from server", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    // Update ฟังก์ชัน fetchUserProfile
     private fun fetchUserProfile(view: View, userId: String, token: String?) {
         val rootUrl = getString(R.string.root_url)
         val userProfileEndpoint = getString(R.string.userprofile)
         val url = "$rootUrl$userProfileEndpoint$userId/profile"
-
 
         val request = Request.Builder()
             .url(url)
@@ -138,25 +247,28 @@ class EditprofileFragment : Fragment() {
                             val jsonObject = JSONObject(it)
                             val username = jsonObject.getString("username")
                             val profileImageUrl = jsonObject.getString("profileImageUrl")
+                            val emailuser = jsonObject.getString("email")
                             val bio = jsonObject.getString("bio")
                             val gender = jsonObject.getString("gender")
-
                             val imgProfileUrl = rootUrl + profileImageUrl
 
-                            // Update UI elements on the main thread
-                            activity?.runOnUiThread {
-                                usernameEditText.setText(username)
-                                bioEditText.setText(bio)
-                                genderSpinner.setSelection(
-                                    resources.getStringArray(R.array.gender_array).indexOf(gender)
-                                )
+                            if (isAdded) {
+                                activity?.runOnUiThread {
+                                    usernameEditText.setText(username)
+                                    email.setText(emailuser)
+                                    bioEditText.setText(bio)
+                                    genderSpinner.setSelection(
+                                        resources.getStringArray(R.array.gender_array).indexOf(gender)
+                                    )
 
-                                // Load the profile image using Glide
-                                Glide.with(this@EditprofileFragment)
-                                    .load(imgProfileUrl)
-                                    .centerCrop()
-                                    .placeholder(R.drawable.ic_launcher_background)
-                                    .into(profileImageView)
+                                    Glide.with(this@EditprofileFragment)
+                                        .load(imgProfileUrl)
+                                        .centerCrop()
+                                        .placeholder(R.drawable.ic_launcher_background)
+                                        .into(profileImageView)
+                                }
+                            }else{
+                                Log.e("EditprofileFragment", "Fragment is not attached to context")
                             }
                         } catch (e: Exception) {
                             Log.e("ProfileFragment", "Error parsing JSON: ${e.message}")
@@ -169,128 +281,5 @@ class EditprofileFragment : Fragment() {
         })
     }
 
-    private fun updateUserProfile(userId: String, token: String?) {
-        val username = usernameEditText.text.toString()
-        val bio = bioEditText.text.toString()
-        val gender = genderSpinner.selectedItem.toString()
-
-        // Validate inputs
-        if (username.isEmpty() || bio.isEmpty() || gender.isEmpty()) {
-            Toast.makeText(requireContext(), "All fields must be filled", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Create MultipartBody Builder for the profile update
-        val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
-            .addFormDataPart("username", username)
-            .addFormDataPart("bio", bio)
-            .addFormDataPart("gender", gender)
-
-        // Add image if selected
-        if (imageUri != null) {
-            val inputStream = requireContext().contentResolver.openInputStream(imageUri!!)
-            val tempFile = File.createTempFile("profile_img", ".jpg", requireContext().cacheDir)
-            inputStream?.use { input ->
-                tempFile.outputStream().use { output ->
-                    input.copyTo(output) // Copy the InputStream to the temp file
-                }
-            }
-
-            val mediaType = "image/jpeg".toMediaTypeOrNull() // Update the MIME type if needed
-            filename = tempFile.name
-            requestBodyBuilder.addFormDataPart(
-                "profileImage",
-                tempFile.name,
-                RequestBody.create(mediaType, tempFile)
-            )
-        }
-
-        val requestBody = requestBodyBuilder.build()
-
-        // Example: replace with the actual API endpoint
-        val url = getString(R.string.root_url) + getString(R.string.userprofileupdate) + userId + "/profile"
-
-        // Build the request
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .put(requestBody)
-            .build()
-
-        // Make the asynchronous network request using OkHttp
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val responseBody = response.body
-                    val jsonResponse = responseBody?.string()
-
-                    if (!jsonResponse.isNullOrEmpty()) {
-                        try {
-                            // Parse the jsonResponse string into a JSONObject
-                            val jsonObject = JSONObject(jsonResponse)
-                            val profileImg = jsonObject.getString("profileImage")
-
-                            // Log the profile image URL or path
-                            Log.d("ProfileFragment", "Profile Image: $profileImg")
-
-                            // Check if imageUri is not null, indicating that the user has changed the profile image
-                            if (imageUri != null) {
-                                // Save the new profile image URL to SharedPreferences only if the image is changed
-                                val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                                val editor = sharedPreferences.edit()
-                                editor.putString("PICTURE", profileImg)
-                                Log.d("ProfileFragment", "Profile Image saved to SharedPreferences: $profileImg")
-                                editor.apply()
-                            }
-
-
-
-                            requireActivity().runOnUiThread {
-                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
-                            }
-                            requireActivity().onBackPressed()
-                        } catch (e: Exception) {
-                            // Log any errors in parsing
-                            Log.e("ProfileFragment", "Error parsing JSON response: ${e.message}")
-                        }
-                    } else {
-                        requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error: Empty response from server", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                } else {
-                    // Extract error message from the response
-                    val errorBody = response.body?.string()
-                    if (!errorBody.isNullOrEmpty()) {
-                        try {
-                            val jsonObject = JSONObject(errorBody)
-                            val errorMessage = jsonObject.getString("error")
-
-                            requireActivity().runOnUiThread {
-                                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            requireActivity().runOnUiThread {
-                                Toast.makeText(requireContext(), "Error updating profile", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    } else {
-                        requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error: Empty error response from server", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            }
-
-        })
-    }
 
 }

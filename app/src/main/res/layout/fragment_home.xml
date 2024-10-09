@@ -23,15 +23,25 @@
             android:padding="10dp"
             app:layout_scrollFlags="scroll|enterAlways|snap">
 
-            <ImageView
-                android:id="@+id/profile_image"
-                android:layout_width="40dp"
+            <TextView
+                android:id="@+id/profile_text_home"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:layout_marginEnd="16dp"
-                android:background="@drawable/rounded_image"
-                android:clipToOutline="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/profiletest" />
+                android:background="@drawable/rounded_text_background"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="Bestpick"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:shadowColor="#55000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="5"
+                android:letterSpacing="0.05"
+                android:elevation="4dp" />
+
 
             <ImageView
                 android:id="@+id/menuImageView"

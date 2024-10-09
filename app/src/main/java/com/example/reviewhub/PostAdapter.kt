@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,13 +17,15 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import okhttp3.*
+import android.widget.PopupMenu
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
@@ -46,8 +49,10 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
         private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
+        private val reportButton: ImageView = itemView.findViewById(R.id.report)
         var isLiked = false
         var isFollowing = false
+
 
         fun bind(post: Post) {
             val context = itemView.context
@@ -65,7 +70,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             userName.text = post.userName
             title.text = post.title
             postContent.text = if (post.content.length > 40) {
-                post.content.substring(0, 40) + "....."
+                post.content.substring(0, 40) + " See more.."
             } else {
                 post.content
             }
@@ -73,12 +78,67 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
             val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val token = sharedPreferences.getString("TOKEN", null)
             val userId = sharedPreferences.getString("USER_ID", null)
+            val isUserPost = userId?.toInt() == post.userId
             // ตรวจสอบว่าโพสต์นี้เป็นของผู้ใช้เองหรือไม่
             if (userId?.toInt() == post.userId) {
                 follower.visibility = View.GONE // ซ่อนปุ่ม "Follow" หากเป็นโพสต์ของผู้ใช้เอง
             } else {
                 follower.visibility = View.VISIBLE // แสดงปุ่ม "Follow" หากเป็นโพสต์ของผู้อื่น
             }
+
+            reportButton.setOnClickListener {
+                showReportMenu(itemView.context, reportButton, post.id ,isUserPost)
+            }
+
+            title.setOnClickListener {
+                // Check if the token is not null
+                token?.let {
+                    // Create the PostDetailFragment and pass the post ID
+                    val postDetailFragment = PostDetailFragment()
+                    val bundle = Bundle().apply {
+                        putInt("POST_ID", post.id)
+                    }
+                    postDetailFragment.arguments = bundle
+
+                    // Record the interaction
+                    recordInteraction(post.id, "view", null, it, context)
+
+                    // Navigate to the PostDetailFragment
+                    (context as? FragmentActivity)?.supportFragmentManager?.beginTransaction()
+                        ?.replace(R.id.nav_host_fragment, postDetailFragment)
+                        ?.addToBackStack(null)
+                        ?.commit()
+                } ?: run {
+                    // Handle the case when token is null
+                    Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            postContent.setOnClickListener {
+                // Check if the token is not null
+                token?.let {
+                    // Create the PostDetailFragment and pass the post ID
+                    val postDetailFragment = PostDetailFragment()
+                    val bundle = Bundle().apply {
+                        putInt("POST_ID", post.id)
+                    }
+                    postDetailFragment.arguments = bundle
+
+                    // Record the interaction
+                    recordInteraction(post.id, "view", null, it, context)
+
+                    // Navigate to the PostDetailFragment
+                    (context as? FragmentActivity)?.supportFragmentManager?.beginTransaction()
+                        ?.replace(R.id.nav_host_fragment, postDetailFragment)
+                        ?.addToBackStack(null)
+                        ?.commit()
+                } ?: run {
+                    // Handle the case when token is null
+                    Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
 
 
             // Load profile image using the full URL
@@ -284,11 +344,21 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
 
                 override fun onResponse(call: Call, response: Response) {
                     val jsonResponse = response.body?.string()
+                    // Log the JSON response to check its content
+                    Log.d("FollowStatusResponse", jsonResponse ?: "Empty response")
+
+                    // Proceed only if jsonResponse is not null or empty
                     if (!jsonResponse.isNullOrEmpty()) {
-                        val isUserFollowing = JSONObject(jsonResponse).getBoolean("isFollowing")
-                        (context as? Activity)?.runOnUiThread {
-                            isFollowing = isUserFollowing
-                            follower.text = if (isFollowing) "Following" else "Follow"
+                        try {
+                            val isUserFollowing = JSONObject(jsonResponse).getBoolean("isFollowing")
+                            (context as? Activity)?.runOnUiThread {
+                                isFollowing = isUserFollowing
+                                follower.text = if (isFollowing) "Following" else "Follow"
+                            }
+                        } catch (e: JSONException) {
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, "Error parsing follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     } else {
                         (context as? Activity)?.runOnUiThread {
@@ -298,6 +368,7 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 }
             })
         }
+
 
         // ฟังก์ชันติดตาม/เลิกติดตาม
         private fun followUnfollowUser(followingId: Int, userId: Int, token: String, context: Context) {
@@ -481,6 +552,85 @@ class PostAdapter(private val postList: List<Post>) : RecyclerView.Adapter<PostA
                 }
             })
         }
+
+        private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
+            val popupMenu = PopupMenu(context, anchorView)
+            popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
+
+            // Show edit and delete options only for user's own posts
+            popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
+            popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
+
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.report -> {
+                        Toast.makeText(context, "Reported as spam", Toast.LENGTH_SHORT).show()
+                        // Handle spam report action here
+                        true
+                    }
+                    R.id.edit_post -> {
+                        Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                        // Handle Edit Post action here (e.g., navigate to Edit screen)
+                        true
+                    }
+                    R.id.delete_post -> {
+                        deletePost(postId, context)
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            popupMenu.show()
+        }
+
+        private fun deletePost(postId: Int, context: Context) {
+            val client = OkHttpClient()
+            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val token = sharedPreferences.getString("TOKEN", null)
+            val userId = sharedPreferences.getString("USER_ID", null)
+
+            if (token != null && userId != null) {
+                val url = "${context.getString(R.string.root_url)}/posts/$postId"
+                val requestBody = FormBody.Builder()
+                    .add("user_id", userId)
+                    .build()
+
+                val request = Request.Builder()
+                    .url(url)
+                    .delete(requestBody) // ส่ง `user_id` ใน request body สำหรับการลบโพสต์
+                    .addHeader("Authorization", "Bearer $token") // เพิ่ม token ใน header
+                    .build()
+
+                client.newCall(request).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to delete post: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        val jsonResponse = response.body?.string()
+                        (context as? Activity)?.runOnUiThread {
+                            if (!response.isSuccessful) {
+                                val errorMessage = JSONObject(jsonResponse ?: "{}").optString("error", "Failed to delete post")
+                                Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
+                                adapter.postList.removeAt(adapterPosition)
+                                adapter.notifyItemRemoved(adapterPosition)
+                            }
+                        }
+                    }
+                })
+            } else {
+                Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
+
+
 
     }
 }
