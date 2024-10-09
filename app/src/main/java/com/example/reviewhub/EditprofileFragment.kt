@@ -174,19 +174,6 @@ class EditprofileFragment : Fragment() {
                     if (!jsonResponse.isNullOrEmpty()) {
                         try {
                             val jsonObject = JSONObject(jsonResponse)
-                            val profileImg = jsonObject.getString("profileImage")
-
-                            Log.d("ProfileFragment", "Profile Image: $profileImg")
-
-                            if (imageUri != null) {
-                                if (isAdded) {
-                                    val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                                    val editor = sharedPreferences.edit()
-                                    editor.putString("PICTURE", profileImg)
-                                    Log.d("ProfileFragment", "Profile Image saved to SharedPreferences: $profileImg")
-                                    editor.apply()
-                                }
-                            }
 
                             if (isAdded) {
                                 requireActivity().runOnUiThread {

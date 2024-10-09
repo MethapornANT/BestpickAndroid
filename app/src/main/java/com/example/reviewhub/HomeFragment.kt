@@ -32,6 +32,8 @@ class HomeFragment : Fragment() {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
 
+    private lateinit var profileImg: ImageView // ประกาศ ImageView สำหรับโปรไฟล์
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,29 +49,13 @@ class HomeFragment : Fragment() {
         postAdapter = PostAdapter(postList)
         recyclerView.adapter = postAdapter
 
+
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize shared preferences and load profile image
-        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val picture = sharedPreferences.getString("PICTURE", null)
-
-        val profileImg = view.findViewById<ImageView>(R.id.profile_image)
-
-        if (picture != null) {
-            val url = getString(R.string.root_url) + picture
-            context?.let {
-                Glide.with(it)
-                    .load(url)
-                    .circleCrop()
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_error)
-                    .into(profileImg)
-            }
-        }
 
         // Set up click listener for search
         val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
@@ -106,6 +92,8 @@ class HomeFragment : Fragment() {
             fetchPosts(showLoading = false) // Show swipe refresh only, not progress bar
         }
     }
+
+
 
     // ฟังก์ชัน refreshPosts ที่จะถูกเรียกเมื่อคลิก Home สองครั้ง
     fun refreshPosts() {
