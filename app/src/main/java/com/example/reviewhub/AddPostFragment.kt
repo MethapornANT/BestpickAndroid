@@ -172,7 +172,7 @@ class AddPostFragment : Fragment() {
         }
 
         if (ProductNumber.isEmpty()) {
-            Toast.makeText(requireContext(), "กรุณากรอกหมายเลขสินค้า.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "กรุณากรอกชื่อสินค้า.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -190,7 +190,7 @@ class AddPostFragment : Fragment() {
             .addFormDataPart("content", content)
             .addFormDataPart("Title", Title)
             .addFormDataPart("category", category)
-            .addFormDataPart("ProductNumber", ProductNumber)
+            .addFormDataPart("ProductName", ProductNumber)
 
         // แยกประเภทไฟล์สำหรับ video และ photo
         var videoFileName: String? = null // แยกตัวแปรสำหรับเก็บชื่อไฟล์วิดีโอ

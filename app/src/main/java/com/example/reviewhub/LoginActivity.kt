@@ -60,64 +60,50 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
-    private lateinit var forgetPassTextView: TextView
-    private lateinit var LodingDialog: LoadingDialogActivity
-
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       //installSplashScreen()
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
-
-//        forgetPassTextView = findViewById(R.id.forgetpass)
-//        LodingDialog = LoadingDialogActivity(this)
-//
-//        forgetPassTextView.setOnClickListener {
-//                LodingDialog.show()
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                LodingDialog.cancel()
-//                val intent = Intent(this, Forget_Password_Activity::class.java)
-//                startActivity(intent)
-//                finish()
-//            } ,3000) }
-
-
 
         // Initialize Facebook SDK
         FacebookSdk.setClientToken("1021807229429436")
         FacebookSdk.sdkInitialize(applicationContext)
         callbackManager = CallbackManager.Factory.create()
 
-        // Check if user is already signed in
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val currentUser = firebaseAuth.currentUser
-        if (currentUser != null) {
+        // Check if user is already signed in via SharedPreferences
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val username = sharedPreferences.getString("USERNAME", null)
+
+        // If token and username exist, navigate to MainActivity
+        if (!token.isNullOrEmpty() && !username.isNullOrEmpty()) {
+            Log.d("LoginActivity", "Token and Username found, navigating to MainActivity")
             navigateToMainActivity()
+        } else {
+            // Configure Google Sign-In
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
+            googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+            googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                handleSignInResult(task)
+            }
+
+            // Apply window insets
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                insets
+            }
+
+            // Set up views and listeners
+            setupViews()
         }
-
-        // Configure Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            handleSignInResult(task)
-        }
-
-        // Apply window insets
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        // Set up views and listeners
-        setupViews()
     }
 
     private fun setupViews() {

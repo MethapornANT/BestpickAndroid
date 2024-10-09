@@ -95,7 +95,7 @@
                 android:padding="12dp"
                 android:paddingStart="30dp"
                 android:layout_margin="10dp"
-                android:hint="Enter Product Number for Check Price" />
+                android:hint="Enter Product Name" />
 
         </LinearLayout>
 

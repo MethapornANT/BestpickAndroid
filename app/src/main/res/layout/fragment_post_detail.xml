@@ -180,13 +180,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="15dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- ProgressBar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:visibility="gone" />
+
+            <!-- ปรับความสูงเป็น wrap_content -->
             <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_products"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
                 android:padding="0dp"
                 tools:listitem="@layout/item_pricedetail" />
+
         </LinearLayout>
+
+
+
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -206,11 +223,13 @@
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_posts"
+            android:id="@+id/recycler_view_comments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="visible"
             android:padding="5dp"
             tools:listitem="@layout/comment_postdetail_item" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
