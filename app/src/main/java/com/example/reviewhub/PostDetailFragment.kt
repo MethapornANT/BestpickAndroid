@@ -72,7 +72,6 @@ class PostDetailFragment : Fragment() {
         // ดึง postId จาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
-
         if (postId != -1) {
             if (token != null && userId != null) {
                 fetchPostDetails(postId, token, userId.toInt(), view)

@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import okhttp3.*
@@ -23,10 +24,9 @@ class SearchFragment : Fragment(), OnItemClickListener {
 
     private lateinit var searchEditText: EditText
     private lateinit var recyclerView: RecyclerView
-    private lateinit var progressBar: ProgressBar
     private lateinit var searchAdapter: SearchAdapter
     private val searchResults = mutableListOf<SearchResult>()
-
+    private lateinit var progressBar: LottieAnimationView
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,13 +35,14 @@ class SearchFragment : Fragment(), OnItemClickListener {
 
         searchEditText = view.findViewById(R.id.search_edit_text)
         recyclerView = view.findViewById(R.id.recycler_view_search_results)
-        progressBar = view.findViewById(R.id.progress_bar)
+        progressBar = view.findViewById(R.id.lottie_loading)
+
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         searchAdapter = SearchAdapter(searchResults, this)
         recyclerView.adapter = searchAdapter
 
-        // กำหนด Listener สำหรับการค้นหา
+
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {

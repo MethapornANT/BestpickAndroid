@@ -61,7 +61,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
     private lateinit var forgetPassTextView: TextView
-    private lateinit var LodingDialog: LoadingDialogActivity
 
 
     @SuppressLint("MissingInflatedId")
@@ -70,20 +69,6 @@ class LoginActivity : AppCompatActivity() {
        //installSplashScreen()
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
-
-//        forgetPassTextView = findViewById(R.id.forgetpass)
-//        LodingDialog = LoadingDialogActivity(this)
-//
-//        forgetPassTextView.setOnClickListener {
-//                LodingDialog.show()
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                LodingDialog.cancel()
-//                val intent = Intent(this, Forget_Password_Activity::class.java)
-//                startActivity(intent)
-//                finish()
-//            } ,3000) }
-
-
 
         // Initialize Facebook SDK
         FacebookSdk.setClientToken("1021807229429436")

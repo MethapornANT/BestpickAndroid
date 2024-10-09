@@ -62,9 +62,12 @@
             android:layout_gravity="center"
             android:background="@color/white"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:tabIndicatorColor="@color/black"
+            app:tabIndicatorColor="@color/blue"
             app:tabSelectedTextColor="@color/black"
-            app:tabTextColor="@color/black">
+            android:theme="@style/NoClickSound"
+            app:itemIconTint="@color/color_navigate_whenclick"
+            app:itemTextColor="@color/color_navigate_whenclick"
+            app:itemRippleColor="@android:color/transparent">
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_following"
@@ -94,12 +97,15 @@
             tools:listitem="@layout/item_post" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie_loading"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_gravity="center"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

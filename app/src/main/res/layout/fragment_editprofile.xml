@@ -40,12 +40,12 @@
             android:textSize="15sp" />
     </androidx.appcompat.widget.Toolbar>
 
-    <androidx.appcompat.widget.Toolbar
-        android:layout_width="match_parent"
+    <FrameLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="20dp"
-        android:padding="10dp">
+        android:layout_gravity="center"
+        android:layout_margin="25dp"
+        android:layout_marginTop="20dp">
 
         <ImageView
             android:id="@+id/Imgview"
@@ -56,18 +56,17 @@
             android:clipToOutline="true"
             android:scaleType="centerCrop"
             android:src="@drawable/profiletest2" />
-    </androidx.appcompat.widget.Toolbar>
 
-    <Button
-        android:id="@+id/editImg"
-        android:layout_width="wrap_content"
-        android:layout_height="45dp"
-        android:layout_gravity="center"
-        android:layout_margin="10dp"
-        android:text="Edit Photo"
-        android:backgroundTint="@color/blue"
-        android:textColor="@color/white"
-        android:textSize="10dp" />
+        <Button
+            android:id="@+id/editImg"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="5dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@color/black"
+            android:background="@drawable/editprofile" />
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -176,7 +175,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:hint="Bio"
+                android:hint="Tell me something about yourself"
                 android:background="@color/white"
                 android:textSize="15sp" />
 
@@ -186,6 +185,44 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:background="@color/gray" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="40dp"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Age"
+                    android:textColor="@color/black"
+                    android:textSize="15dp" />
+
+            </LinearLayout>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:hint="Age"
+                android:background="@color/white"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/gray" />
+
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -212,11 +249,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:background="@color/gray" />
-
 
     </LinearLayout>
 </LinearLayout>
