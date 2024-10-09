@@ -181,7 +181,7 @@ class PostDetailFragment : Fragment() {
 
     private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
         val client = OkHttpClient()
-        val rooturl = "http://192.168.1.108:5000"
+        val rooturl = getString(R.string.root_url).substring(0, getString(R.string.root_url).length - 5) + ":5000"
         val url = "$rooturl/search?productname=$productName"
 
         Log.d("fetchProductData", "Requesting URL: $url")
