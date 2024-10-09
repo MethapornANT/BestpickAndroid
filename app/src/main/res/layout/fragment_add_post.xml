@@ -95,9 +95,9 @@
                 android:padding="12dp"
                 android:paddingStart="30dp"
                 android:layout_margin="10dp"
-                android:hint="Enter Product Number for Check Price" />
-        </LinearLayout>
+                android:hint="Enter Product Name" />
 
+        </LinearLayout>
 
         <Button
             android:id="@+id/selectPhotoButton"
@@ -109,11 +109,11 @@
             android:layout_margin="20dp"
             android:backgroundTint="@color/white" />
 
-
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="500dp"
             android:layout_gravity="center">
+
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
@@ -137,5 +137,6 @@
             android:layout_gravity="center"
             android:padding="10dp">
         </LinearLayout>
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

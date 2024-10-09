@@ -3,17 +3,22 @@ package com.example.reviewhub
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
@@ -35,77 +40,109 @@ import java.util.Locale
 import java.util.TimeZone
 
 class PostDetailFragment : Fragment() {
-    private lateinit var recyclerView: RecyclerView
     private lateinit var dotIndicatorLayout: LinearLayout
     private lateinit var follower: TextView
-    private var followingId: Int = -1
+    private var bottomNav: BottomNavigationView? = null
+    private lateinit var recyclerViewComments: RecyclerView
+    private lateinit var recyclerViewProducts: RecyclerView
 
+    private var followingId: Int = -1
     private var isLiked: Boolean = false
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_post_detail, container, false)
+        return inflater.inflate(R.layout.fragment_post_detail, container, false)
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomNav?.visibility = View.VISIBLE
+    }
 
-        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // กำหนดค่า View ให้กับตัวแปรต่างๆ
+        follower = view.findViewById(R.id.follower)
+        recyclerViewComments = view.findViewById(R.id.recycler_view_comments)
+        recyclerViewProducts = view.findViewById(R.id.recycler_view_products)
+
+        // กำหนดค่า LayoutManager และ Adapter ให้กับ RecyclerView
+        recyclerViewComments.layoutManager = LinearLayoutManager(requireContext())
+        recyclerViewComments.adapter = CommentAdapter(emptyList())
+
+        recyclerViewProducts.layoutManager = LinearLayoutManager(requireContext())
+        recyclerViewProducts.adapter = ProductAdapter(emptyList())
+
+
+        dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
+        bottomNav = (activity as? MainActivity)?.findViewById(R.id.bottom_navigation)
+
+        // ตั้งค่า Visibility ของ Bottom Navigation Bar เป็น GONE เมื่ออยู่ใน Fragment นี้
         bottomNav?.visibility = View.GONE
 
+        // กำหนดการทำงานของปุ่ม Back
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             bottomNav?.visibility = View.VISIBLE
             parentFragmentManager.popBackStack()
         }
 
-
-        // เชื่อมโยงกับ LinearLayout สำหรับแสดงจุด Indicator
-        dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
-
-        // ตั้งค่า Back Button
-        view.findViewById<ImageView>(R.id.back_button).setOnClickListener {
-            activity?.onBackPressed()
-        }
-
-        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val token = sharedPreferences.getString("TOKEN", null)
-        val userId = sharedPreferences.getString("USER_ID", null)
-        follower = view.findViewById<TextView>(R.id.follower)
-        // ดึง postId จาก arguments
+        // ดึงข้อมูลจาก arguments
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
-
-        if (postId != -1) {
+        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+        // ตั้งค่า Listener ให้กับปุ่มไลค์
+        val likeButton = view.findViewById<ImageView>(R.id.like_button)
+        likeButton.setOnClickListener {
             if (token != null && userId != null) {
-                fetchPostDetails(postId, token, userId.toInt(), view)
+                if (isLiked) {
+                    // หากกดไลค์แล้ว ให้ unlike
+                    likeUnlikePost(postId, userId, token)
+                    deleteNotification(postId, userId, "like", token, requireContext())
+                    recordInteraction(postId, "unlike", null, token, requireContext())
+                } else {
+                    // หากยังไม่ไลค์ ให้กดไลค์
+                    likeUnlikePost(postId, userId, token)
+                    sendNotification(postId, userId, "like", token, requireContext())
+                    recordInteraction(postId, "like", null, token, requireContext())
+                }
+            } else {
+                Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
-        }
-        val Imgview = view.findViewById<ImageView>(R.id.Imgview)
-        Imgview.setOnClickListener {
-            openUserProfile(userId.toString().toInt())
-            recordInteraction(postId, "view_profile", null, token!!, requireContext())
         }
 
+        // ตั้งค่า Listener ให้กับปุ่ม follow
         follower.setOnClickListener {
             if (token != null && userId != null) {
                 followUser(userId.toInt(), followingId, token)
-                val actionType = if (follower.text == "Following") "follow" else "unfollow"
-                if (actionType == "follow") {
-                    sendNotification(postId, userId.toInt(), "follow", token, requireContext())
-                }else{
-                    deleteNotification(postId, userId.toInt(), "follow", token, requireContext())
-                }
+                val actionType = if (follower.text == "Following") "unfollow" else "follow"
                 recordInteraction(postId, actionType, null, token, requireContext())
             }
         }
+        val back = view.findViewById<ImageView>(R.id.back_button)
+        back.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
+
+        val report = view.findViewById<ImageView>(R.id.report)
+        report.setOnClickListener {
+            // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
+            val isUserPost = userId == followingId
+            showReportMenu(requireContext(), it, postId, isUserPost)
+        }
+
+
         val commentButton = view.findViewById<ImageView>(R.id.send_button)
         val commentEditText = view.findViewById<EditText>(R.id.comment_input)
+
         // กำหนดการทำงานเมื่อคลิกปุ่มส่งคอมเมนต์
         commentButton.setOnClickListener {
             if (token != null && userId != null) {
                 val commentContent = commentEditText.text.toString().trim()
                 if (commentContent.isNotEmpty()) {
                     postComment(postId, userId.toInt(), commentContent, token)
-                    sendNotification(postId, userId.toInt(), "comment", token, requireContext())
                     commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
                 } else {
                     Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
@@ -115,9 +152,15 @@ class PostDetailFragment : Fragment() {
             }
         }
 
-
-
-        return view
+        if (postId != -1 && token != null && userId != null) {
+            // เรียกข้อมูล Post
+            CoroutineScope(Dispatchers.Main).launch {
+                fetchPostDetails(postId, token, userId.toInt(), view)
+                checkLikeStatus(postId, userId, token, view)
+            }
+        } else {
+            Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupPageIndicators(totalPages: Int) {
@@ -135,6 +178,92 @@ class PostDetailFragment : Fragment() {
             dotIndicatorLayout.addView(dot)
         }
     }
+
+    private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
+        val client = OkHttpClient()
+        val rooturl = getString(R.string.root_url).substring(0, getString(R.string.root_url).length - 5) + ":5000"
+        val url = "$rooturl/search?productname=$productName"
+
+        Log.d("fetchProductData", "Requesting URL: $url")
+
+        // Show the ProgressBar
+        activity?.runOnUiThread {
+            view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.VISIBLE
+        }
+
+        val request = Request.Builder().url(url).build()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                activity?.runOnUiThread {
+                    Log.e("fetchProductData", "Failed to fetch data: ${e.message}")
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to fetch data: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    // Hide the ProgressBar
+                    view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val responseBody = it.body?.string()
+                    if (responseBody != null) {
+                        val jsonObject = JSONObject(responseBody)
+
+                        // Extract prices and URLs from all shops
+                        val products = mutableListOf<Product>()
+
+                        // Extracting data from each shop
+                        jsonObject.keys().forEach { key ->
+                            val shopDetails = jsonObject.getJSONObject(key)
+
+                            // Advice
+                            val adviceArray = shopDetails.optJSONArray("Advice")
+                            if (adviceArray != null && adviceArray.length() > 0) {
+                                val adviceProduct = adviceArray.getJSONObject(0)
+                                products.add(Product(adviceProduct.getString("name"), adviceProduct.getString("price"), adviceProduct.getString("url")))
+                            }
+
+                            // Banana
+                            val bananaArray = shopDetails.optJSONArray("Banana")
+                            if (bananaArray != null && bananaArray.length() > 0) {
+                                val bananaProduct = bananaArray.getJSONObject(0)
+                                products.add(Product(bananaProduct.getString("name"), bananaProduct.getString("price"), bananaProduct.getString("url")))
+                            }
+
+                            // JIB
+                            val jibArray = shopDetails.optJSONArray("JIB")
+                            if (jibArray != null && jibArray.length() > 0) {
+                                val jibProduct = jibArray.getJSONObject(0)
+                                products.add(Product(jibProduct.getString("name"), jibProduct.getString("price"), jibProduct.getString("url")))
+                            }
+                        }
+
+                        activity?.runOnUiThread {
+                            if (isAdded && view != null) {
+                                Log.d("fetchProductData", "Products fetched: $products")
+                                callback(products) // Send the list of products back
+                            }
+                        }
+                    } else {
+                        Log.e("fetchProductData", "Response body is null")
+                    }
+
+                    // Hide the ProgressBar after response handling
+                    activity?.runOnUiThread {
+                        view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
+                    }
+                }
+            }
+        })
+    }
+
+
+
+
+
 
     private fun updatePageIndicators(selectedPosition: Int) {
         for (i in 0 until dotIndicatorLayout.childCount) {
@@ -160,6 +289,84 @@ class PostDetailFragment : Fragment() {
             start()
         }
     }
+
+
+    private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
+        val popupMenu = PopupMenu(context, anchorView)
+        popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
+
+        // Show edit and delete options only for user's own posts
+        popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
+        popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
+
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.report -> {
+                    Toast.makeText(context, "Reported as spam", Toast.LENGTH_SHORT).show()
+                    // Handle spam report action here
+                    true
+                }
+                R.id.edit_post -> {
+                    Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                    // Handle Edit Post action here (e.g., navigate to Edit screen)
+                    true
+                }
+                R.id.delete_post -> {
+                    deletePost(postId, context)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+
+    private fun deletePost(postId: Int, context: Context) {
+        val client = OkHttpClient()
+        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)
+
+        if (token != null && userId != null) {
+            val url = "${context.getString(R.string.root_url)}/posts/$postId"
+            val requestBody = FormBody.Builder()
+                .add("user_id", userId)
+                .build()
+
+            val request = Request.Builder()
+                .url(url)
+                .delete(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to delete post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val jsonResponse = response.body?.string()
+                    (context as? Activity)?.runOnUiThread {
+                        if (!response.isSuccessful) {
+                            val errorMessage = JSONObject(jsonResponse ?: "{}").optString("error", "Failed to delete post")
+                            Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
+                            // Instead of adding a callback, simply pop the back stack
+                            parentFragmentManager.popBackStack()
+                        }
+                    }
+                }
+            })
+        } else {
+            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     // ฟังก์ชันสำหรับเรียก API ติดตาม/เลิกติดตาม
     private fun followUser(userId: Int, followingId: Int, token: String) {
@@ -231,6 +438,7 @@ class PostDetailFragment : Fragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchPostDetails(postId: Int, token: String, userId: Int, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
@@ -258,6 +466,14 @@ class PostDetailFragment : Fragment() {
                         val time = jsonObject.getString("updated_at")
                         val profileImage = jsonObject.getString("picture")
                         val profileUrl = getString(R.string.root_url) + profileImage
+                        val productname = jsonObject.getString("ProductName")
+
+                        Log.d("PostDetailFragment", "Product Name: $productname")
+
+                        fetchProductData(productname) { products ->
+                            // Update UI with the list of products from all shops
+                            updateProductDetailsUI(products)
+                        }
 
                         val commentsArray = jsonObject.getJSONArray("comments")
                         val comments = mutableListOf<Comment>()
@@ -296,64 +512,40 @@ class PostDetailFragment : Fragment() {
                         }
 
                         withContext(Dispatchers.Main) {
-                            view.findViewById<TextView>(R.id.username).text = username
-                            view.findViewById<TextView>(R.id.title).text = title
-                            view.findViewById<TextView>(R.id.detail).text = postContent
-                            view.findViewById<TextView>(R.id.time).text = formatTime(time)
-                            view.findViewById<TextView>(R.id.like_count).text = ": $likeCount"
-                            view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
-                            checkFollowStatus(userId, followingId, token)
-
-                            if (userId == followingId) {
-                                follower.visibility = View.GONE
-                            } else {
+                            if (view.isAttachedToWindow) { // ตรวจสอบว่า View ยังอยู่ใน Window หรือไม่
+                                recyclerViewComments.adapter = CommentAdapter(comments)
+                                recyclerViewComments.adapter?.notifyDataSetChanged()
+                                view.findViewById<TextView>(R.id.username).text = username
+                                view.findViewById<TextView>(R.id.title).text = title
+                                view.findViewById<TextView>(R.id.detail).text = postContent
+                                view.findViewById<TextView>(R.id.time).text = formatTime(time)
+                                view.findViewById<TextView>(R.id.like_count).text = ": $likeCount"
+                                view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
                                 checkFollowStatus(userId, followingId, token)
-                            }
 
-                            Glide.with(this@PostDetailFragment)
-                                .load(profileUrl)
-                                .into(view.findViewById(R.id.Imgview))
-
-                            val viewPager = view.findViewById<ViewPager2>(R.id.ShowImgpost)
-                            val adapter = PhotoPagerAdapter(mediaUrls)
-                            viewPager.adapter = adapter
-
-                            setupPageIndicators(mediaUrls.size)
-
-                            viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                                override fun onPageSelected(position: Int) {
-                                    super.onPageSelected(position)
-                                    updatePageIndicators(position)
-                                }
-                            })
-
-                            val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
-                            recyclerView.layoutManager = LinearLayoutManager(requireContext())
-                            recyclerView.adapter = CommentAdapter(comments)
-
-                            // เรียก `checkLikeStatus` เพื่อตรวจสอบสถานะการกดไลค์
-                            checkLikeStatus(postId, userId, token, view)
-
-                            val likeButton = view.findViewById<ImageView>(R.id.like_button)
-                            likeButton.setOnClickListener {
-                                if (token != null) {
-                                    // ตรวจสอบสถานะปัจจุบันของการกดไลค์
-                                    if (isLiked) {
-                                        // หากปัจจุบันอยู่ในสถานะไลค์ เมื่อคลิกจะเป็นการ unlike
-                                        likeUnlikePost(postId, userId, token)
-                                        recordInteraction(postId, "unlike", null, token, requireContext())
-                                        deleteNotification(postId, userId, "like", token, requireContext())
-                                    } else {
-                                        // หากยังไม่ไลค์ เมื่อคลิกจะเป็นการ like
-                                        likeUnlikePost(postId, userId, token)
-                                        sendNotification(postId, userId, "like", token, requireContext())
-                                        recordInteraction(postId, "like", null, token, requireContext())
-                                    }
+                                if (userId == followingId) {
+                                    follower.visibility = View.GONE
                                 } else {
-                                    Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+                                    checkFollowStatus(userId, followingId, token)
                                 }
-                            }
 
+                                Glide.with(this@PostDetailFragment)
+                                    .load(profileUrl)
+                                    .into(view.findViewById(R.id.Imgview))
+
+                                val viewPager = view.findViewById<ViewPager2>(R.id.ShowImgpost)
+                                val adapter = PhotoPagerAdapter(mediaUrls)
+                                viewPager.adapter = adapter
+
+                                setupPageIndicators(mediaUrls.size)
+
+                                viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                                    override fun onPageSelected(position: Int) {
+                                        super.onPageSelected(position)
+                                        updatePageIndicators(position)
+                                    }
+                                })
+                            }
                         }
                     }
                 } else {
@@ -370,6 +562,7 @@ class PostDetailFragment : Fragment() {
             }
         }
     }
+
 
     private fun likeUnlikePost(postId: Int, userId: Int?, token: String) {
         val client = OkHttpClient()
@@ -686,5 +879,52 @@ class PostDetailFragment : Fragment() {
                 }
             }
         })
+
     }
+    private fun updateProductDetailsUI(products: List<Product>) {
+        recyclerViewProducts.adapter = ProductAdapter(products)
+        recyclerViewProducts.adapter?.notifyDataSetChanged()
+    }
+
+    data class Product(val productName: String, val price: String, val url: String)
+
+    inner class ProductAdapter(private val productList: List<Product>) :
+        RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+
+        inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val productNameTextView: TextView = itemView.findViewById(R.id.productname)
+            val productPriceTextView: TextView = itemView.findViewById(R.id.price)
+            val openLinkButton: Button = itemView.findViewById(R.id.open_link_button)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_pricedetail, parent, false)
+            return ProductViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
+            val product = productList[position]
+            holder.productNameTextView.text = product.productName
+            holder.productPriceTextView.text = product.price
+
+            holder.openLinkButton.setOnClickListener {
+                try {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(product.url))
+                    holder.itemView.context.startActivity(browserIntent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(holder.itemView.context, "No application found to open this URL", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        }
+
+
+        override fun getItemCount(): Int {
+            return productList.size
+        }
+    }
+
+
+
 }

@@ -53,7 +53,6 @@ import org.json.JSONObject
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.os.postDelayed
-import com.airbnb.lottie.LottieAnimationView
 import okio.IOException
 
 
@@ -61,14 +60,10 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
-    private lateinit var forgetPassTextView: TextView
-    private lateinit var progressBar: LottieAnimationView
-
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       //installSplashScreen()
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
 
@@ -76,36 +71,39 @@ class LoginActivity : AppCompatActivity() {
         FacebookSdk.setClientToken("1021807229429436")
         FacebookSdk.sdkInitialize(applicationContext)
         callbackManager = CallbackManager.Factory.create()
-        progressBar = findViewById<LottieAnimationView>(R.id.lottie_loading)
 
-        // Check if user is already signed in
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val currentUser = firebaseAuth.currentUser
-        if (currentUser != null) {
+        // Check if user is already signed in via SharedPreferences
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val username = sharedPreferences.getString("USERNAME", null)
+
+        // If token and username exist, navigate to MainActivity
+        if (!token.isNullOrEmpty() && !username.isNullOrEmpty()) {
+            Log.d("LoginActivity", "Token and Username found, navigating to MainActivity")
             navigateToMainActivity()
+        } else {
+            // Configure Google Sign-In
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
+            googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+            googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                handleSignInResult(task)
+            }
+
+            // Apply window insets
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                insets
+            }
+
+            // Set up views and listeners
+            setupViews()
         }
-
-        // Configure Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            handleSignInResult(task)
-        }
-
-        // Apply window insets
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        // Set up views and listeners
-        setupViews()
     }
 
     private fun setupViews() {
@@ -113,7 +111,6 @@ class LoginActivity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.Email)
         val passwordEditText = findViewById<EditText>(R.id.password)
         val togglePassword = findViewById<ImageView>(R.id.togglePasswordConfirm)
-
 
         togglePassword.setOnClickListener {
             if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
@@ -133,20 +130,15 @@ class LoginActivity : AppCompatActivity() {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
             when {
-                email.isEmpty() -> emailEditText.error = "Enter Your Email"
-                password.isEmpty() -> passwordEditText.error = "Enter Your Password"
-                else -> {
-                    performLogin(email, password)
-                    progressBar.visibility = View.VISIBLE
-                }
+                email.isEmpty() -> emailEditText.error = "Email is required"
+                password.isEmpty() -> passwordEditText.error = "Password is required"
+                else -> performLogin(email, password)
             }
         }
-
 
     }
 
     private fun navigateToMainActivity() {
-        progressBar.visibility = View.GONE
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
@@ -226,7 +218,6 @@ class LoginActivity : AppCompatActivity() {
         } catch (e: JSONException) {
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
-        progressBar.visibility = View.GONE
     }
 
 
