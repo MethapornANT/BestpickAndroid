@@ -11,6 +11,7 @@
     <item
         android:id="@+id/add"
         android:icon="@drawable/addclick"
+        android:iconTint="@color/blue"
         tools:ignore="MenuTitle" />
     <item
         android:id="@+id/notification"

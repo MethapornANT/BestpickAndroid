@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -31,7 +32,7 @@ class HomeFragment : Fragment() {
     private val postList = mutableListOf<Post>()
     private val client = OkHttpClient()
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private lateinit var progressBar: ProgressBar
+    private lateinit var progressBar: LottieAnimationView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,19 +43,18 @@ class HomeFragment : Fragment() {
         // Initialize view elements
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
-        progressBar = view.findViewById(R.id.progress_bar)
+        progressBar = view.findViewById(R.id.lottie_loading)
+
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         postAdapter = PostAdapter(postList)
         recyclerView.adapter = postAdapter
-
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 
         // Set up click listener for search
 

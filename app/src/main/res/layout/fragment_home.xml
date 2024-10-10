@@ -27,13 +27,10 @@
                 android:id="@+id/profile_text_home"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/rounded_text_background"
                 android:gravity="center"
-                android:padding="8dp"
-                android:text="Bestpick"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
+                android:text="BESTPICK"
+                android:textColor="@color/blue"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:shadowColor="#55000000"
                 android:shadowDx="2"
@@ -72,9 +69,12 @@
             android:layout_gravity="center"
             android:background="@color/white"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:tabIndicatorColor="@color/black"
+            app:tabIndicatorColor="@color/blue"
             app:tabSelectedTextColor="@color/black"
-            app:tabTextColor="@color/black">
+            android:theme="@style/NoClickSound"
+            app:itemIconTint="@color/color_navigate_whenclick"
+            app:itemTextColor="@color/color_navigate_whenclick"
+            app:itemRippleColor="@android:color/transparent">
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_following"
@@ -104,12 +104,14 @@
             tools:listitem="@layout/item_post" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie_loading"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_gravity="center"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

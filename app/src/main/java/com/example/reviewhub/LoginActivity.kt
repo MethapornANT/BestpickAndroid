@@ -53,6 +53,7 @@ import org.json.JSONObject
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.os.postDelayed
+import com.airbnb.lottie.LottieAnimationView
 import okio.IOException
 
 
@@ -60,6 +61,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
+    private lateinit var progressBar: LottieAnimationView
+
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,7 +103,6 @@ class LoginActivity : AppCompatActivity() {
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
                 insets
             }
-
             // Set up views and listeners
             setupViews()
         }
@@ -111,6 +113,8 @@ class LoginActivity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.Email)
         val passwordEditText = findViewById<EditText>(R.id.password)
         val togglePassword = findViewById<ImageView>(R.id.togglePasswordConfirm)
+        val progressBar = findViewById<LottieAnimationView>(R.id.lottie_loading)
+        progressBar.visibility = View.GONE
 
         togglePassword.setOnClickListener {
             if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
@@ -132,16 +136,22 @@ class LoginActivity : AppCompatActivity() {
             when {
                 email.isEmpty() -> emailEditText.error = "Email is required"
                 password.isEmpty() -> passwordEditText.error = "Password is required"
-                else -> performLogin(email, password)
+                else -> {
+                    performLogin(email, password)
+                    progressBar.visibility = View.VISIBLE
+                }
+
             }
         }
 
     }
 
     private fun navigateToMainActivity() {
+        progressBar.visibility = View.GONE
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
+
 
     private fun performLogin(email: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -168,6 +178,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun handleLoginResponse(response: okhttp3.Response, responseBody: String) {
         try {
@@ -379,9 +390,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
 
     fun onclickRegister(view: View) {
         startActivity(Intent(this, RegisterActivity::class.java))
