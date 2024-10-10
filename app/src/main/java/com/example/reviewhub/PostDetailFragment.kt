@@ -143,6 +143,7 @@ class PostDetailFragment : Fragment() {
                 val commentContent = commentEditText.text.toString().trim()
                 if (commentContent.isNotEmpty()) {
                     postComment(postId, userId.toInt(), commentContent, token)
+                    sendNotification(postId, userId.toInt(), "comment", token, requireContext())
                     commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
                 } else {
                     Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
