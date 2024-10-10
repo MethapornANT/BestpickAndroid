@@ -1,6 +1,8 @@
 package com.example.reviewhub
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -10,13 +12,19 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okio.IOException
 
 class MainActivity : AppCompatActivity() {
 
-    // เก็บ NavController เพื่อควบคุมการนำทาง
+    private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var navController: NavController
-
-    // เก็บ ID ของเมนูที่ถูกคลิกครั้งล่าสุด
     private var lastClickedItemId = -1
     private var lastClickedTime: Long = 0
 
@@ -24,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         enableEdgeToEdge()
-        // จัดการการแสดงผลเต็มจอด้วย WindowInsetsCompat
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -35,15 +43,19 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
+        // กำหนดค่าให้กับตัวแปร bottomNavigationView โดยใช้ตัวแปร lateinit ที่ประกาศไว้ด้านบน
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
+
         // เชื่อมต่อ BottomNavigationView กับ NavController
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setupWithNavController(navController)
+
+        fetchAndShowBadge()
 
         // ฟังการเปลี่ยนแปลงเส้นทางการนำทางเพื่อแสดงหรือซ่อน BottomNavigationView
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment ,R.id.notificationsFragment -> {
-                    // แสดง BottomNavigationView ในหน้า Home, Search, Profile
+                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.notificationsFragment -> {
+                    // แสดง BottomNavigationView ในหน้า Home, Search, Profile, Notifications
                     bottomNavigationView.visibility = View.VISIBLE
                 }
                 else -> {
@@ -79,12 +91,62 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshHomeFragment() {
-        // ดึง HomeFragment จาก NavHostFragment มาเพื่อทำการ refresh
         val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
         fragment?.childFragmentManager?.fragments?.forEach {
             if (it is HomeFragment) {
                 it.refreshPosts()
             }
+        }
+    }
+
+    private fun fetchAndShowBadge() {
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+
+        if (token.isNullOrEmpty()) {
+            Log.e("MainActivity", "Token not found")
+            return
+        }
+
+        val url = getString(R.string.root_url) + "/api/notifications"
+        val client = OkHttpClient()
+
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.body?.string()?.let { jsonResponse ->
+                    val notificationList: List<Notification> = Gson().fromJson(
+                        jsonResponse,
+                        object : TypeToken<List<Notification>>() {}.type
+                    )
+
+                    val distinctNotifications = notificationList.distinctBy { it.id }
+                    val unreadCount = distinctNotifications.count { it.read_status == 0 }
+
+                    runOnUiThread {
+                        updateBadge(unreadCount)
+                    }
+                }
+            }
+        })
+    }
+
+    private fun updateBadge(unreadCount: Int) {
+        val badge = bottomNavigationView.getOrCreateBadge(R.id.notification)
+        if (unreadCount > 0) {
+            badge.isVisible = true
+            badge.number = unreadCount
+        } else {
+            badge.isVisible = false
         }
     }
 }
