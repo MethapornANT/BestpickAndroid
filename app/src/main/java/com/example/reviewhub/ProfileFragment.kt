@@ -12,17 +12,18 @@ import android.widget.Button
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
 class ProfileFragment : Fragment() {
 
     private val client = OkHttpClient()
+    private lateinit var recyclerViewPosts: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,22 +35,27 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Retrieve token passed through fragment arguments
+        // ดึง token และ userId จาก SharedPreferences
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
+
+        // อ้างอิง UI Component
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         val editProfileButton = view.findViewById<Button>(R.id.edit_profile_button)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
+        recyclerViewPosts = view.findViewById(R.id.recycler_view_posts)
 
-        // Navigate to EditprofileFragment when editProfileButton is clicked
+        // ตั้งค่าการแสดงผลของ RecyclerView
+        recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
+        recyclerViewPosts.setHasFixedSize(true)
+
+        // กำหนดการทำงานให้กับปุ่ม Edit Profile
         editProfileButton.setOnClickListener {
             val navController = findNavController()
             navController.navigate(R.id.editprofileFragment)
         }
 
-
-        // Popup menu handling
+        // ตั้งค่า PopupMenu สำหรับเมนูเพิ่มเติม
         menuImageView.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), menuImageView)
             popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
@@ -64,19 +70,16 @@ class ProfileFragment : Fragment() {
             popupMenu.show()
         }
 
-        Log.d("ProfileFragment", "Token: $token")
-        Log.d("ProfileFragment", "User ID: $userId")
-
-        // Fetch user profile using token and userId
-        if (userId != null) {
+        // ตรวจสอบค่า Token และ User ID ก่อนดึงข้อมูลโปรไฟล์
+        if (userId != null && token != null) {
             fetchUserProfile(view, userId, token)
         }
     }
 
-    private fun fetchUserProfile(view: View, userId: String, token: String?) {
-        val rootUrl = getString(R.string.root_url)
-        val userProfileEndpoint = getString(R.string.userprofile)
-        val url = "$rootUrl$userProfileEndpoint$userId/profile"
+    private fun fetchUserProfile(view: View, userId: String, token: String) {
+        val rootUrl = getString(R.string.root_url)  // URL หลักของ API จาก resources
+        val userProfileEndpoint = "/api/users/"  // กำหนด URL ของ API Profile
+        val url = "$rootUrl$userProfileEndpoint$userId/view-profile"  // สร้าง URL เต็ม
 
         val request = Request.Builder()
             .url(url)
@@ -93,32 +96,11 @@ class ProfileFragment : Fragment() {
                     val responseData = response.body?.string()
                     responseData?.let {
                         try {
-                            val jsonObject = JSONObject(it)
-                            val username = jsonObject.getString("username")
-                            val profileImageUrl = jsonObject.getString("profileImageUrl")
-                            val followerCount = jsonObject.getInt("followerCount")
-                            val followingCount = jsonObject.getInt("followingCount")
-                            val postCount = jsonObject.getInt("postCount")
-                            val bio = jsonObject.getString("bio")
+                            val userProfile = JSONObject(it)
 
-                            val imgProfileUrl = rootUrl + profileImageUrl
-
-                            // Update UI elements on the main thread
+                            // อัปเดต UI บน Main Thread
                             activity?.runOnUiThread {
-                                view.findViewById<TextView>(R.id.username)?.text = username
-                                view.findViewById<TextView>(R.id.back)?.text = username
-                                view.findViewById<TextView>(R.id.follower_count)?.text = followerCount.toString()
-                                view.findViewById<TextView>(R.id.following_count)?.text = followingCount.toString()
-                                view.findViewById<TextView>(R.id.post_count)?.text = postCount.toString()
-                                view.findViewById<TextView>(R.id.bio)?.text = bio
-
-                                // Load the profile image using Glide
-                                val profileImageView = view.findViewById<ImageView>(R.id.user_profile_image)
-                                Glide.with(this@ProfileFragment)
-                                    .load(imgProfileUrl)
-                                    .centerCrop()
-                                    .placeholder(R.drawable.ic_launcher_background)
-                                    .into(profileImageView)
+                                displayUserProfile(view, userProfile)
                             }
                         } catch (e: Exception) {
                             Log.e("ProfileFragment", "Error parsing JSON: ${e.message}")
@@ -130,4 +112,72 @@ class ProfileFragment : Fragment() {
             }
         })
     }
+
+    private fun displayUserProfile(view: View, userProfile: JSONObject) {
+        val username = userProfile.getString("username")
+        val profileImageUrl = userProfile.getString("profileImageUrl")
+        val followerCount = userProfile.getInt("followerCount")
+        val followingCount = userProfile.getInt("followingCount")
+        val postCount = userProfile.getInt("postCount")
+        val bio = userProfile.getString("bio")
+
+        // กำหนดค่าข้อมูลใน View
+        view.findViewById<TextView>(R.id.username)?.text = username
+        view.findViewById<TextView>(R.id.back)?.text = username
+        view.findViewById<TextView>(R.id.follower_count)?.text = followerCount.toString()
+        view.findViewById<TextView>(R.id.following_count)?.text = followingCount.toString()
+        view.findViewById<TextView>(R.id.post_count)?.text = postCount.toString()
+        view.findViewById<TextView>(R.id.bio)?.text = bio
+
+        // โหลดภาพโปรไฟล์โดยใช้ Glide
+        val profileImageView = view.findViewById<ImageView>(R.id.user_profile_image)
+        Glide.with(this)
+            .load(getString(R.string.root_url) + profileImageUrl)
+            .centerCrop()
+            .placeholder(R.drawable.ic_launcher_background)
+            .into(profileImageView)
+
+        // เรียกฟังก์ชันจัดการข้อมูลโพสต์ของผู้ใช้
+        if (userProfile.has("posts")) {
+            displayUserPosts(userProfile.getJSONArray("posts"),userProfile)
+        }
+    }
+
+    private fun displayUserPosts(posts: JSONArray, userProfile: JSONObject) {
+        val postList = mutableListOf<Post>()
+        val username = userProfile.getString("username")  // ดึง username จาก userProfile
+        val userId = userProfile.getInt("userId")  // ดึง userId จาก userProfile
+
+        for (i in 0 until posts.length()) {
+            val post = posts.getJSONObject(i)
+
+            postList.add(
+                Post(
+                    id = post.getInt("post_id"),
+                    userName = username,  // ใช้ username จาก userProfile
+                    userId = userId,  // ใช้ userId จาก userProfile แทนการดึงจากโพสต์
+                    title = post.getString("content"),
+                    time = post.getString("created_at"),
+                    updated = post.optString("updated_at", null),
+                    content = post.getString("content"),
+                    is_liked = post.optBoolean("is_liked", false),
+                    userProfileUrl = userProfile.optString("profileImageUrl", null),  // ใช้ profileImageUrl จาก userProfile
+                    photoUrl = post.optJSONArray("photos")?.let { jsonArray ->
+                        List(jsonArray.length()) { index -> jsonArray.getString(index) }
+                    },
+                    videoUrl = post.optJSONArray("videos")?.let { jsonArray ->
+                        List(jsonArray.length()) { index -> jsonArray.getString(index) }
+                    },
+                    likeCount = post.optInt("like_count", 0),
+                    commentCount = post.optInt("comment_count", 0)
+                )
+            )
+        }
+
+        Log.d("ProfileFragment", "Number of posts displayed: ${postList.size}")
+
+        // ตั้งค่า Adapter สำหรับ RecyclerView
+        recyclerViewPosts.adapter = PostAdapter(postList)
+    }
+
 }

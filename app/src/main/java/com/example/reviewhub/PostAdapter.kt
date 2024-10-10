@@ -18,6 +18,9 @@ import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import okhttp3.*
 import android.widget.PopupMenu
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
@@ -179,6 +182,17 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 if (fragmentManager != null) {
                     val transaction = fragmentManager.beginTransaction()
                     val anotherUserFragment = AnotherUserFragment()
+                    val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                    val userid = sharedPreferences.getString("USER_ID", null)
+
+                    if (userid != null && userid.toInt() == post.userId) {
+                        // นำทางไปยังโปรไฟล์ของผู้ใช้เอง
+                        val navController = (context as? FragmentActivity)?.findNavController(R.id.nav_host_fragment)
+                        val bottomNavigationView = (context as? Activity)?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                        bottomNavigationView?.menu?.findItem(R.id.profile)?.isChecked = true
+                        navController?.navigate(R.id.profileFragment)
+                        return@setOnClickListener
+                    }
 
                     // ส่งข้อมูล USER_ID ไปยัง Fragment
                     val bundle = Bundle()

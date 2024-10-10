@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -31,8 +32,6 @@ class HomeFragment : Fragment() {
     private val client = OkHttpClient()
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
-
-    private lateinit var profileImg: ImageView // ประกาศ ImageView สำหรับโปรไฟล์
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,11 +57,15 @@ class HomeFragment : Fragment() {
 
 
         // Set up click listener for search
+
         val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
         searchEditText.setOnClickListener {
             val navController = findNavController()
+            val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+            bottomNavigationView?.menu?.findItem(R.id.search)?.isChecked = true
             navController.navigate(R.id.searchFragment)
         }
+
 
         // Set up click listener for menu
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)

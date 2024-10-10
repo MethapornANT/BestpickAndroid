@@ -64,11 +64,14 @@ class AnotherUserFragment : Fragment() {
             requireActivity().onBackPressed()
         }
 
+
+
         // กำหนด LayoutManager ให้กับ RecyclerView
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
 
         // ดึง userId จาก Arguments
         val userId = arguments?.getInt("USER_ID") ?: -1
+
 
         if (userId != -1) {
             fetchUserProfile(userId)
