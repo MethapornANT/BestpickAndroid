@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
-
+        progressBar = findViewById(R.id.lottie_loading)
         // Initialize Facebook SDK
         FacebookSdk.setClientToken("1021807229429436")
         FacebookSdk.sdkInitialize(applicationContext)
@@ -113,8 +113,8 @@ class LoginActivity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.Email)
         val passwordEditText = findViewById<EditText>(R.id.password)
         val togglePassword = findViewById<ImageView>(R.id.togglePasswordConfirm)
-        val progressBar = findViewById<LottieAnimationView>(R.id.lottie_loading)
-        progressBar.visibility = View.GONE
+        progressBar = findViewById(R.id.lottie_loading) // กำหนดค่า progressBar
+        progressBar.visibility = View.GONE // ตั้งค่าเริ่มต้นให้เป็น GONE
 
         togglePassword.setOnClickListener {
             if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
