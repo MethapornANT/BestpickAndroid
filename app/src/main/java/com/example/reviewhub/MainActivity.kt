@@ -124,19 +124,25 @@ class MainActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 response.body?.string()?.let { jsonResponse ->
-                    val notificationList: List<Notification> = Gson().fromJson(
-                        jsonResponse,
-                        object : TypeToken<List<Notification>>() {}.type
-                    )
+                    try {
+                        val notificationList: List<Notification> = Gson().fromJson(
+                            jsonResponse,
+                            object : TypeToken<List<Notification>>() {}.type
+                        )
 
-                    val distinctNotifications = notificationList.distinctBy { it.id }
-                    val unreadCount = distinctNotifications.count { it.read_status == 0 }
+                        val distinctNotifications = notificationList.distinctBy { it.id }
+                        val unreadCount = distinctNotifications.count { it.read_status == 0 }
 
-                    runOnUiThread {
-                        updateBadge(unreadCount)
+                        runOnUiThread {
+                            updateBadge(unreadCount)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.e("JSON Parsing", "Error parsing response: ${e.message}")
                     }
                 }
             }
+
         })
     }
 
