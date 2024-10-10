@@ -274,14 +274,29 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    val jsonResponse = response.body?.string()
-                    val isPostLiked = JSONObject(jsonResponse).getBoolean("isLiked")
+                    response.body?.string()?.let { jsonResponse ->
+                        try {
+                            // สร้าง JSONObject เพียงครั้งเดียวและตรวจสอบว่ามีคีย์ "isLiked" หรือไม่
+                            val jsonObject = JSONObject(jsonResponse)
 
-                    (context as? Activity)?.runOnUiThread {
-                        isLiked = isPostLiked
-                        likeButton.setImageResource(if (isLiked) R.drawable.heartclick else R.drawable.heart)
+                            if (jsonObject.has("isLiked")) {
+                                val isLiked = jsonObject.getBoolean("isLiked")
+                                Log.d("CheckLikeStatus", "isLiked: $isLiked")
+
+                                // อัปเดต UI ใน Main Thread
+                                (context as? Activity)?.runOnUiThread {
+                                    this@PostViewHolder.isLiked = isLiked
+                                    likeButton.setImageResource(if (isLiked) R.drawable.heartclick else R.drawable.heart)
+                                }
+                            } else {
+                                Log.e("CheckLikeStatus", "Key 'isLiked' not found in response")
+                            }
+                        } catch (e: JSONException) {
+                            Log.e("CheckLikeStatus", "JSON Parsing Error: ${e.message}")
+                        }
                     }
                 }
+
             })
         }
 

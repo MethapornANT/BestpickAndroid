@@ -1,17 +1,24 @@
 package com.example.reviewhub
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NotificationsAdapter(private val notificationList: List<Notification>) :
-    RecyclerView.Adapter<NotificationsAdapter.NotificationViewHolder>() {
+
+class NotificationsAdapter(
+    private val notificationList: List<Notification>,
+    private val onNotificationClick: (Notification) -> Unit  // เพิ่ม Listener สำหรับคลิก Notification
+) : RecyclerView.Adapter<NotificationsAdapter.NotificationViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -21,7 +28,7 @@ class NotificationsAdapter(private val notificationList: List<Notification>) :
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         val notification = notificationList[position]
-        holder.bind(notification)
+        holder.bind(notification, onNotificationClick)
     }
 
     override fun getItemCount(): Int = notificationList.size
@@ -31,8 +38,11 @@ class NotificationsAdapter(private val notificationList: List<Notification>) :
         private val userName: TextView = itemView.findViewById(R.id.comment_username)
         private val actionText: TextView = itemView.findViewById(R.id.comment_created_at)
         private val notificationContent: TextView = itemView.findViewById(R.id.comment_content)
+        private val notificationContainer: LinearLayout =
+            itemView.findViewById(R.id.notification_container)
 
-        fun bind(notification: Notification) {
+        fun bind(notification: Notification, onNotificationClick: (Notification) -> Unit) {
+            notificationContent.text = notification.content
             // ตั้งค่าชื่อผู้ส่งการแจ้งเตือน
             userName.text = notification.sender_name ?: "Unknown User"
 
@@ -43,9 +53,12 @@ class NotificationsAdapter(private val notificationList: List<Notification>) :
             notificationContent.text = when (notification.action_type) {
                 "like" -> "liked your post"
                 "follow" -> "started following you"
-                "comment" -> "commented: ${notification.comment_content ?: ""}"
+                "comment" -> "commented: ${notification.comment_content}"  // แสดงความเห็นแยกกัน
                 else -> ""
             }
+
+
+
 
             // โหลดรูปโปรไฟล์ผู้ส่งการแจ้งเตือน ถ้าไม่มีแสดงรูปเริ่มต้น
             val rootUrl = itemView.context.getString(R.string.root_url)
@@ -61,6 +74,34 @@ class NotificationsAdapter(private val notificationList: List<Notification>) :
                 .circleCrop()
                 .placeholder(R.drawable.testpic)
                 .into(profileImage)
+
+            // ตรวจสอบสถานะการอ่าน
+            if (notification.read_status == 1) {
+                notificationContainer.setBackgroundColor(itemView.context.getColor(R.color.gray_light))
+            } else {
+                notificationContainer.setBackgroundColor(itemView.context.getColor(R.color.white))
+            }
+
+            itemView.setOnClickListener {
+                onNotificationClick(notification)  // เรียก onNotificationClick เมื่อผู้ใช้คลิก
+                val postDetailFragment = PostDetailFragment()
+                val bundle = Bundle().apply {
+                    putInt("POST_ID", notification.post_id)
+                }
+                postDetailFragment.arguments = bundle
+
+                // แก้ไข context ให้ถูกต้องเป็น itemView.context
+                val fragmentActivity = itemView.context as? FragmentActivity
+                fragmentActivity?.supportFragmentManager?.beginTransaction()
+                    ?.replace(R.id.nav_host_fragment, postDetailFragment)
+                    ?.addToBackStack(null)
+                    ?.commit()
+                    ?: run {
+                        Toast.makeText(itemView.context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                    }
+            }
+
+
         }
 
         // ฟอร์แมตวันที่เพื่อให้แสดงผลอย่างถูกต้อง

@@ -6,7 +6,7 @@ data class Notification(
     val post_id: Int,
     val action_type: String,
     val content: String,
-    val read_status: Int,
+    var read_status: Int,
     val created_at: String,
     val sender_name: String,
     val sender_picture: String?, // สามารถเป็น null ได้
