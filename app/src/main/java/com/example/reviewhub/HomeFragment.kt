@@ -46,17 +46,16 @@ class HomeFragment : Fragment() {
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout)
         progressBar = view.findViewById(R.id.lottie_loading)
 
+
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         postAdapter = PostAdapter(postList)
         recyclerView.adapter = postAdapter
-
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 
         // Set up click listener for search
         val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)

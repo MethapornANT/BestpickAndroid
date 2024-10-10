@@ -166,6 +166,13 @@
                 android:textColor="@color/black"
                 android:textSize="14sp" />
 
+        </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="horizontal">
 
             <Button
                 android:id="@+id/edit_profile_button"
@@ -175,8 +182,8 @@
                 android:backgroundTint="@color/blue"
                 android:text="Edit Profile"
                 android:textColor="@color/white" />
+            </LinearLayout>
 
-        </LinearLayout>
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
