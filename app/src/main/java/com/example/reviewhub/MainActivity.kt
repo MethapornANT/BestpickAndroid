@@ -1,6 +1,7 @@
 package com.example.reviewhub
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -28,10 +29,17 @@ class MainActivity : AppCompatActivity() {
     private var lastClickedItemId = -1
     private var lastClickedTime: Long = 0
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDeepLink(intent)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         enableEdgeToEdge()
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -87,8 +95,30 @@ class MainActivity : AppCompatActivity() {
             lastClickedTime = currentTime
 
             true
+
+        }
+
+    }
+
+
+
+    private fun handleDeepLink(intent: Intent) {
+        val data = intent.data
+        Log.d("DeepLink", "Received deep link data: $data")
+        data?.let {
+            val postId = it.lastPathSegment?.toIntOrNull()
+            if (postId != null) {
+                Log.d("DeepLink", "Navigating to post with ID: $postId")
+                val bundle = Bundle().apply {
+                    putInt("POST_ID", postId)
+                }
+                navController.navigate(R.id.postDetailFragment, bundle)
+            } else {
+                Log.e("DeepLink", "Invalid post ID in deep link")
+            }
         }
     }
+
 
     private fun refreshHomeFragment() {
         val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)

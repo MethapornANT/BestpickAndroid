@@ -261,13 +261,23 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
         }
 
         private fun sharePost(context: Context, post: Post) {
-            val shareText = "Check out this post from ${post.userName}:\n${post.content}"
+            // สร้างลิงก์ภายในแอปพลิเคชันโดยใช้ Custom URI Scheme
+            val postDetailUrl = "reviewhub://post/${post.id}"
+
+            // สร้างข้อความที่จะแชร์ รวมทั้งลิงก์ไปยังรายละเอียดโพสต์
+            val shareText = "Check out this post from ${post.userName}: \n\n$postDetailUrl"
+
+            // ใช้ Intent เพื่อแชร์ข้อความ
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, shareText)
             }
+
+            // เปิดหน้าต่างแชร์
             context.startActivity(Intent.createChooser(intent, "Share Post via"))
         }
+
+
 
         // ฟังก์ชันเรียก API เพื่อตรวจสอบสถานะการกดไลค์
         private fun checkLikeStatus(postId: Int, userId: Int, token: String, context: Context) {
