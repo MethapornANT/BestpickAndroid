@@ -61,6 +61,7 @@ class AnotherUserFragment : Fragment() {
         bioTextView = view.findViewById(R.id.bio)
         followButton = view.findViewById(R.id.follower)
         recyclerViewPosts = view.findViewById(R.id.recycler_view_posts)
+
         val back = view.findViewById<TextView>(R.id.back)
 
         back.setOnClickListener{
@@ -216,7 +217,12 @@ class AnotherUserFragment : Fragment() {
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                         isFollowing = !isFollowing
-                        followButton.text = if (isFollowing) "Following" else "Follow"
+                        followButton.text = if (isFollowing) "Following"  else "Follow"
+                        if (isFollowing) {
+                            recordInteraction(followingId, "follow", null, token, requireContext())
+                        } else {
+                            recordInteraction(followingId, "unfollow", null, token, requireContext())
+                        }
                     }
                 }
             }
