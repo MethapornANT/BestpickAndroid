@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.tabs.TabLayout
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -73,6 +74,22 @@ class ProfileFragment : Fragment() {
         // ตรวจสอบค่า Token และ User ID ก่อนดึงข้อมูลโปรไฟล์
         if (userId != null && token != null) {
             fetchUserProfile(view, userId, token)
+            val tabLayout = view.findViewById<TabLayout>(R.id.tab_layout)
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    when (tab?.position) {
+                        0 -> {
+                            fetchUserProfile(view, userId, token)
+                        }
+                        1 -> {
+
+                        }
+                    }
+                }
+
+                override fun onTabUnselected(tab: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {}
+            })
         }
     }
 
