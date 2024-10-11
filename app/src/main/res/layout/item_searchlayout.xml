@@ -17,8 +17,7 @@
             android:id="@+id/main_image"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/testpic" />
+            android:scaleType="centerCrop" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -32,8 +31,7 @@
             android:layout_marginEnd="16dp"
             android:background="@drawable/rounded_image"
             android:clipToOutline="true"
-            android:scaleType="centerCrop"
-            android:src="@drawable/profiletest" />
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/usernamesearch"
