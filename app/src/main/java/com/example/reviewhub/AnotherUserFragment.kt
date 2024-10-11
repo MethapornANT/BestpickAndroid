@@ -1,6 +1,8 @@
 package com.example.reviewhub
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
@@ -18,11 +20,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.*
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 
 class AnotherUserFragment : Fragment() {
-
     private lateinit var userProfileImage: ImageView
     private lateinit var usernameTextView: TextView
     private lateinit var followerCountTextView: TextView
@@ -31,6 +33,7 @@ class AnotherUserFragment : Fragment() {
     private lateinit var bioTextView: TextView
     private lateinit var followButton: Button
     private lateinit var recyclerViewPosts: RecyclerView
+    var isFollowing = false
 
     private val client = OkHttpClient()
 
@@ -66,6 +69,8 @@ class AnotherUserFragment : Fragment() {
 
 
 
+
+
         // กำหนด LayoutManager ให้กับ RecyclerView
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
 
@@ -78,8 +83,21 @@ class AnotherUserFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "Invalid User ID", Toast.LENGTH_SHORT).show()
         }
+        followButton.setOnClickListener {
+            handleFollowButton(userId)
+        }
 
         return view
+    }
+
+    private fun handleFollowButton(userId: Int) {
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences?.getString("TOKEN", null)
+        if (token != null) {
+            followUnfollowUser(userId, token)
+        } else {
+            Toast.makeText(context, "Token not available", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun fetchUserProfile(userId: Int) {
@@ -103,10 +121,11 @@ class AnotherUserFragment : Fragment() {
                 val jsonResponse = response.body?.string()
                 if (jsonResponse != null) {
                     val userProfile = JSONObject(jsonResponse)
-
                     requireActivity().runOnUiThread {
                         // แสดงข้อมูลผู้ใช้ใน UI
                         displayUserProfile(userProfile)
+                        // เรียกตรวจสอบสถานะการติดตาม
+                        checkFollowStatus(userId)
                     }
                 }
             }
@@ -168,6 +187,128 @@ class AnotherUserFragment : Fragment() {
 
         // กำหนด Adapter ให้กับ RecyclerView
         recyclerViewPosts.adapter = PostAdapter(postList)
+    }
+
+    // ฟังก์ชันติดตาม/เลิกติดตาม
+        private fun followUnfollowUser(followingId: Int, token: String) {
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val userIdString = sharedPreferences?.getString("USER_ID", null)
+        val userId = userIdString?.toIntOrNull() ?: return
+        val url = getString(R.string.root_url) + "/api/users/$userId/follow/$followingId"
+        val requestBody = FormBody.Builder().build()
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to follow/unfollow user: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                if (!jsonResponse.isNullOrEmpty()) {
+                    val message = JSONObject(jsonResponse).getString("message")
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                        isFollowing = !isFollowing
+                        followButton.text = if (isFollowing) "Following" else "Follow"
+                    }
+                }
+            }
+        })
+    }
+
+    private fun checkFollowStatus(userId: Int) {
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences?.getString("TOKEN", null)
+        val currentUserId = sharedPreferences?.getString("USER_ID", null)?.toIntOrNull() ?: return
+
+        val url = getString(R.string.root_url) + "/api/users/$currentUserId/follow/$userId/status"
+
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to check follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                if (!jsonResponse.isNullOrEmpty()) {
+                    try {
+                        val isUserFollowing = JSONObject(jsonResponse).getBoolean("isFollowing")
+                        requireActivity().runOnUiThread {
+                            isFollowing = isUserFollowing
+                            followButton.text = if (isFollowing) "Following" else "Follow"
+                        }
+                    } catch (e: JSONException) {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "Error parsing follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+
+    private fun recordInteraction(postId: Int, actionType: String, content: String? = null, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}${context.getString(R.string.interactions)}"
+
+        // สร้าง body ของ request
+        val requestBody = FormBody.Builder()
+            .add("post_id", postId.toString())
+            .add("action_type", actionType)
+            .apply {
+                if (content != null) {
+                    add("content", content)
+                }
+            }
+            .build()
+
+        // สร้าง request พร้อมแนบ token ใน header
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        // ส่ง request ไปยังเซิร์ฟเวอร์
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        val jsonResponse = response.body?.string()
+                        val message = JSONObject(jsonResponse).getString("message")
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
     }
 
 
