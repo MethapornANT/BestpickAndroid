@@ -33,20 +33,24 @@ class CreateName_Activity : AppCompatActivity() {
 
         val changeUsernameButton = findViewById<Button>(R.id.change)
         val usernameEditText = findViewById<EditText>(R.id.txtusername)
+//        val pictureEditText = findViewById<EditText>(R.id.txtPicture)
+//        val birthdayEditText = findViewById<EditText>(R.id.txtBirthday)
         val txterror = findViewById<TextView>(R.id.txterror) // Reference to the error field
 
         changeUsernameButton.setOnClickListener {
             val newUsername = usernameEditText.text.toString()
+//            val picture = pictureEditText.text.toString()
+//            val birthday = birthdayEditText.text.toString()
 
-            if (newUsername.isEmpty()) {
-                txterror.text = "Please enter a username"
-            } else {
-                setUsername(newUsername, txterror)
-            }
+//            if (newUsername.isEmpty() || picture.isEmpty() || birthday.isEmpty()) {
+//                txterror.text = "Please enter username, picture, and birthday"
+//            } else {
+//                setProfile(newUsername, picture, birthday, txterror) // ส่งค่าครบทุกฟิลด์ไปที่ setProfile
+//            }
         }
     }
 
-    private fun setUsername(newUsername: String, txterror: TextView) { // Change to TextView
+    private fun setProfile(newUsername: String, picture: String, birthday: String, txterror: TextView) {
         // Get the token from SharedPreferences
         val token = sharedPreferences.getString("TOKEN", null)
 
@@ -55,52 +59,51 @@ class CreateName_Activity : AppCompatActivity() {
             return
         }
 
+        // ใช้ Coroutine ใน IO Thread
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
 
-            // Create request body
+            // สร้าง request body
             val requestBody = FormBody.Builder()
                 .add("newUsername", newUsername)
+                .add("picture", picture) // เพิ่มฟิลด์รูปภาพ
+                .add("birthday", birthday) // เพิ่มฟิลด์วันเกิด
                 .build()
 
-            // Create the request
-            val url = getString(R.string.root_url) + getString(R.string.setusername)
+            // สร้าง URL สำหรับคำขอ
+            val url = getString(R.string.root_url) + getString(R.string.setprofile) // `setprofile` ควรตรงกับ API route ที่คุณกำหนด
             val request = Request.Builder()
                 .url(url)
-                .addHeader("Authorization", "Bearer $token") // Add the token in the header
+                .addHeader("Authorization", "Bearer $token") // ใส่ token ใน Header
                 .post(requestBody)
                 .build()
 
             try {
                 val response = client.newCall(request).execute()
-
-                // Get the full response body as a string
                 val responseBody = response.body?.string()
-                val jsonObject = JSONObject(responseBody)
-                val message = jsonObject.optString("message", "No message")
+                val message = responseBody?.let { JSONObject(it).optString("message", "No message") } ?: "No message"
+                response.close()
 
-                // Check if the response is successful
-                if (response.isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@CreateName_Activity, "Username set successfully", Toast.LENGTH_SHORT).show()
-                        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@CreateName_Activity, "Profile set successfully for the first time", Toast.LENGTH_SHORT).show()
+
+                        // บันทึกข้อมูล username, picture, และ birthday ลงใน SharedPreferences
                         val editor = sharedPreferences.edit()
                         editor.putString("username", newUsername)
+                        editor.putString("picture", picture)
+                        editor.putString("birthday", birthday)
                         editor.apply()
+
+                        // ไปยัง MainActivity เมื่อบันทึกสำเร็จ
                         val intent = Intent(this@CreateName_Activity, MainActivity::class.java)
                         startActivity(intent)
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        // Display the full error response
-                        txterror.text = "$message  "
+                    } else {
+                        txterror.text = "Failed: $message"
                     }
                 }
-
-                response.close()
             } catch (e: IOException) {
                 withContext(Dispatchers.Main) {
-                    // Display error in the txterror TextView
                     txterror.text = "Error: ${e.message}"
                     Log.e("CreateName_Activity", "Error: ${e.message}", e)
                 }
@@ -108,3 +111,4 @@ class CreateName_Activity : AppCompatActivity() {
         }
     }
 }
+

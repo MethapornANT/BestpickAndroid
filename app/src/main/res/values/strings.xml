@@ -13,7 +13,7 @@
     <string name="resetpassword">/reset-password</string>
     <string name="resentotpregis">/resend-otp/register</string>
     <string name="forgotpassword">/forgot-password</string>
-    <string name="setusername">/set-username</string>
+    <string name="setprofile">/set-profile</string>
     <string name="Allpost">/posts</string>
     <string name="check_like_status">/api/checkLikeStatus/</string>
     <string name="postdetail">/posts/</string>
