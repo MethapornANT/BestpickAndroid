@@ -1,5 +1,6 @@
 package com.example.reviewhub
 
+import android.app.AlertDialog
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
@@ -66,6 +67,32 @@ class ProfileFragment : Fragment() {
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
+                    R.id.deleteAccount -> {
+                        val options = arrayOf("Option 1","Option 2")
+                        // สร้าง AlertDialog พร้อมรายการแบบตัวเลือก
+                        val dialogBuilder = AlertDialog.Builder(context,R.style.CustomAlertDialog)
+                            .setTitle("Delete Account Option")
+                            .setSingleChoiceItems(options, -1) { dialog, which ->
+                                val selectedOption = options[which]
+                            }
+                            .setPositiveButton("Confirm") { dialog, _ ->
+                                // สิ่งที่ต้องทำเมื่อกดปุ่ม OK
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                // สิ่งที่ต้องทำเมื่อกดปุ่ม Cancel
+                                dialog.dismiss()
+                            }
+
+                        // แสดง dialog
+                        val alertDialog = dialogBuilder.create()
+                        alertDialog.show()
+
+
+                        true
+                    }
+
+
                     R.id.logout -> {
                         performLogout()
                         true
