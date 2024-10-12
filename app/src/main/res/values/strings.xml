@@ -2,7 +2,7 @@
     <string name="app_name">Bestpick</string>
     <string name="server_client_id">741201850844-l69jb0ief835gt14ogbn9041g4b318os.apps.googleusercontent.com</string>
     <string name="facebook_app_id">1021807229429436</string>
-    <string name="root_url">http://192.168.1.42:3000</string>
+    <string name="root_url">http://192.168.1.108:3000</string>
     <string name="googlesignin">/google-signin</string>
     <string name="Login">/login</string>
     <string name="register">/register/email</string>

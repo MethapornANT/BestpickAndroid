@@ -34,20 +34,22 @@
 
             <FrameLayout
                 android:layout_width="178dp"
-                android:layout_height="117dp"
+                android:layout_height="140dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp">
 
                 <ImageView
                     android:id="@+id/viewimage"
-                    android:layout_width="178dp"
-                    android:layout_height="117dp"
-                    android:clipToOutline="true"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
                     android:layout_gravity="center"
+                    android:background="@drawable/rounded_image"
+                    android:clipToOutline="true"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/profiletest2" />
 
                 <Button
-                    android:id="@+id/editimage_name"
+                    android:id="@+id/editimage"
                     android:layout_width="36dp"
                     android:layout_height="32dp"
                     android:layout_marginLeft="130dp"
@@ -74,13 +76,7 @@
                 android:layout_marginTop="5dp"
                 android:textSize="13sp" />
 
-            <TextView
-                android:id="@+id/txterror"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Error report"
-                android:textColor="@color/red"
-                android:textSize="10sp" />
+
 
             <TextView
                 android:layout_width="match_parent"
@@ -101,6 +97,13 @@
                 android:focusable="false"
                 android:layout_marginTop="5dp"
                 android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txterror"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/red"
+                android:textSize="10sp" />
 
             <Button
                 android:id="@+id/change"

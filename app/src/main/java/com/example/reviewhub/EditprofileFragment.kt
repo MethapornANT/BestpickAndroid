@@ -33,7 +33,6 @@ class EditprofileFragment : Fragment() {
     private lateinit var genderSpinner: Spinner
     private lateinit var profileImageView: ImageView
     private lateinit var email: EditText
-    private lateinit var birthday: EditText
     private var imageUri: Uri? = null
     private val client = OkHttpClient()
     var filename = ""
