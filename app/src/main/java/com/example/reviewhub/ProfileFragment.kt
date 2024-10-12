@@ -1,6 +1,8 @@
 package com.example.reviewhub
 
 import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.auth.FirebaseAuth
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -63,8 +66,10 @@ class ProfileFragment : Fragment() {
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
-                    R.id.setting -> true
-                    R.id.Theme -> true
+                    R.id.logout -> {
+                        performLogout()
+                        true
+                    }
                     else -> false
                 }
             }
@@ -195,6 +200,23 @@ class ProfileFragment : Fragment() {
 
         // ตั้งค่า Adapter สำหรับ RecyclerView
         recyclerViewPosts.adapter = PostAdapter(postList)
+    }
+
+
+    private fun performLogout() {
+        val firebaseAuth = FirebaseAuth.getInstance()
+        firebaseAuth.signOut()
+        clearLocalData()
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        startActivity(intent)
+        requireActivity().finish()
+    }
+
+    private fun clearLocalData() {
+        if (isAdded) {
+            val sharedPreferences: SharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            sharedPreferences.edit().clear().apply()
+        }
     }
 
 }
