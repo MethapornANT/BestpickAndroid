@@ -31,7 +31,7 @@
             android:background="@drawable/rounded_image"
             android:clipToOutline="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/profiletest" />
+            android:src="@drawable/user" />
 
         <!-- Username and Post Time -->
         <LinearLayout

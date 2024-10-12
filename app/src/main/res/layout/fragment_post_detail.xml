@@ -40,7 +40,7 @@
                 android:background="@drawable/rounded_image"
                 android:clipToOutline="true"
                 android:scaleType="centerCrop"
-                android:src="@drawable/profiletest2" />
+                android:src="@drawable/user" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -251,6 +251,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:padding="10dp"
+            android:layout_marginBottom="20dp"
             android:background="@color/white"
             android:orientation="horizontal">
 

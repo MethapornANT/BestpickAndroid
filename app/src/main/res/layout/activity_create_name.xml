@@ -27,7 +27,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="What You name?"
+                android:text="You Name?"
                 android:textColor="@color/black"
                 android:textSize="30sp"
                 android:textStyle="bold" />
@@ -40,20 +40,20 @@
 
                 <ImageView
                     android:id="@+id/viewimage"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
                     android:layout_gravity="center"
                     android:background="@drawable/rounded_image"
                     android:clipToOutline="true"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/profiletest2" />
+                    android:src="@drawable/user"/>
 
                 <Button
                     android:id="@+id/editimage"
-                    android:layout_width="36dp"
-                    android:layout_height="32dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_marginLeft="130dp"
-                    android:layout_marginTop="81dp"
+                    android:layout_marginTop="100dp"
                     android:background="@drawable/editprofile" />
             </FrameLayout>
 

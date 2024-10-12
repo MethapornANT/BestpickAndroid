@@ -31,6 +31,7 @@
             android:layout_marginEnd="16dp"
             android:background="@drawable/rounded_image"
             android:clipToOutline="true"
+            android:src="@drawable/user"
             android:scaleType="centerCrop" />
 
         <TextView

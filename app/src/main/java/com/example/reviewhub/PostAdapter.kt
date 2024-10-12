@@ -1,6 +1,7 @@
 package com.example.reviewhub
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
@@ -601,13 +602,37 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
             popupMenu.menu.findItem(R.id.report).isVisible = !isUserPost
 
+
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.report -> {
-                        Toast.makeText(context, "Reported as spam", Toast.LENGTH_SHORT).show()
-                        // Handle spam report action here
+                        val options = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam" , "Violence or Threats"," Misinformation or False Information","Fraud or Malicious Inten")
+                        // สร้าง AlertDialog พร้อมรายการแบบตัวเลือก
+                        val dialogBuilder = AlertDialog.Builder(context,R.style.CustomAlertDialog)
+                            .setTitle("Report Option")
+                            .setSingleChoiceItems(options, -1) { dialog, which ->
+                                val selectedOption = options[which]
+                            }
+                            .setPositiveButton("OK") { dialog, _ ->
+                                // สิ่งที่ต้องทำเมื่อกดปุ่ม OK
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                // สิ่งที่ต้องทำเมื่อกดปุ่ม Cancel
+                                dialog.dismiss()
+                            }
+
+                        // แสดง dialog
+                        val alertDialog = dialogBuilder.create()
+                        alertDialog.show()
+
                         true
                     }
+                    R.id.bookmark -> {
+
+                        true
+                    }
+
                     R.id.edit_post -> {
                         Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
                         // Handle Edit Post action here (e.g., navigate to Edit screen)

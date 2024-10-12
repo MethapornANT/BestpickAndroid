@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- กำหนดสีพื้นหลัง -->
+    <solid android:color="@color/white" />
+
+    <!-- กำหนดรัศมีความโค้ง -->
+    <corners android:radius="30dp" />
+
+    <!-- ขอบของ Dialog (optional) -->
+    <stroke
+        android:width="15dp"
+        android:color="@color/white" />
+</shape>

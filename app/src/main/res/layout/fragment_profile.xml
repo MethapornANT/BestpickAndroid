@@ -59,7 +59,7 @@
                 android:background="@drawable/rounded_image"
                 android:clipToOutline="true"
                 android:scaleType="centerCrop"
-                android:src="@drawable/testpic" />
+                android:src="@drawable/user" />
 
             <!-- User Information -->
             <LinearLayout

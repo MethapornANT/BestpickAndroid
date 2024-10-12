@@ -56,13 +56,12 @@
             android:background="@drawable/rounded_image"
             android:clipToOutline="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/profiletest2" />
+            android:src="@drawable/user" />
 
         <Button
             android:id="@+id/editImg"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:layout_marginEnd="5dp"
             android:layout_gravity="end|top"
             android:layout_marginTop="5dp"
             android:backgroundTint="@color/black"
@@ -231,6 +230,7 @@
             <LinearLayout
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:orientation="horizontal">
 
                 <TextView
