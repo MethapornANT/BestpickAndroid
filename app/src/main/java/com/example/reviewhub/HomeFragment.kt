@@ -75,8 +75,6 @@ class HomeFragment : Fragment() {
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
-                    R.id.setting -> true
-                    R.id.Theme -> true
                     R.id.logout -> {
                         performLogout()
                         true
