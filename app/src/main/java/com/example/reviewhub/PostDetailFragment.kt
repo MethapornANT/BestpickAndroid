@@ -129,6 +129,9 @@ class PostDetailFragment : Fragment() {
         val report = view.findViewById<ImageView>(R.id.report)
         report.setOnClickListener {
             // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
+
+
+
             val isUserPost = userId == followingId
             showReportMenu(requireContext(), it, postId, isUserPost)
         }
