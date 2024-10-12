@@ -1,6 +1,7 @@
 package com.example.reviewhub
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
@@ -23,6 +24,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import java.util.Calendar
 
 class EditprofileFragment : Fragment() {
 
@@ -31,6 +33,7 @@ class EditprofileFragment : Fragment() {
     private lateinit var genderSpinner: Spinner
     private lateinit var profileImageView: ImageView
     private lateinit var email: EditText
+    private lateinit var birthday: EditText
     private var imageUri: Uri? = null
     private val client = OkHttpClient()
     var filename = ""
@@ -82,6 +85,12 @@ class EditprofileFragment : Fragment() {
 
         editImg.setOnClickListener {
             pickImageFromGallery()
+        }
+
+        val editTextBirthday = view.findViewById<EditText>(R.id.editTextBirthday)
+
+        editTextBirthday.setOnClickListener {
+            showDatePickerDialog(editTextBirthday)
         }
 
 
@@ -249,6 +258,7 @@ class EditprofileFragment : Fragment() {
                             val profileImageUrl = jsonObject.getString("profileImageUrl")
                             val emailuser = jsonObject.getString("email")
                             val bio = jsonObject.getString("bio")
+                            val birthday = jsonObject.getString("birthday")
                             val gender = jsonObject.getString("gender")
                             val imgProfileUrl = rootUrl + profileImageUrl
 
@@ -260,6 +270,7 @@ class EditprofileFragment : Fragment() {
                                     genderSpinner.setSelection(
                                         resources.getStringArray(R.array.gender_array).indexOf(gender)
                                     )
+
 
                                     Glide.with(this@EditprofileFragment)
                                         .load(imgProfileUrl)
@@ -280,6 +291,26 @@ class EditprofileFragment : Fragment() {
             }
         })
     }
+
+
+    private fun showDatePickerDialog(editText: EditText) {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(
+            requireContext(),
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val formattedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                editText.setText(formattedDate)
+            },
+            year, month, day
+        )
+
+        datePickerDialog.show()
+    }
+
 
 
 }

@@ -599,6 +599,7 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             // Show edit and delete options only for user's own posts
             popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
             popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
+            popupMenu.menu.findItem(R.id.report).isVisible = !isUserPost
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
