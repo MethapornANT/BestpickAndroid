@@ -132,12 +132,13 @@
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/like_button"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:layout_marginEnd="7dp"
                 android:src="@drawable/heart" />
 
@@ -148,12 +149,20 @@
                 android:textSize="18dp"
                 android:text="250" />
 
-            <TextView
+             <TextView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="15dp"
-                android:background="@drawable/share"/>
+                android:background="@drawable/shareclick"/>
+
+            <ImageView
+                android:id="@+id/bookmark_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/bookmark" />
         </androidx.appcompat.widget.Toolbar>
 
         <TextView

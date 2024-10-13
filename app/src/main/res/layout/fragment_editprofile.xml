@@ -53,10 +53,9 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_gravity="center"
-            android:background="@drawable/rounded_image"
+            android:background="@drawable/user"
             android:clipToOutline="true"
-            android:scaleType="centerCrop"
-            android:src="@drawable/user" />
+            android:scaleType="centerCrop" />
 
         <Button
             android:id="@+id/editImg"

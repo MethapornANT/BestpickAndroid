@@ -54,8 +54,12 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
         private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
         private val reportButton: ImageView = itemView.findViewById(R.id.report)
+        private val bookmarkButton: ImageView = itemView.findViewById(R.id.bookmark_button)
+
         var isLiked = false
         var isFollowing = false
+        var isBookmark = false
+
 
 
         fun bind(post: Post) {
@@ -143,8 +147,6 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             }
 
 
-
-
             // Load profile image using the full URL
             Glide.with(context)
                 .load(profileImageUrl)
@@ -207,17 +209,23 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 }
             }
 
-
-
-
-
-
-
             // เรียก API เพื่อตรวจสอบสถานะการกดไลค์ของโพสต์
             if (token != null && userId != null) {
                 checkLikeStatus(post.id, userId.toInt(), token, context)
                 checkFollowStatus(post.userId, userId.toInt(), token, context)
             }
+
+            bookmarkButton.setOnClickListener{
+                isBookmark = !isBookmark
+                if (isBookmark) {
+                    bookmarkButton.setImageResource(R.drawable.bookmarkclick)
+
+                } else {
+                    bookmarkButton.setImageResource(R.drawable.bookmark)
+
+                }
+            }
+
             likeButton.setOnClickListener {
                 isLiked = !isLiked
                 if (isLiked) {
@@ -692,9 +700,6 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
             }
         }
-
-
-
 
 
     }

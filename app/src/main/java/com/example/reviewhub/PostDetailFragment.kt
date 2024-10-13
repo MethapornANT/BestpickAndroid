@@ -92,6 +92,21 @@ class PostDetailFragment : Fragment() {
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+
+
+        val bookmarkButton = view.findViewById<ImageView>(R.id.bookmark_button)
+        var isBookmark = false
+                bookmarkButton.setOnClickListener{
+                        isBookmark = !isBookmark
+                        if (isBookmark) {
+                            bookmarkButton.setImageResource(R.drawable.bookmarkclick)
+
+                        } else {
+                            bookmarkButton.setImageResource(R.drawable.bookmark)
+
+                        }
+                }
+
         // ตั้งค่า Listener ให้กับปุ่มไลค์
         val likeButton = view.findViewById<ImageView>(R.id.like_button)
         likeButton.setOnClickListener {
@@ -654,6 +669,9 @@ class PostDetailFragment : Fragment() {
             }
         })
     }
+
+
+
 
     private fun sendNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
         val client = OkHttpClient()
