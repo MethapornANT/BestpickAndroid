@@ -17,4 +17,9 @@
         <item name="android:textColor">@color/blue</item>
         <item name="android:textSize">18sp</item>
     </style>
+
+    <style name="CustomPopupMenuHomepage" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
 </resources>

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -67,10 +68,9 @@ class HomeFragment : Fragment() {
         }
 
 
-        // Set up click listener for menu
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         menuImageView.setOnClickListener {
-            val popupMenu = PopupMenu(requireContext(), menuImageView)
+            val popupMenu = PopupMenu(ContextThemeWrapper(requireContext(), R.style.CustomPopupMenuHomepage), menuImageView)
             popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
@@ -82,8 +82,12 @@ class HomeFragment : Fragment() {
                     else -> false
                 }
             }
-            popupMenu.show()
+            popupMenu.show()  // แสดง PopupMenu
         }
+
+
+
+
 
         // Fetch data from the API
         fetchPosts(showLoading = true)

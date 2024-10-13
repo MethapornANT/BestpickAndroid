@@ -3,7 +3,8 @@
     <!-- Report Options -->
     <item
         android:id="@+id/bookmark"
-        android:title="Add Bookmark" />
+        android:title="Add Bookmark"
+        android:icon="@drawable/bookmark"/>
     <item
         android:id="@+id/report"
         android:title="Report " />
