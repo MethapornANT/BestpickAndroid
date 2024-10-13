@@ -19,7 +19,11 @@ data class Post(
     @SerializedName("video_url")
     val videoUrl: List<String>?,
     val likeCount: Int,
-    val commentCount: Int
+    val commentCount: Int,
+
+
+
+
 )
 
 
