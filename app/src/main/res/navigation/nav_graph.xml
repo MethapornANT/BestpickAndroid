@@ -36,11 +36,10 @@
         android:name="com.example.reviewhub.ProfileFragment"
         android:label="Profile" />
 
-    <!-- Fragment สำหรับ Add Post -->
     <fragment
-        android:id="@+id/addPostFragment"
-        android:name="com.example.reviewhub.AddPostFragment"
-        android:label="Add Post" />
+        android:id="@+id/AnotherUserFragment"
+        android:name="com.example.reviewhub.AnotherUserFragment"
+        android:label="AnotherUser" />
 
     <!-- Fragment ที่ไม่ต้องการแสดง BottomNavigationView -->
     <fragment

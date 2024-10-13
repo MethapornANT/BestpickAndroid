@@ -73,6 +73,7 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
 
+
             // Set user details
             postTime.text = formatTime(displayTime)
             userName.text = post.userName
@@ -215,16 +216,31 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 checkFollowStatus(post.userId, userId.toInt(), token, context)
             }
 
-            bookmarkButton.setOnClickListener{
+            bookmarkButton.setOnClickListener {
                 isBookmark = !isBookmark
                 if (isBookmark) {
                     bookmarkButton.setImageResource(R.drawable.bookmarkclick)
-
+                    if (token != null && userId != null) {
+                        // Call the bookmark API to add the post to bookmarks
+                        bookmarkPost(post.id, token, context)
+                    }
                 } else {
                     bookmarkButton.setImageResource(R.drawable.bookmark)
-
+                    if (token != null && userId != null) {
+                        // Call the unbookmark API to remove the post from bookmarks
+                        bookmarkPost(post.id, token, context)
+                    }
                 }
             }
+
+// Initial check for bookmark status when the view is created
+            if (token != null) {
+                checkBookmarkStatus(post.id, token, context) { isBookmarked ->
+                    isBookmark = isBookmarked
+                    bookmarkButton.setImageResource(if (isBookmarked) R.drawable.bookmarkclick else R.drawable.bookmark)
+                }
+            }
+
 
             likeButton.setOnClickListener {
                 isLiked = !isLiked
@@ -636,11 +652,6 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
 
                         true
                     }
-                    R.id.bookmark -> {
-
-                        true
-                    }
-
                     R.id.edit_post -> {
                         Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
                         // Handle Edit Post action here (e.g., navigate to Edit screen)
@@ -699,6 +710,76 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             } else {
                 Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        private fun bookmarkPost(postId: Int, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark" // Endpoint to bookmark a post
+
+            val request = Request.Builder()
+                .url(url)
+                .post(FormBody.Builder().build()) // Send a POST request
+                .addHeader("Authorization", "Bearer $token") // Attach token in the header
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to bookmark post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!response.isSuccessful) {
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, "Error bookmarking post: ${response.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, "Post bookmarked successfully", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        private fun checkBookmarkStatus(postId: Int, token: String, context: Context, callback: (Boolean) -> Unit) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark/status"
+
+            val request = Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer $token") // Add token in header
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to check bookmark status: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.body?.string()?.let { jsonResponse ->
+                        try {
+                            val jsonObject = JSONObject(jsonResponse)
+                            val isBookmarked = jsonObject.getBoolean("isBookmarked")
+
+                            // Update the UI in Main Thread
+                            (context as? Activity)?.runOnUiThread {
+                                callback(isBookmarked) // Return bookmark status to caller
+                            }
+                        } catch (e: JSONException) {
+                            (context as? Activity)?.runOnUiThread {
+                                Toast.makeText(context, "Error parsing bookmark status: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            })
         }
 
 
