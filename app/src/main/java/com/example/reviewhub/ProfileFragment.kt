@@ -33,7 +33,8 @@ class ProfileFragment : Fragment() {
 
     private val client = OkHttpClient()
     private lateinit var recyclerViewPosts: RecyclerView
-    private lateinit var followerTextView: TextView // Add this to reference the follower TextView
+    private lateinit var followerTextView: TextView
+    private lateinit var noBookmarksTextView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,8 +54,9 @@ class ProfileFragment : Fragment() {
         // Reference UI components
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         val editProfileButton = view.findViewById<Button>(R.id.edit_profile_button)
-        followerTextView = view.findViewById(R.id.follower_count) // Correct reference for follower TextView
+        followerTextView = view.findViewById(R.id.follower_count)
         recyclerViewPosts = view.findViewById(R.id.recycler_view_posts)
+        noBookmarksTextView = view.findViewById(R.id.noBookmarksTextView)
 
         // Set up RecyclerView
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
@@ -100,8 +102,17 @@ class ProfileFragment : Fragment() {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 if (userId != null && token != null) {
                     when (tab?.position) {
-                        0 -> fetchUserProfile(view, userId, token) // Fetch user posts
-                        1 -> fetchBookmarks(view, userId, token) // Fetch user bookmarks
+                        0 -> {
+                            // Hide bookmarks, show posts
+                            noBookmarksTextView.visibility = View.GONE
+                            recyclerViewPosts.visibility = View.VISIBLE
+                            fetchUserProfile(view, userId, token) // Fetch user posts
+                        }
+                        1 -> {
+                            // Show bookmarks, hide posts
+                            recyclerViewPosts.visibility = View.VISIBLE
+                            fetchBookmarks(view, userId, token) // Fetch user bookmarks
+                        }
                     }
                 }
             }
@@ -244,6 +255,11 @@ class ProfileFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("ProfileFragment", "Failed to fetch bookmarks: ${e.message}")
+                activity?.runOnUiThread {
+                    noBookmarksTextView.visibility = View.VISIBLE
+                    recyclerViewPosts.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Error fetching bookmarks: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -252,34 +268,53 @@ class ProfileFragment : Fragment() {
                     responseData?.let {
                         try {
                             val jsonResponse = JSONObject(it)
-                            val bookmarks = jsonResponse.getJSONArray("bookmarks")
+                            val bookmarks = jsonResponse.optJSONArray("bookmarks")
+
                             activity?.runOnUiThread {
-                                displayBookmarks(bookmarks)
+                                if (bookmarks == null || bookmarks.length() == 0) {
+                                    noBookmarksTextView.visibility = View.VISIBLE
+                                    recyclerViewPosts.visibility = View.GONE
+                                } else {
+                                    noBookmarksTextView.visibility = View.GONE
+                                    recyclerViewPosts.visibility = View.VISIBLE
+                                    displayBookmarks(bookmarks)
+                                }
                             }
                         } catch (e: JSONException) {
                             Log.e("ProfileFragment", "Error parsing bookmarks JSON: ${e.message}")
+                            activity?.runOnUiThread {
+                                noBookmarksTextView.visibility = View.VISIBLE
+                                recyclerViewPosts.visibility = View.GONE
+                            }
                         }
                     }
                 } else {
                     Log.e("ProfileFragment", "Error fetching bookmarks: ${response.message}")
+                    activity?.runOnUiThread {
+                        noBookmarksTextView.visibility = View.VISIBLE
+                        recyclerViewPosts.visibility = View.GONE
+                    }
                 }
             }
         })
     }
+
+
     private fun displayBookmarks(bookmarks: JSONArray) {
         val bookmarkList = mutableListOf<Post>()
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toInt()
 
+
+
         for (i in 0 until bookmarks.length()) {
             val post = bookmarks.getJSONObject(i)
-            val postId = post.optInt("post_id", -1) // Handle missing post_id
-            val author = post.optJSONObject("author") // Extract author object
-            val followingId = author?.optInt("user_id", -1) ?: -1 // Get user_id from the author object
+            val postId = post.optInt("post_id", -1)
+            val author = post.optJSONObject("author")
+            val followingId = author?.optInt("user_id", -1) ?: -1
 
             if (postId != -1 && userId != null && token != null) {
-                // Create Post object
                 val postObject = Post(
                     id = postId,
                     userName = post.optJSONObject("author")?.optString("username", "Unknown") ?: "Unknown",
@@ -299,8 +334,6 @@ class ProfileFragment : Fragment() {
                     likeCount = post.optInt("like_count", 0),
                     commentCount = post.optInt("comment_count", 0)
                 )
-
-                // Add post to the list
                 bookmarkList.add(postObject)
             }
         }
@@ -309,14 +342,12 @@ class ProfileFragment : Fragment() {
         recyclerViewPosts.adapter = PostAdapter(bookmarkList)
     }
 
-
     // Logout functionality
     private fun performLogout() {
         val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signOut()
         clearLocalData()
 
-        // Start the login activity and finish the current one
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivity(intent)
         requireActivity().finish()
@@ -330,5 +361,4 @@ class ProfileFragment : Fragment() {
             sharedPreferences.edit().clear().apply()
         }
     }
-
 }
