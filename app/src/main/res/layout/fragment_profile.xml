@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content"
     tools:context=".ProfileFragment"
     android:background="#e0e0e0"
@@ -38,6 +38,7 @@
                 android:layout_marginEnd="10dp"
                 android:layout_gravity="end"
                 android:src="@drawable/baseline_menu"
+                android:theme="@style/NoClickSound"
                 android:contentDescription="Menu" />
 
         </androidx.appcompat.widget.Toolbar>
@@ -190,7 +191,14 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_gravity="center"
-            android:background="@color/white">
+            android:background="@color/white"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:tabIndicatorColor="@color/blue"
+            app:tabSelectedTextColor="@color/black"
+            android:theme="@style/NoClickSound"
+            app:itemIconTint="@color/color_navigate_whenclick"
+            app:itemTextColor="@color/color_navigate_whenclick"
+            app:itemRippleColor="@android:color/transparent">
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_post"
@@ -204,6 +212,7 @@
                 android:layout_height="wrap_content"
                 android:text="Bookmarks" />
         </com.google.android.material.tabs.TabLayout>
+
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_posts"
