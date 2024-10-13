@@ -826,16 +826,27 @@ class PostDetailFragment : Fragment() {
 
     // ฟังก์ชันสำหรับเปิดหน้าโปรไฟล์ผู้ใช้คนนั้น
     private fun openUserProfile(userId: Int) {
+        // Hide BottomNavigationView
+        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+
+        // Create the AnotherUserFragment and pass the userId as a bundle
         val fragment = AnotherUserFragment()
         val bundle = Bundle()
         bundle.putInt("USER_ID", userId)
         fragment.arguments = bundle
 
-        // เปลี่ยน Fragment ปัจจุบันเป็น AnotherUserFragment
+        // Replace the current fragment with AnotherUserFragment
         parentFragmentManager.beginTransaction()
             .replace(R.id.nav_host_fragment, fragment)
             .addToBackStack(null)
             .commit()
+
+        // Show the BottomNavigationView again when navigating back
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            bottomNav?.visibility = View.VISIBLE
+            parentFragmentManager.popBackStack()
+        }
     }
 
 
