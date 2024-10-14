@@ -11,9 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import org.json.JSONArray
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -23,6 +26,7 @@ class AddPostFragment : Fragment() {
 
     private val selectedMedia: MutableList<Uri> = mutableListOf()
     private lateinit var viewPager: ViewPager2
+    private var selectedCategoryId: Int? = null
     private lateinit var contentEditText: EditText //content
     private lateinit var TitleEditText: EditText //Detail
     private lateinit var categorySpinner: Spinner
@@ -50,7 +54,6 @@ class AddPostFragment : Fragment() {
         deleteButton = view.findViewById(R.id.deleteButton)
         ProductNumberEditText = view.findViewById(R.id.ProductNumberEditText)
 
-        setupSpinner()
 
         selectMediaButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
@@ -59,17 +62,22 @@ class AddPostFragment : Fragment() {
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             startActivityForResult(intent, 1)
         }
-
+        fetchCategories()
         viewPager.adapter = ImagePagerAdapter(selectedMedia)
 
         submitButton.setOnClickListener { uploadPost() }
 
         backButton.setOnClickListener {
-            val intent = Intent(requireContext(), MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-            activity?.finish()
+            parentFragmentManager.popBackStack()
+            val navController = findNavController()
+
+            // Use the correct action ID or destination ID from the navigation graph
+            navController.navigate(R.id.action_addPostFragment_to_home)
+
+            val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+            bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
         }
+
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -92,12 +100,6 @@ class AddPostFragment : Fragment() {
         return view
     }
 
-    private fun setupSpinner() {
-        val categories = arrayOf("หมวดหมู่ 1", "หมวดหมู่ 2", "หมวดหมู่ 3")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categorySpinner.adapter = adapter
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -166,7 +168,7 @@ class AddPostFragment : Fragment() {
             return
         }
 
-        if (category.isEmpty()) {
+        if (selectedCategoryId == null) {
             Toast.makeText(requireContext(), "กรุณาเลือกหมวดหมู่.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -189,7 +191,7 @@ class AddPostFragment : Fragment() {
             .addFormDataPart("user_id", id)
             .addFormDataPart("content", content)
             .addFormDataPart("Title", Title)
-            .addFormDataPart("category", category)
+            .addFormDataPart("category", selectedCategoryId.toString())
             .addFormDataPart("ProductName", ProductNumber)
 
         // แยกประเภทไฟล์สำหรับ video และ photo
@@ -240,10 +242,12 @@ class AddPostFragment : Fragment() {
                 activity?.runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(requireContext(), "สร้างโพสต์สำเร็จ", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(requireContext(), MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(intent)
-                        activity?.finish()
+                        parentFragmentManager.popBackStack()
+                        val navController = findNavController()
+                        // Use the correct action ID or destination ID from the navigation graph
+                        navController.navigate(R.id.action_addPostFragment_to_home)
+                        val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                        bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
                     } else {
                         val errorBody = response.body?.string() ?: "เกิดข้อผิดพลาดที่ไม่ทราบ"
                         Toast.makeText(requireContext(), "ไม่สามารถสร้างโพสต์ได้: ${response.message}, Body: $errorBody", Toast.LENGTH_SHORT).show()
@@ -273,4 +277,97 @@ class AddPostFragment : Fragment() {
             null
         }
     }
+
+    // Function to fetch categories from the backend
+    private fun fetchCategories() {
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences?.getString("TOKEN", null)
+
+        if (token == null) {
+            Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val url = getString(R.string.root_url) + "/type" // Endpoint to fetch categories
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to fetch categories: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseData = response.body?.string()
+                    val categories = parseCategories(responseData)
+
+                    activity?.runOnUiThread {
+                        // Now call setupSpinner with the fetched categories
+                        setupSpinner(categories)
+                    }
+                } else {
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "Failed to fetch categories", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+    data class Category(val id: Int, val name: String)
+
+    // Function to parse categories from JSON response
+    private fun parseCategories(json: String?): List<Category> {
+        val categories = mutableListOf<Category>()
+        if (json != null) {
+            val jsonArray = JSONArray(json)
+            for (i in 0 until jsonArray.length()) {
+                val category = jsonArray.getJSONObject(i)
+                val id = category.getInt("CategoryID")
+                val name = category.getString("CategoryName")
+                categories.add(Category(id, name))
+            }
+        }
+        return categories
+    }
+
+
+    private fun setupSpinner(categories: List<Category>) {
+        // Create a mutable list to hold the category names
+        val categoryNames = mutableListOf("Select type") // Add the default option first
+
+        // Add the actual category names to the list
+        categoryNames.addAll(categories.map { it.name })
+
+        // Set up the adapter using the category names
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categorySpinner.adapter = adapter
+
+        // Handle selection event to get the selected category ID
+        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (position == 0) {
+                    // "Select type" is selected, so no valid category is chosen
+                    selectedCategoryId = null
+                } else {
+                    // Adjust position because "Select type" is at position 0
+                    val selectedCategory = categories[position - 1]
+                    selectedCategoryId = selectedCategory.id
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Handle the case where no category is selected if needed
+
+            }
+        }
+    }
+
+
+
 }
