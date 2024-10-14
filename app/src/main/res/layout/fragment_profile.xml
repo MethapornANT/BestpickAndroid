@@ -213,7 +213,6 @@
                 android:text="Bookmarks" />
         </com.google.android.material.tabs.TabLayout>
 
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"

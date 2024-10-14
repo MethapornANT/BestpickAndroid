@@ -38,6 +38,9 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
+import androidx.navigation.fragment.findNavController
+import java.sql.Types.NULL
+
 
 class PostDetailFragment : Fragment() {
     private lateinit var dotIndicatorLayout: LinearLayout
@@ -107,6 +110,9 @@ class PostDetailFragment : Fragment() {
                         }
                 }
 
+
+
+
         // ตั้งค่า Listener ให้กับปุ่มไลค์
         val likeButton = view.findViewById<ImageView>(R.id.like_button)
         likeButton.setOnClickListener {
@@ -144,13 +150,13 @@ class PostDetailFragment : Fragment() {
         val report = view.findViewById<ImageView>(R.id.report)
         report.setOnClickListener {
             // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
-
-
-
             val isUserPost = userId == followingId
             showReportMenu(requireContext(), it, postId, isUserPost)
         }
-
+        val Imgview = view.findViewById<ImageView>(R.id.Imgview)
+        Imgview.setOnClickListener {
+            openUserProfile(followingId)
+        }
 
         val commentButton = view.findViewById<ImageView>(R.id.send_button)
         val commentEditText = view.findViewById<EditText>(R.id.comment_input)
@@ -296,6 +302,49 @@ class PostDetailFragment : Fragment() {
             }
         }
     }
+
+    // ฟังก์ชันสำหรับเปิดหน้าโปรไฟล์ผู้ใช้คนนั้น
+    private fun openUserProfile(userId: Int) {
+        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+        val token = sharedPreferences.getString("TOKEN", null)
+        Log.d("userId", userId.toString())
+        // ซ่อน BottomNavigationView เมื่อเปิดหน้าโปรไฟล์
+        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+        // ตรวจสอบว่าเป็นโปรไฟล์ของตัวเองหรือไม่
+        if (userId == currentUserId) {
+            // ลิงก์ไปที่หน้าโปรไฟล์ของตัวเอง
+            val profileFragment = ProfileFragment()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.nav_host_fragment, profileFragment)
+                .addToBackStack(null)
+                .commit()
+        } else {
+            // สร้าง AnotherUserFragment และส่ง USER_ID
+            val anotherUserFragment = AnotherUserFragment()
+            val bundle = Bundle()
+            bundle.putInt("USER_ID", userId)  // ใช้ userId ที่ถูกส่งเข้ามา
+            anotherUserFragment.arguments = bundle
+
+            // บันทึกการทำงานของผู้ใช้ ถ้า token ไม่เป็น null
+            token?.let {
+                recordInteraction(null, "view_profile", null, it, requireContext())
+            }
+
+            // แทนที่ Fragment ปัจจุบันด้วย AnotherUserFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.nav_host_fragment, anotherUserFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
+    }
+
+
+
+
+
 
     private fun animateDot(dot: ImageView, isSelected: Boolean) {
         val scale = if (isSelected) 1.4f else 1.0f
@@ -556,6 +605,8 @@ class PostDetailFragment : Fragment() {
                                 val viewPager = view.findViewById<ViewPager2>(R.id.ShowImgpost)
                                 val adapter = PhotoPagerAdapter(mediaUrls)
                                 viewPager.adapter = adapter
+
+
 
                                 setupPageIndicators(mediaUrls.size)
 
@@ -824,31 +875,6 @@ class PostDetailFragment : Fragment() {
         }
     }
 
-    // ฟังก์ชันสำหรับเปิดหน้าโปรไฟล์ผู้ใช้คนนั้น
-    private fun openUserProfile(userId: Int) {
-        // Hide BottomNavigationView
-        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNav?.visibility = View.GONE
-
-        // Create the AnotherUserFragment and pass the userId as a bundle
-        val fragment = AnotherUserFragment()
-        val bundle = Bundle()
-        bundle.putInt("USER_ID", userId)
-        fragment.arguments = bundle
-
-        // Replace the current fragment with AnotherUserFragment
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, fragment)
-            .addToBackStack(null)
-            .commit()
-
-        // Show the BottomNavigationView again when navigating back
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            bottomNav?.visibility = View.VISIBLE
-            parentFragmentManager.popBackStack()
-        }
-    }
-
 
 
     private fun formatTime(timeString: String): String {
@@ -871,16 +897,19 @@ class PostDetailFragment : Fragment() {
         val client = OkHttpClient()
         val url = "${context.getString(R.string.root_url)}${context.getString(R.string.interactions)}"
 
-        // สร้าง body ของ request
-        val requestBody = FormBody.Builder()
-            .add("post_id", postId.toString())
+        // ตรวจสอบค่า postId ถ้าเป็น null ไม่ต้องใส่ลงใน FormBody
+        val requestBodyBuilder = FormBody.Builder()
             .add("action_type", actionType)
-            .apply {
-                if (content != null) {
-                    add("content", content)
-                }
-            }
-            .build()
+
+        postId?.let {
+            requestBodyBuilder.add("post_id", it.toString())
+        }
+
+        content?.let {
+            requestBodyBuilder.add("content", it)
+        }
+
+        val requestBody = requestBodyBuilder.build()
 
         // สร้าง request พร้อมแนบ token ใน header
         val request = Request.Builder()
@@ -889,7 +918,6 @@ class PostDetailFragment : Fragment() {
             .addHeader("Authorization", "Bearer $token")
             .build()
 
-        // ส่ง request ไปยังเซิร์ฟเวอร์
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
@@ -913,8 +941,8 @@ class PostDetailFragment : Fragment() {
                 }
             }
         })
-
     }
+
     private fun updateProductDetailsUI(products: List<Product>) {
         recyclerViewProducts.adapter = ProductAdapter(products)
         recyclerViewProducts.adapter?.notifyDataSetChanged()

@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         // ฟังการเปลี่ยนแปลงเส้นทางการนำทางเพื่อแสดงหรือซ่อน BottomNavigationView
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.notificationsFragment -> {
+                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.notificationsFragment-> {
                     // แสดง BottomNavigationView ในหน้า Home, Search, Profile, Notifications
                     bottomNavigationView.visibility = View.VISIBLE
                 }
