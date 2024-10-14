@@ -67,6 +67,7 @@ class ProfileFragment : Fragment() {
             // ถ้ามาจาก BottomNavigationView ให้ซ่อนปุ่ม Back
             back.visibility = View.GONE
         } else {
+            editProfileButton.visibility = View.GONE
             back.visibility = View.VISIBLE
             back.setOnClickListener {
                 requireActivity().onBackPressed()
