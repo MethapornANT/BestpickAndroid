@@ -137,6 +137,22 @@ class ProfileFragment : Fragment() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        // Retrieve token and userId from SharedPreferences
+        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)
+
+        // Refresh the profile when this fragment becomes visible again
+        if (userId != null && token != null) {
+            fetchUserProfile(requireView(), userId, token)
+        } else {
+            Toast.makeText(requireContext(), "User ID or token is null", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showDeleteAccountDialog() {
         val options = arrayOf("Option 1", "Option 2")
         val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
@@ -376,5 +392,7 @@ class ProfileFragment : Fragment() {
             sharedPreferences.edit().clear().apply()
         }
     }
+
+
 
 }

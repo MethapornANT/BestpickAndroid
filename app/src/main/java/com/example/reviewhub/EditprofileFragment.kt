@@ -2,10 +2,13 @@ package com.example.reviewhub
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.app.ProgressDialog
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,21 +21,23 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 class EditprofileFragment : Fragment() {
-
     private lateinit var usernameEditText: EditText
     private lateinit var bioEditText: EditText
     private lateinit var genderSpinner: Spinner
     private lateinit var profileImageView: ImageView
     private lateinit var email: EditText
+    private lateinit var birthday: EditText
     private var imageUri: Uri? = null
     private val client = OkHttpClient()
     var filename = ""
@@ -46,38 +51,34 @@ class EditprofileFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_editprofile, container, false)
     }
 
-    // Override onViewCreated to set up listeners and other view-related logic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize sharedPreferences inside onViewCreated (after the fragment is attached to the activity)
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
 
-        // Initialize EditText, Spinner, and ImageView
         usernameEditText = view.findViewById(R.id.username_edit)
         bioEditText = view.findViewById(R.id.bio_edit)
         genderSpinner = view.findViewById(R.id.gender_spinner)
         profileImageView = view.findViewById(R.id.Imgview)
         email = view.findViewById(R.id.email_edit)
+        birthday = view.findViewById(R.id.editTextBirthday)
         val editImg = view.findViewById<TextView>(R.id.editImg)
 
         // Load gender array into Spinner
         ArrayAdapter.createFromResource(
             requireContext(),
-            R.array.gender_array, // Use the gender array from strings.xml
+            R.array.gender_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             genderSpinner.adapter = adapter
         }
 
-        // Set up back button functionality
         view.findViewById<TextView>(R.id.back).setOnClickListener {
             requireActivity().onBackPressed()
         }
@@ -86,23 +87,16 @@ class EditprofileFragment : Fragment() {
             pickImageFromGallery()
         }
 
-        val editTextBirthday = view.findViewById<EditText>(R.id.editTextBirthday)
-
-        editTextBirthday.setOnClickListener {
-            showDatePickerDialog(editTextBirthday)
+        birthday.setOnClickListener {
+            showDatePickerDialog(birthday)
         }
 
-
-
-        // Save button functionality
         view.findViewById<TextView>(R.id.save_button).setOnClickListener {
             if (userId != null) {
                 updateUserProfile(userId, token)
-                requireActivity().onBackPressed()
             }
         }
 
-        // Fetch user profile using token and userId
         if (userId != null) {
             fetchUserProfile(view, userId, token)
         }
@@ -114,42 +108,42 @@ class EditprofileFragment : Fragment() {
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
-    // Handle the image selection result
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-            imageUri = data?.data
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
+            imageUri = data.data
             Log.d("ProfileFragment", "Selected image URI: $imageUri")
-            profileImageView.setImageURI(imageUri) // Show the selected image in the ImageView
+            profileImageView.setImageURI(imageUri)
         }
     }
 
-    // Update ฟังก์ชัน updateUserProfile
     private fun updateUserProfile(userId: String, token: String?) {
         val username = usernameEditText.text.toString()
         val bio = bioEditText.text.toString()
         val gender = genderSpinner.selectedItem.toString()
+        val birthdayStr = birthday.text.toString()
 
-        if (username.isEmpty() || bio.isEmpty() || gender.isEmpty()) {
+        if (username.isEmpty() || bio.isEmpty() || gender.isEmpty() || birthdayStr.isEmpty()) {
             if (isAdded) {
                 Toast.makeText(requireContext(), "All fields must be filled", Toast.LENGTH_SHORT).show()
             }
             return
         }
 
+        // Convert birthday from "d MMM yyyy" back to "yyyy-MM-dd" for the server
+        val formattedBirthday = formatDateForServer(birthdayStr)
+
         val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("username", username)
             .addFormDataPart("bio", bio)
             .addFormDataPart("gender", gender)
+            .addFormDataPart("birthday", formattedBirthday)
 
         if (imageUri != null) {
             val inputStream = requireContext().contentResolver.openInputStream(imageUri!!)
             val tempFile = File.createTempFile("profile_img", ".jpg", requireContext().cacheDir)
-            inputStream?.use { input ->
-                tempFile.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
+            inputStream?.use { input -> tempFile.outputStream().use { output -> input.copyTo(output) } }
             val mediaType = "image/jpeg".toMediaTypeOrNull()
             filename = tempFile.name
             requestBodyBuilder.addFormDataPart("profileImage", tempFile.name, RequestBody.create(mediaType, tempFile))
@@ -169,69 +163,61 @@ class EditprofileFragment : Fragment() {
                 e.printStackTrace()
                 if (isAdded) {
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Failed to update profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Log.e("ProfileFragment", "API update error: ${e.message}")
                     }
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                Log.d("ProfileFragment", "Response Data: $responseData")
+
                 if (response.isSuccessful) {
-                    val responseBody = response.body
-                    val jsonResponse = responseBody?.string()
-
-                    if (!jsonResponse.isNullOrEmpty()) {
-                        try {
-                            val jsonObject = JSONObject(jsonResponse)
-
-                            if (isAdded) {
-                                requireActivity().runOnUiThread {
-                                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
-                                }
-                                requireActivity().onBackPressed()
-                            }
-                        } catch (e: Exception) {
-                            Log.e("ProfileFragment", "Error parsing JSON response: ${e.message}")
-                        }
-                    } else {
-                        if (isAdded) {
-                            requireActivity().runOnUiThread {
-                                Toast.makeText(requireContext(), "Error: Empty response from server", Toast.LENGTH_SHORT).show()
-                            }
+                    if (isAdded && activity != null) {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                            requireActivity().onBackPressed() // ย้อนกลับเมื่ออัปเดตสำเร็จ
                         }
                     }
                 } else {
-                    val errorBody = response.body?.string()
-                    if (!errorBody.isNullOrEmpty()) {
-                        try {
-                            val jsonObject = JSONObject(errorBody)
-                            val errorMessage = jsonObject.getString("error")
+                    if (isAdded && activity != null) {
+                        requireActivity().runOnUiThread {
+                            try {
+                                // แปลงข้อมูล response เป็น JSONObject เพื่อดึง error message
+                                val jsonResponse = JSONObject(responseData ?: "")
+                                val errorMessage = jsonResponse.optString("error", "Unknown error")
 
-                            if (isAdded) {
-                                requireActivity().runOnUiThread {
-                                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                                }
+                                // แสดงข้อความ error
+                                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                // กรณีที่ไม่สามารถแปลง JSON ได้
+                                Toast.makeText(requireContext(), "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            if (isAdded) {
-                                requireActivity().runOnUiThread {
-                                    Toast.makeText(requireContext(), "Error updating profile", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    } else {
-                        if (isAdded) {
-                            requireActivity().runOnUiThread {
-                                Toast.makeText(requireContext(), "Error: Empty error response from server", Toast.LENGTH_SHORT).show()
-                            }
+                            Log.e("ProfileFragment", "API error: ${response.message}, Response body: $responseData")
                         }
                     }
                 }
             }
+
         })
     }
 
-    // Update ฟังก์ชัน fetchUserProfile
+    // Helper function to format birthday for server (yyyy-MM-dd)
+    private fun formatDateForServer(dateStr: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault()) // รูปแบบจาก UI
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) // รูปแบบที่เซิร์ฟเวอร์คาดหวัง
+            outputFormat.timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่าเป็น UTC
+            val date = inputFormat.parse(dateStr)
+            date?.let { outputFormat.format(it) } ?: dateStr
+        } catch (e: Exception) {
+            dateStr // หากมีข้อผิดพลาด ให้ส่งค่ากลับเป็นวันที่ดั้งเดิม
+        }
+    }
+
+
+
     private fun fetchUserProfile(view: View, userId: String, token: String?) {
         val rootUrl = getString(R.string.root_url)
         val userProfileEndpoint = getString(R.string.userprofile)
@@ -250,6 +236,7 @@ class EditprofileFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     val responseData = response.body?.string()
+                    Log.d("ProfileFragment", "Response Data: $responseData")
                     responseData?.let {
                         try {
                             val jsonObject = JSONObject(it)
@@ -257,7 +244,7 @@ class EditprofileFragment : Fragment() {
                             val profileImageUrl = jsonObject.getString("profileImageUrl")
                             val emailuser = jsonObject.getString("email")
                             val bio = jsonObject.getString("bio")
-                            val birthday = jsonObject.getString("birthday")
+                            val birthday = formatTime(jsonObject.optString("birthday", ""))
                             val gender = jsonObject.getString("gender")
                             val imgProfileUrl = rootUrl + profileImageUrl
 
@@ -266,10 +253,10 @@ class EditprofileFragment : Fragment() {
                                     usernameEditText.setText(username)
                                     email.setText(emailuser)
                                     bioEditText.setText(bio)
+                                    this@EditprofileFragment.birthday.setText(birthday)
                                     genderSpinner.setSelection(
                                         resources.getStringArray(R.array.gender_array).indexOf(gender)
                                     )
-
 
                                     Glide.with(this@EditprofileFragment)
                                         .load(imgProfileUrl)
@@ -277,7 +264,7 @@ class EditprofileFragment : Fragment() {
                                         .placeholder(R.drawable.ic_launcher_background)
                                         .into(profileImageView)
                                 }
-                            }else{
+                            } else {
                                 Log.e("EditprofileFragment", "Fragment is not attached to context")
                             }
                         } catch (e: Exception) {
@@ -290,7 +277,6 @@ class EditprofileFragment : Fragment() {
             }
         })
     }
-
 
     private fun showDatePickerDialog(editText: EditText) {
         val calendar = Calendar.getInstance()
@@ -310,6 +296,19 @@ class EditprofileFragment : Fragment() {
         datePickerDialog.show()
     }
 
+    private fun formatTime(timeString: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
+            }
+            val outputFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
+            }
+            val date = inputFormat.parse(timeString ?: "")
+            date?.let { outputFormat.format(it) } ?: "N/A"
 
-
+        } catch (e: Exception) {
+            timeString
+        }
+    }
 }
