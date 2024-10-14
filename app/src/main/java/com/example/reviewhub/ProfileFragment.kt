@@ -57,6 +57,20 @@ class ProfileFragment : Fragment() {
         followerTextView = view.findViewById(R.id.follower_count) // Correct reference for follower TextView
         recyclerViewPosts = view.findViewById(R.id.recycler_view_posts)
 
+        val back = view.findViewById<TextView>(R.id.back)
+
+        // ตรวจสอบว่า Fragment ถูกเปิดจาก BottomNavigationView หรือไม่
+        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        if (bottomNav?.selectedItemId == R.id.profile) {
+            // ถ้ามาจาก BottomNavigationView ให้ซ่อนปุ่ม Back
+            back.visibility = View.GONE
+        } else {
+            back.visibility = View.VISIBLE
+            back.setOnClickListener {
+                requireActivity().onBackPressed()
+            }
+        }
+
         // Set up RecyclerView
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
         recyclerViewPosts.setHasFixedSize(true)
@@ -178,7 +192,6 @@ class ProfileFragment : Fragment() {
 
         // Set user profile data
         view.findViewById<TextView>(R.id.username)?.text = username
-        view.findViewById<TextView>(R.id.back)?.text = username
         followerTextView.text = followerCount.toString()
         view.findViewById<TextView>(R.id.following_count)?.text = followingCount.toString()
         view.findViewById<TextView>(R.id.post_count)?.text = postCount.toString()
