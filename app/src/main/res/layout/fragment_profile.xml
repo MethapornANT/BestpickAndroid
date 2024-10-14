@@ -219,6 +219,20 @@
                 android:text="Bookmarks" />
         </com.google.android.material.tabs.TabLayout>
 
+        <!-- TextView สำหรับแสดงข้อความ No bookmarks -->
+        <TextView
+            android:id="@+id/noBookmarksTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No bookmarks"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"
