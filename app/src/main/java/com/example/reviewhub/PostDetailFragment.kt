@@ -262,8 +262,13 @@ class PostDetailFragment : Fragment() {
 
                         activity?.runOnUiThread {
                             if (isAdded && view != null) {
-                                Log.d("fetchProductData", "Products fetched: $products")
-                                callback(products) // Send the list of products back
+                                if (products.isEmpty()) {
+                                    Log.d("fetchProductData", "No products found")
+                                    Toast.makeText(requireContext(), "No products found", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Log.d("fetchProductData", "Products fetched: $products")
+                                    callback(products) // Send the list of products back
+                                }
                             }
                         }
                     } else {
@@ -276,6 +281,7 @@ class PostDetailFragment : Fragment() {
                     }
                 }
             }
+
         })
     }
 
@@ -939,19 +945,38 @@ class PostDetailFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
             val product = productList[position]
-            holder.productNameTextView.text = product.productName
-            holder.productPriceTextView.text = product.price
 
-            holder.openLinkButton.setOnClickListener {
-                try {
-                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(product.url))
-                    holder.itemView.context.startActivity(browserIntent)
-                } catch (e: ActivityNotFoundException) {
-                    Toast.makeText(holder.itemView.context, "No application found to open this URL", Toast.LENGTH_SHORT).show()
+            // If any of the product data is invalid (null or "Not found"), hide the entire item
+            if (product.productName == null || product.productName == "Not found" ||
+                product.price == null || product.price == "Not found" ||
+                product.url == null || product.url == "Not found") {
+
+                holder.itemView.visibility = View.GONE // Hide the entire item
+                holder.itemView.layoutParams = RecyclerView.LayoutParams(0, 0) // Remove the item's layout space
+
+            } else {
+                // Show the item and set the data if it's valid
+                holder.itemView.visibility = View.VISIBLE
+                holder.itemView.layoutParams = RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+
+                holder.productNameTextView.text = product.productName
+                holder.productPriceTextView.text = product.price
+                holder.productPriceTextView.visibility = View.VISIBLE // Ensure visibility in case it was hidden
+
+                holder.openLinkButton.setOnClickListener {
+                    try {
+                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(product.url))
+                        holder.itemView.context.startActivity(browserIntent)
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(holder.itemView.context, "No application found to open this URL", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
-
         }
+
 
 
         override fun getItemCount(): Int {
