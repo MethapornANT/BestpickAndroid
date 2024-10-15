@@ -14,7 +14,12 @@
     <fragment
         android:id="@+id/addPostFragment"
         android:name="com.example.reviewhub.AddPostFragment"
-        android:label="Add" />
+        android:label="Add Post">
+        <action
+            android:id="@+id/action_addPostFragment_to_home"
+            app:destination="@id/homeFragment" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/notificationsFragment"

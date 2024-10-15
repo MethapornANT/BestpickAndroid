@@ -21,7 +21,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import okhttp3.*
@@ -34,8 +33,8 @@ class ProfileFragment : Fragment() {
 
     private val client = OkHttpClient()
     private lateinit var recyclerViewPosts: RecyclerView
-    private lateinit var followerTextView: TextView // Add this to reference the follower TextView
-    private lateinit var noBookmarksTextView: TextView // Add this to reference the no bookmarks TextView
+    private lateinit var followerTextView: TextView
+    private lateinit var noBookmarksTextView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,24 +54,9 @@ class ProfileFragment : Fragment() {
         // Reference UI components
         val menuImageView = view.findViewById<ImageView>(R.id.menuImageView)
         val editProfileButton = view.findViewById<Button>(R.id.edit_profile_button)
-        followerTextView = view.findViewById(R.id.follower_count) // Correct reference for follower TextView
+        followerTextView = view.findViewById(R.id.follower_count)
         recyclerViewPosts = view.findViewById(R.id.recycler_view_posts)
-        noBookmarksTextView = view.findViewById(R.id.noBookmarksTextView) // Correct reference for no bookmarks TextView
-
-        val back = view.findViewById<TextView>(R.id.back)
-
-        // ตรวจสอบว่า Fragment ถูกเปิดจาก BottomNavigationView หรือไม่
-        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        if (bottomNav?.selectedItemId == R.id.profile) {
-            // ถ้ามาจาก BottomNavigationView ให้ซ่อนปุ่ม Back
-            back.visibility = View.GONE
-        } else {
-            editProfileButton.visibility = View.GONE
-            back.visibility = View.VISIBLE
-            back.setOnClickListener {
-                requireActivity().onBackPressed()
-            }
-        }
+        noBookmarksTextView = view.findViewById(R.id.noBookmarksTextView)
 
         // Set up RecyclerView
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
@@ -136,22 +120,6 @@ class ProfileFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        // Retrieve token and userId from SharedPreferences
-        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val token = sharedPreferences.getString("TOKEN", null)
-        val userId = sharedPreferences.getString("USER_ID", null)
-
-        // Refresh the profile when this fragment becomes visible again
-        if (userId != null && token != null) {
-            fetchUserProfile(requireView(), userId, token)
-        } else {
-            Toast.makeText(requireContext(), "User ID or token is null", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun showDeleteAccountDialog() {
@@ -220,6 +188,7 @@ class ProfileFragment : Fragment() {
 
         // Set user profile data
         view.findViewById<TextView>(R.id.username)?.text = username
+        view.findViewById<TextView>(R.id.back)?.text = username
         followerTextView.text = followerCount.toString()
         view.findViewById<TextView>(R.id.following_count)?.text = followingCount.toString()
         view.findViewById<TextView>(R.id.post_count)?.text = postCount.toString()
@@ -330,11 +299,14 @@ class ProfileFragment : Fragment() {
         })
     }
 
+
     private fun displayBookmarks(bookmarks: JSONArray) {
         val bookmarkList = mutableListOf<Post>()
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toInt()
+
+
 
         for (i in 0 until bookmarks.length()) {
             val post = bookmarks.getJSONObject(i)
@@ -370,16 +342,12 @@ class ProfileFragment : Fragment() {
         recyclerViewPosts.adapter = PostAdapter(bookmarkList)
     }
 
-
-
-
     // Logout functionality
     private fun performLogout() {
         val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signOut()
         clearLocalData()
 
-        // Start the login activity and finish the current one
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivity(intent)
         requireActivity().finish()
@@ -393,7 +361,4 @@ class ProfileFragment : Fragment() {
             sharedPreferences.edit().clear().apply()
         }
     }
-
-
-
 }

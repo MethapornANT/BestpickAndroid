@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content"
     tools:context=".ProfileFragment"
     android:background="#e0e0e0"
@@ -14,20 +14,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- First Toolbar for Back and Menu -->
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:padding="8dp">
+
             <TextView
                 android:id="@+id/back"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:background="@drawable/ic_baseline_arrow_back_24"/>
-
-
-            <TextView
-                android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="MyProfile"
@@ -40,16 +35,14 @@
                 android:id="@+id/menuImageView"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:layout_gravity="end"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="10dp"
-                android:layout_gravity="end"
                 android:src="@drawable/baseline_menu"
-                android:theme="@style/NoClickSound"
                 android:contentDescription="Menu" />
-
         </androidx.appcompat.widget.Toolbar>
 
-
+        <!-- Second Toolbar for Profile Info -->
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,7 +55,6 @@
                 android:id="@+id/user_profile_image"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:layout_gravity="start"
                 android:background="@drawable/rounded_image"
                 android:clipToOutline="true"
                 android:scaleType="centerCrop"
@@ -74,8 +66,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_gravity="center_vertical">
+                android:gravity="center">
 
                 <!-- Following Section -->
                 <LinearLayout
@@ -88,7 +79,6 @@
                         android:id="@+id/following_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:text="0"
                         android:textColor="@color/black"
                         android:textSize="18sp"
@@ -96,7 +86,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:text="Following"
                         android:textColor="@color/black"
                         android:textSize="14sp"/>
@@ -113,7 +102,6 @@
                         android:id="@+id/follower_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:text="0"
                         android:textColor="@color/black"
                         android:textSize="18sp"
@@ -121,7 +109,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:text="Followers"
                         android:textColor="@color/black"
                         android:textSize="14sp"/>
@@ -138,7 +125,6 @@
                         android:id="@+id/post_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:text="0"
                         android:textColor="@color/black"
                         android:textSize="18sp"
@@ -146,7 +132,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:text="Posts"
                         android:textColor="@color/black"
                         android:textSize="14sp"/>
@@ -156,7 +141,7 @@
 
         </androidx.appcompat.widget.Toolbar>
 
-
+        <!-- Bio Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -173,14 +158,14 @@
                 android:text="MyProfile BIO"
                 android:textColor="@color/black"
                 android:textSize="14sp" />
-
         </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:orientation="horizontal">
+        <!-- Edit Profile Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/edit_profile_button"
@@ -190,21 +175,14 @@
                 android:backgroundTint="@color/blue"
                 android:text="Edit Profile"
                 android:textColor="@color/white" />
-            </LinearLayout>
+        </LinearLayout>
 
+        <!-- Tabs Section -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="30dp"
-            android:layout_gravity="center"
-            android:background="@color/white"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:tabIndicatorColor="@color/blue"
-            app:tabSelectedTextColor="@color/black"
-            android:theme="@style/NoClickSound"
-            app:itemIconTint="@color/color_navigate_whenclick"
-            app:itemTextColor="@color/color_navigate_whenclick"
-            app:itemRippleColor="@android:color/transparent">
+            android:background="@color/white">
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_post"
@@ -219,26 +197,25 @@
                 android:text="Bookmarks" />
         </com.google.android.material.tabs.TabLayout>
 
-        <!-- TextView สำหรับแสดงข้อความ No bookmarks -->
+        <!-- No Bookmarks Message -->
         <TextView
             android:id="@+id/noBookmarksTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No bookmarks"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
+            android:text="No Bookmarks"
+            android:gravity="center"
+            android:layout_gravity="center"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:textSize="18sp"
+            android:textColor="@android:color/black" />
 
+        <!-- RecyclerView for Posts/Bookmarks -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            tools:listitem=""/>
+            tools:listitem="" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
