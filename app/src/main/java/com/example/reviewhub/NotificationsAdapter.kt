@@ -53,9 +53,17 @@ class NotificationsAdapter(
             notificationContent.text = when (notification.action_type) {
                 "like" -> "liked your post"
                 "follow" -> "started following you"
-                "comment" -> "commented: ${notification.comment_content}"  // แสดงความเห็นแยกกัน
+                "comment" -> {
+                    val commentContent = notification.comment_content
+                    if (commentContent!!.length > 10) {
+                        "commented: ${commentContent.take(10)}..."
+                    } else {
+                        "commented: $commentContent"
+                    }
+                }
                 else -> ""
             }
+
 
 
 

@@ -120,12 +120,12 @@ class PostDetailFragment : Fragment() {
                 if (isLiked) {
                     // หากกดไลค์แล้ว ให้ unlike
                     likeUnlikePost(postId, userId, token)
-                    deleteNotification(postId, userId, "like", token, requireContext())
+                    deleteNotification(postId, userId, null,"like", token, requireContext())
                     recordInteraction(postId, "unlike", null, token, requireContext())
                 } else {
                     // หากยังไม่ไลค์ ให้กดไลค์
                     likeUnlikePost(postId, userId, token)
-                    sendNotification(postId, userId, "like", token, requireContext())
+                    sendNotification(postId, userId, null,"like", token, requireContext())
                     recordInteraction(postId, "like", null, token, requireContext())
                 }
             } else {
@@ -166,9 +166,13 @@ class PostDetailFragment : Fragment() {
             if (token != null && userId != null) {
                 val commentContent = commentEditText.text.toString().trim()
                 if (commentContent.isNotEmpty()) {
-                    postComment(postId, userId.toInt(), commentContent, token)
-                    sendNotification(postId, userId.toInt(), "comment", token, requireContext())
-                    commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
+                    // โพสต์คอมเมนต์และรอรับ commentId จาก response
+                    postComment(postId, userId.toInt(), commentContent, token) { commentId ->
+                        // ส่ง notification พร้อมกับ commentId ที่ได้รับ
+                        sendNotification(postId, userId.toInt(), commentId, "comment", token, requireContext())
+                        commentEditText.text.clear() // ล้างข้อมูลหลังส่งคอมเมนต์สำเร็จ
+                        fetchPostDetails(postId, token, userId.toInt(), view)
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
                 }
@@ -176,6 +180,8 @@ class PostDetailFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please login to comment", Toast.LENGTH_SHORT).show()
             }
         }
+
+
 
         if (postId != -1 && token != null && userId != null) {
             // เรียกข้อมูล Post
@@ -688,7 +694,7 @@ class PostDetailFragment : Fragment() {
     }
 
     // ฟังก์ชันสำหรับการส่งคอมเมนต์ไปยัง API
-    private fun postComment(postId: Int, userId: Int, content: String, token: String) {
+    private fun postComment(postId: Int, userId: Int, content: String, token: String, callback: (Int?) -> Unit) {
         val client = OkHttpClient()
         val url = getString(R.string.root_url) + "/posts/$postId/comment"
 
@@ -706,20 +712,24 @@ class PostDetailFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 (requireActivity() as? Activity)?.runOnUiThread {
                     Toast.makeText(requireContext(), "Failed to post comment: ${e.message}", Toast.LENGTH_SHORT).show()
+                    callback(null) // ส่ง null ในกรณีที่ล้มเหลว
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (response.isSuccessful) {
+                        val responseBody = response.body?.string()
+                        val jsonObject = responseBody?.let { JSONObject(it) }
+                        val commentId = jsonObject?.getInt("comment_id") // ดึง commentId จาก response
                         (requireActivity() as? Activity)?.runOnUiThread {
                             Toast.makeText(requireContext(), "Comment posted successfully", Toast.LENGTH_SHORT).show()
-                            recordInteraction(postId, "comment", content, token, requireContext())
-                            fetchPostDetails(postId, token, userId, requireView()) // โหลดข้อมูลโพสต์ใหม่
+                            callback(commentId) // ส่ง commentId กลับ
                         }
                     } else {
                         (requireActivity() as? Activity)?.runOnUiThread {
                             Toast.makeText(requireContext(), "Failed: ${response.message}", Toast.LENGTH_SHORT).show()
+                            callback(null) // ส่ง null หากไม่สำเร็จ
                         }
                     }
                 }
@@ -729,27 +739,29 @@ class PostDetailFragment : Fragment() {
 
 
 
-
-    private fun sendNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
+    private fun sendNotification(postId: Int, userId: Int, commentId: Int?, actionType: String, token: String, context: Context) {
         val client = OkHttpClient()
         val url = "${context.getString(R.string.root_url)}/api/notifications"
 
-        // สร้าง Body ของ Request สำหรับสร้าง Notification
-        val requestBody = FormBody.Builder()
+        val requestBodyBuilder = FormBody.Builder()
             .add("user_id", userId.toString())
             .add("post_id", postId.toString())
             .add("action_type", actionType)
-            .add("content", "User ${userId} performed action: $actionType on post $postId")
-            .build()
+            .add("content", "User $userId performed action: $actionType on post $postId")
 
-        // สร้าง Request พร้อมแนบ Header ของ Token
+        // หากมี comment_id ให้เพิ่มลงไปใน request body
+        commentId?.let {
+            requestBodyBuilder.add("comment_id", it.toString())
+        }
+
+        val requestBody = requestBodyBuilder.build()
+
         val request = Request.Builder()
             .url(url)
             .post(requestBody)
             .addHeader("Authorization", "Bearer $token")
             .build()
 
-        // ส่ง Request ไปยังเซิร์ฟเวอร์
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
@@ -758,7 +770,6 @@ class PostDetailFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val jsonResponse = response.body?.string()
                 (context as? Activity)?.runOnUiThread {
                     if (!response.isSuccessful) {
                         Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
@@ -769,15 +780,21 @@ class PostDetailFragment : Fragment() {
             }
         })
     }
-    private fun deleteNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
-        val client = OkHttpClient()
-        val url = "${context.getString(R.string.root_url)}/api/notifications" // URL API ของการลบ Notification
 
-        val requestBody = FormBody.Builder()
+    private fun deleteNotification(postId: Int, userId: Int, commentId: Int?, actionType: String, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}/api/notifications"
+
+        val requestBodyBuilder = FormBody.Builder()
             .add("user_id", userId.toString())
             .add("post_id", postId.toString())
             .add("action_type", actionType)
-            .build()
+
+        commentId?.let {
+            requestBodyBuilder.add("comment_id", it.toString())
+        }
+
+        val requestBody = requestBodyBuilder.build()
 
         val request = Request.Builder()
             .url(url)
@@ -793,7 +810,6 @@ class PostDetailFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val jsonResponse = response.body?.string()
                 (context as? Activity)?.runOnUiThread {
                     if (!response.isSuccessful) {
                         Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
@@ -804,6 +820,7 @@ class PostDetailFragment : Fragment() {
             }
         })
     }
+
 
 
     private fun checkLikeStatus(postId: Int, userId: Int, token: String, view: View) {
