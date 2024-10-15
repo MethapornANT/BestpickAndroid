@@ -48,6 +48,8 @@ class PostDetailFragment : Fragment() {
     private var bottomNav: BottomNavigationView? = null
     private lateinit var recyclerViewComments: RecyclerView
     private lateinit var recyclerViewProducts: RecyclerView
+    private lateinit var comments: MutableList<Comment>
+
 
     private var followingId: Int = -1
     private var isLiked: Boolean = false
@@ -69,10 +71,12 @@ class PostDetailFragment : Fragment() {
         follower = view.findViewById(R.id.follower)
         recyclerViewComments = view.findViewById(R.id.recycler_view_comments)
         recyclerViewProducts = view.findViewById(R.id.recycler_view_products)
+        val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
         // กำหนดค่า LayoutManager และ Adapter ให้กับ RecyclerView
         recyclerViewComments.layoutManager = LinearLayoutManager(requireContext())
-        recyclerViewComments.adapter = CommentAdapter(emptyList())
+        recyclerViewComments.adapter = CommentAdapter(emptyList(), postId)
+
 
         recyclerViewProducts.layoutManager = LinearLayoutManager(requireContext())
         recyclerViewProducts.adapter = ProductAdapter(emptyList())
@@ -91,7 +95,7 @@ class PostDetailFragment : Fragment() {
         }
 
         // ดึงข้อมูลจาก arguments
-        val postId = arguments?.getInt("POST_ID", -1) ?: -1
+
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
@@ -147,6 +151,9 @@ class PostDetailFragment : Fragment() {
         }
 
 
+
+
+
         val report = view.findViewById<ImageView>(R.id.report)
         report.setOnClickListener {
             // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
@@ -157,6 +164,7 @@ class PostDetailFragment : Fragment() {
         Imgview.setOnClickListener {
             openUserProfile(followingId)
         }
+
 
         val commentButton = view.findViewById<ImageView>(R.id.send_button)
         val commentEditText = view.findViewById<EditText>(R.id.comment_input)
@@ -403,6 +411,66 @@ class PostDetailFragment : Fragment() {
         popupMenu.show()
     }
 
+    private fun showDeleteMenu(context: Context, anchorView: View, commentId: Int, postId: Int) {
+        val popupMenu = PopupMenu(context, anchorView)
+        popupMenu.menuInflater.inflate(R.menu.menu_delete, popupMenu.menu)
+
+        // ตั้งค่าให้ทำงานเมื่อลบคอมเมนต์
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.delete_comment -> {
+                    deleteComment(commentId, postId, context) // เรียกฟังก์ชันลบคอมเมนต์
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+    private fun deleteComment(commentId: Int, postId: Int, context: Context) {
+        val client = OkHttpClient()
+        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+
+        if (token != null) {
+            val url = "${context.getString(R.string.root_url)}/posts/$postId/comment/$commentId"
+            val request = Request.Builder()
+                .url(url)
+                .delete()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to delete comment: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    (context as? Activity)?.runOnUiThread {
+                        if (!response.isSuccessful) {
+                            Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show()
+                            // อัปเดตรายการคอมเมนต์หลังจากลบสำเร็จ
+                            if (userId != null) {
+                                fetchPostDetails(postId, token, userId, requireView())
+                            }
+                        }
+                    }
+                }
+            })
+        } else {
+            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
 
     private fun deletePost(postId: Int, context: Context) {
         val client = OkHttpClient()
@@ -520,6 +588,7 @@ class PostDetailFragment : Fragment() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
+
     private fun fetchPostDetails(postId: Int, token: String, userId: Int, view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
@@ -556,9 +625,10 @@ class PostDetailFragment : Fragment() {
                             updateProductDetailsUI(products)
                         }
 
-                        val commentsArray = jsonObject.getJSONArray("comments")
-                        val comments = mutableListOf<Comment>()
+                        // Initialize comments list
+                        comments = mutableListOf()
 
+                        val commentsArray = jsonObject.getJSONArray("comments")
                         for (i in 0 until commentsArray.length()) {
                             val commentObject = commentsArray.getJSONObject(i)
                             val comment = Comment(
@@ -593,15 +663,23 @@ class PostDetailFragment : Fragment() {
                         }
 
                         withContext(Dispatchers.Main) {
-                            if (view.isAttachedToWindow) { // ตรวจสอบว่า View ยังอยู่ใน Window หรือไม่
-                                recyclerViewComments.adapter = CommentAdapter(comments)
-                                recyclerViewComments.adapter?.notifyDataSetChanged()
+                            if (view.isAttachedToWindow) {
+                                // Update comments adapter
+                                if (comments.isEmpty()) {
+                                    Toast.makeText(requireContext(), "No comments found", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    recyclerViewComments.adapter = CommentAdapter(comments, postId)
+                                    recyclerViewComments.adapter?.notifyDataSetChanged()
+                                }
+
+                                // Update other post details
                                 view.findViewById<TextView>(R.id.username).text = username
                                 view.findViewById<TextView>(R.id.title).text = title
                                 view.findViewById<TextView>(R.id.detail).text = postContent
                                 view.findViewById<TextView>(R.id.time).text = formatTime(time)
                                 view.findViewById<TextView>(R.id.like_count).text = ": $likeCount"
                                 view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
+
                                 checkFollowStatus(userId, followingId, token)
 
                                 if (userId == followingId) {
@@ -610,15 +688,15 @@ class PostDetailFragment : Fragment() {
                                     checkFollowStatus(userId, followingId, token)
                                 }
 
+                                // Load profile image
                                 Glide.with(this@PostDetailFragment)
                                     .load(profileUrl)
                                     .into(view.findViewById(R.id.Imgview))
 
+                                // Load media (images/videos)
                                 val viewPager = view.findViewById<ViewPager2>(R.id.ShowImgpost)
                                 val adapter = PhotoPagerAdapter(mediaUrls)
                                 viewPager.adapter = adapter
-
-
 
                                 setupPageIndicators(mediaUrls.size)
 
@@ -859,7 +937,7 @@ class PostDetailFragment : Fragment() {
 
     data class Comment(val id: Int,val user_id: Int,val content: String, val username: String, val createdAt: String, val profileImage: String)
 
-    inner class CommentAdapter(private val comments: List<Comment>) :
+    inner class CommentAdapter(private val comments: List<Comment>, private val postId: Int) :
         RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -883,6 +961,16 @@ class PostDetailFragment : Fragment() {
             // กำหนดการคลิกที่โปรไฟล์ของผู้แสดงความคิดเห็น
             holder.Imageprofile.setOnClickListener {
                 openUserProfile(comment.user_id)
+            }
+            val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+
+            holder.itemView.findViewById<ImageView>(R.id.comment_report).setOnClickListener {
+                val isCommentOwner = userId == comment.user_id
+                if (isCommentOwner) {
+                    // ถ้าเป็นเจ้าของคอมเมนต์ให้แสดงเมนูลบ
+                    showDeleteMenu(requireContext(), it, comment.id, postId)
+                }
             }
         }
 

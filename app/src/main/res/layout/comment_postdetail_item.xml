@@ -7,26 +7,22 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_margin="10dp"
         android:padding="5dp"
-        android:gravity="center_vertical"
-        android:paddingBottom="5dp">
+        android:gravity="center_vertical">
 
         <!-- Profile Image -->
         <ImageView
             android:id="@+id/comment_profile_image"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:background="@drawable/rounded_image"
             android:clipToOutline="true"
-            android:layout_gravity="top"
             android:scaleType="centerCrop"
             android:src="@drawable/profiletest" />
 
@@ -43,17 +39,18 @@
                 android:layout_height="wrap_content"
                 android:text="User"
                 android:textColor="@color/black"
-                android:textSize="18dp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/comment_content"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
                 android:text="Comment"
                 android:textColor="@color/black"
-                android:textSize="16dp" />
+                android:textSize="14sp"
+                android:maxLines="2"
+                android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/comment_created_at"
@@ -63,6 +60,14 @@
                 android:textColor="@android:color/darker_gray"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <!-- Report Icon -->
+        <ImageView
+            android:id="@+id/comment_report"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/report"
+            android:layout_marginEnd="5dp" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
