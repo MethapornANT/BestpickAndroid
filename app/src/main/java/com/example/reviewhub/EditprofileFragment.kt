@@ -202,19 +202,21 @@ class EditprofileFragment : Fragment() {
 
         })
     }
-
     // Helper function to format birthday for server (yyyy-MM-dd)
     private fun formatDateForServer(dateStr: String): String {
         return try {
-            val inputFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault()) // รูปแบบจาก UI
-            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) // รูปแบบที่เซิร์ฟเวอร์คาดหวัง
-            outputFormat.timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่าเป็น UTC
+            // Input format is "dd/MM/yyyy" from the UI
+            val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) // Format the server expects
+            // No need to set time zone here since we're only dealing with date
             val date = inputFormat.parse(dateStr)
             date?.let { outputFormat.format(it) } ?: dateStr
         } catch (e: Exception) {
-            dateStr // หากมีข้อผิดพลาด ให้ส่งค่ากลับเป็นวันที่ดั้งเดิม
+            dateStr // In case of an error, return the original string
         }
     }
+
+
 
 
 

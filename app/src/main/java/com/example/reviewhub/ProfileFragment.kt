@@ -319,7 +319,7 @@ class ProfileFragment : Fragment() {
                     id = postId,
                     userName = post.optJSONObject("author")?.optString("username", "Unknown") ?: "Unknown",
                     userId = followingId,
-                    title = post.optString("content", "No Content"),
+                    title = post.optString("title", "No Content"),
                     time = post.optString("created_at", "Unknown Date"),
                     updated = post.optString("updated_at", null),
                     content = post.optString("content", ""),
