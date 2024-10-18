@@ -3,6 +3,7 @@ package com.example.reviewhub
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
@@ -103,16 +104,14 @@ class PostDetailFragment : Fragment() {
 
         val bookmarkButton = view.findViewById<ImageView>(R.id.bookmark_button)
         var isBookmark = false
-                bookmarkButton.setOnClickListener{
-                        isBookmark = !isBookmark
-                        if (isBookmark) {
-                            bookmarkButton.setImageResource(R.drawable.bookmarkclick)
-
-                        } else {
-                            bookmarkButton.setImageResource(R.drawable.bookmark)
-
-                        }
-                }
+        bookmarkButton.setOnClickListener{
+            isBookmark = !isBookmark
+            if (isBookmark) {
+                bookmarkButton.setImageResource(R.drawable.bookmarkclick)
+            } else {
+                bookmarkButton.setImageResource(R.drawable.bookmark)
+            }
+        }
 
 
 
@@ -391,13 +390,32 @@ class PostDetailFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.report -> {
-                    Toast.makeText(context, "Reported as spam", Toast.LENGTH_SHORT).show()
-                    // Handle spam report action here
+                    val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                    val token = sharedPreferences.getString("TOKEN", null)
+                    val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+
+                    if (token != null && userId != null) {
+                        val reportOptions = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam", "Violence or Threats", "Misinformation or False Information", "Fraud or Malicious Intent")
+
+                        // Create an AlertDialog to show the options
+                        val builder = AlertDialog.Builder(context, R.style.CustomAlertDialog)
+                        builder.setTitle("Report Post")
+                        builder.setSingleChoiceItems(reportOptions, -1) { dialog, which ->
+                            val selectedReason = reportOptions[which]
+                            reportPost(postId, userId, selectedReason, token) // Call reportPost with the selected reason
+                            dialog.dismiss() // Close the dialog after selection
+                        }
+                        builder.setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        builder.show() // Display the dialog
+                    } else {
+                        Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                    }
                     true
                 }
                 R.id.edit_post -> {
                     Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
-                    // Handle Edit Post action here (e.g., navigate to Edit screen)
                     true
                 }
                 R.id.delete_post -> {
@@ -1116,6 +1134,45 @@ class PostDetailFragment : Fragment() {
             return productList.size
         }
     }
+
+    // Updated reportPost function with an additional reason parameter
+    private fun reportPost(postId: Int, userId: Int, reason: String, token: String) {
+        val client = OkHttpClient()
+        val url = "${requireContext().getString(R.string.root_url)}/posts/$postId/report"
+
+        // Prepare request body with user ID and reason for reporting
+        val requestBody = FormBody.Builder()
+            .add("user_id", userId.toString())
+            .add("reason", reason)
+            .build()
+
+        // Build the HTTP request
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        // Send the request asynchronously
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (requireActivity() as? Activity)?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to report post: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                (requireActivity() as? Activity)?.runOnUiThread {
+                    if (response.isSuccessful) {
+                        Toast.makeText(requireContext(), "Post reported successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "Error reporting post: ${response.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+
 
 
 

@@ -619,58 +619,61 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             })
         }
 
-        private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
-            val popupMenu = PopupMenu(context, anchorView)
-            popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
 
-            // Show edit and delete options only for user's own posts
-            popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
-            popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
-            popupMenu.menu.findItem(R.id.report).isVisible = !isUserPost
+            private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
+                val popupMenu = PopupMenu(context, anchorView)
+                popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
 
+                popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
+                popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
+                popupMenu.menu.findItem(R.id.report).isVisible = !isUserPost
 
-            popupMenu.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.report -> {
-                        val options = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam" , "Violence or Threats"," Misinformation or False Information","Fraud or Malicious Inten")
-                        // สร้าง AlertDialog พร้อมรายการแบบตัวเลือก
-                        val dialogBuilder = AlertDialog.Builder(context,R.style.CustomAlertDialog)
-                            .setTitle("Report Option")
-                            .setSingleChoiceItems(options, -1) { dialog, which ->
-                                val selectedOption = options[which]
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.report -> {
+                            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                            val token = sharedPreferences.getString("TOKEN", null)
+                            val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+
+                            if (token != null && userId != null) {
+                                val reportOptions = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam", "Violence or Threats", "Misinformation or False Information", "Fraud or Malicious Intent")
+
+                                // Create an AlertDialog to show the options
+                                val builder = AlertDialog.Builder(context, R.style.CustomAlertDialog)
+                                builder.setTitle("Report Post")
+                                builder.setSingleChoiceItems(reportOptions, -1) { dialog, which ->
+                                    val selectedReason = reportOptions[which]
+                                    reportPost(postId, userId, selectedReason, token, context) // Call reportPost with the selected reason
+                                    dialog.dismiss() // Close the dialog after selection
+                                }
+                                builder.setNegativeButton("Cancel") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                builder.show() // Display the dialog
+                            } else {
+                                Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
                             }
-                            .setPositiveButton("OK") { dialog, _ ->
-                                // สิ่งที่ต้องทำเมื่อกดปุ่ม OK
-                                dialog.dismiss()
-                            }
-                            .setNegativeButton("Cancel") { dialog, _ ->
-                                // สิ่งที่ต้องทำเมื่อกดปุ่ม Cancel
-                                dialog.dismiss()
-                            }
 
-                        // แสดง dialog
-                        val alertDialog = dialogBuilder.create()
-                        alertDialog.show()
-
-                        true
+                            true
+                        }
+                        R.id.edit_post -> {
+                            Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                            true
+                        }
+                        R.id.delete_post -> {
+                            deletePost(postId, context)
+                            true
+                        }
+                        else -> false
                     }
-                    R.id.edit_post -> {
-                        Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
-                        // Handle Edit Post action here (e.g., navigate to Edit screen)
-                        true
-                    }
-                    R.id.delete_post -> {
-                        deletePost(postId, context)
-                        true
-                    }
-                    else -> false
                 }
+
+                popupMenu.show()
             }
 
-            popupMenu.show()
-        }
 
-        private fun deletePost(postId: Int, context: Context) {
+
+            private fun deletePost(postId: Int, context: Context) {
             val client = OkHttpClient()
             val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val token = sharedPreferences.getString("TOKEN", null)
@@ -747,6 +750,41 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             })
         }
 
+        private fun reportPost(postId: Int, userId: Int, reason: String, token: String, context: Context) {
+            val client = OkHttpClient()
+            val url = "${context.getString(R.string.root_url)}/posts/$postId/report"
+
+            val requestBody = FormBody.Builder()
+                .add("user_id", userId.toString())
+                .add("reason", reason) // Send the reason selected by the user
+                .build()
+
+            val request = Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (context as? Activity)?.runOnUiThread {
+                        Toast.makeText(context, "Failed to report post: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    (context as? Activity)?.runOnUiThread {
+                        if (response.isSuccessful) {
+                            Toast.makeText(context, "Post reported successfully", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Error reporting post: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        }
+
+
         private fun checkBookmarkStatus(postId: Int, token: String, context: Context, callback: (Boolean) -> Unit) {
             val client = OkHttpClient()
             val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark/status"
@@ -783,6 +821,8 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 }
             })
         }
+
+
 
 
     }
