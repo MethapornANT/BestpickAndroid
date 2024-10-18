@@ -69,7 +69,9 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
             val photoUrls = post.photoUrl?.map { Pair(baseUrl + it, "photo") } ?: emptyList()
+            Log.d("PhotoUrls", "Photo URLs: $photoUrls")
             val videoUrls = post.videoUrl?.map { Pair(baseUrl + it, "video") } ?: emptyList()
+            Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
 
@@ -821,9 +823,5 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                 }
             })
         }
-
-
-
-
     }
 }

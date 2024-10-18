@@ -73,15 +73,14 @@ class HomeFragment : Fragment() {
                 when (tab?.position) {
                     0 -> {
                         Log.d("TabSwitch", "Loading FORYOU data")
-                        loadForYouData()
+                        fetchForYouPosts() // เรียกฟังก์ชันโหลดโพสต์ FOR YOU
                     }
                     1 -> {
                         Log.d("TabSwitch", "Loading FOLLOW data")
-                        loadFollowingData()
+                        fetchFollowingPosts() // เรียกฟังก์ชันโหลดโพสต์ FOLLOW
                     }
                 }
             }
-
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
@@ -108,12 +107,14 @@ class HomeFragment : Fragment() {
             popupMenu.show()
         }
 
-        // Fetch data from the API for the default tab
-        fetchPosts(showLoading = true)
-
         // Pull-to-refresh functionality
         swipeRefreshLayout.setOnRefreshListener {
-            fetchPosts(showLoading = false)
+            val selectedTab = tabLayout.selectedTabPosition
+            if (selectedTab == 0) {
+                fetchForYouPosts() // รีเฟรช FOR YOU
+            } else {
+                fetchFollowingPosts() // รีเฟรช FOLLOW
+            }
         }
     }
 
@@ -121,12 +122,27 @@ class HomeFragment : Fragment() {
     fun refreshPosts() {
         Toast.makeText(requireContext(), "Refreshing posts...", Toast.LENGTH_SHORT).show()
         view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
-        fetchPosts(showLoading = true)
+        val selectedTab = view?.findViewById<TabLayout>(R.id.tab_layout)?.selectedTabPosition
+        if (selectedTab == 0) {
+            fetchForYouPosts()
+        } else {
+            fetchFollowingPosts()
+        }
     }
 
-    private fun fetchPosts(showLoading: Boolean) {
-        swipeRefreshLayout.isRefreshing = false
-        noFollowingPostsTextView.visibility = View.GONE // Hide the message initially
+    private fun loadForYouData() {
+        Toast.makeText(requireContext(), "Loading FORYOU data...", Toast.LENGTH_SHORT).show()
+        fetchForYouPosts()
+    }
+
+    private fun loadFollowingData() {
+        Toast.makeText(requireContext(), "Loading FOLLOW data...", Toast.LENGTH_SHORT).show()
+        fetchFollowingPosts()
+    }
+
+    private fun fetchForYouPosts() {
+        swipeRefreshLayout.isRefreshing = true // เริ่มการรีเฟรช
+        noFollowingPostsTextView.visibility = View.GONE // ซ่อนข้อความ
 
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
@@ -147,6 +163,7 @@ class HomeFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
                     Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                 }
             }
 
@@ -154,6 +171,7 @@ class HomeFragment : Fragment() {
                 if (!response.isSuccessful) {
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), "Failed to fetch posts: ${response.message}", Toast.LENGTH_SHORT).show()
+                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                     return
                 }
@@ -163,6 +181,7 @@ class HomeFragment : Fragment() {
                         val gson = Gson()
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(jsonResponse, postType)
+                        Log.d("HomeFragment", "Posts fetched: $posts")
 
                         requireActivity().runOnUiThread {
                             postList.clear()
@@ -176,42 +195,28 @@ class HomeFragment : Fragment() {
                                 noFollowingPostsTextView.visibility = View.GONE // Hide message
                                 recyclerView.visibility = View.VISIBLE // Show RecyclerView
                             }
+                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     } catch (e: Exception) {
                         requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
                             Log.e("HomeFragment", "Error parsing data: ${e.message}", e)
+                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     }
                 } ?: run {
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
+                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                 }
             }
         })
     }
 
-    // Load data for FORYOU tab
-    private fun loadForYouData() {
-        Toast.makeText(requireContext(), "Loading FORYOU data...", Toast.LENGTH_SHORT).show()
-        //fetchForYouPosts()
-        fetchPosts(true)
-    }
-
-    // Load data for FOLLOW tab
-    private fun loadFollowingData() {
-        Toast.makeText(requireContext(), "Loading FOLLOW data...", Toast.LENGTH_SHORT).show()
-        fetchFollowingPosts()
-    }
-
-    private fun fetchForYouPosts() {
-        // Implement API call or local data fetching for FORYOU posts
-    }
-
     private fun fetchFollowingPosts() {
-        // Show a loading indicator
-        noFollowingPostsTextView.visibility = View.GONE // Hide the message initially
+        swipeRefreshLayout.isRefreshing = true // เริ่มการรีเฟรช
+        noFollowingPostsTextView.visibility = View.GONE // ซ่อนข้อความ
 
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
@@ -232,6 +237,7 @@ class HomeFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
                     Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                 }
             }
 
@@ -239,41 +245,48 @@ class HomeFragment : Fragment() {
                 if (!response.isSuccessful) {
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), "Failed to fetch followed posts: ${response.message}", Toast.LENGTH_SHORT).show()
+                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                     return
                 }
 
-                response.body?.string()?.let { jsonResponse ->
+                val responseBody = response.body?.string()
+
+                if (responseBody != null) {
+                    Log.d("FollowPostsResponse", responseBody)  // Log the API response
                     try {
                         val gson = Gson()
-                        val jsonObject = gson.fromJson(jsonResponse, JsonObject::class.java)
+                        val jsonObject = gson.fromJson(responseBody, JsonObject::class.java)
                         val postsJsonArray = jsonObject.getAsJsonArray("posts")
 
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(postsJsonArray, postType)
+                        Log.d("FollowPostsResponse", "Posts: $posts")
 
                         requireActivity().runOnUiThread {
                             postList.clear()
 
                             if (posts.isEmpty()) {
-                                noFollowingPostsTextView.visibility = View.VISIBLE
                                 recyclerView.visibility = View.GONE
+                                noFollowingPostsTextView.visibility = View.VISIBLE // Show message
                             } else {
-                                noFollowingPostsTextView.visibility = View.GONE
+                                postList.addAll(posts)
+                                postAdapter.notifyDataSetChanged()
                                 recyclerView.visibility = View.VISIBLE
-                                postAdapter.notifyDataSetChanged()  // เรียกเมื่อต้องการอัปเดตข้อมูล
+                                noFollowingPostsTextView.visibility = View.GONE
                             }
-
+                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     } catch (e: Exception) {
                         requireActivity().runOnUiThread {
                             Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
-                            Log.e("HomeFragment", "Error parsing data: ${e.message}", e)
+                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     }
-                } ?: run {
+                } else {
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
+                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                 }
             }
