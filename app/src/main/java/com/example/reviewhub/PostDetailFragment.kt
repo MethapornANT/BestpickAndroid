@@ -60,10 +60,6 @@ class PostDetailFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_post_detail, container, false)
     }
-    override fun onDestroyView() {
-        super.onDestroyView()
-        bottomNav?.visibility = View.VISIBLE
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -85,7 +81,6 @@ class PostDetailFragment : Fragment() {
 
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
         bottomNav = (activity as? MainActivity)?.findViewById(R.id.bottom_navigation)
-
         // ตั้งค่า Visibility ของ Bottom Navigation Bar เป็น GONE เมื่ออยู่ใน Fragment นี้
         bottomNav?.visibility = View.GONE
 
@@ -112,10 +107,6 @@ class PostDetailFragment : Fragment() {
                 bookmarkButton.setImageResource(R.drawable.bookmark)
             }
         }
-
-
-
-
         // ตั้งค่า Listener ให้กับปุ่มไลค์
         val likeButton = view.findViewById<ImageView>(R.id.like_button)
         likeButton.setOnClickListener {
@@ -148,11 +139,6 @@ class PostDetailFragment : Fragment() {
         back.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
-
-
-
-
         val report = view.findViewById<ImageView>(R.id.report)
         report.setOnClickListener {
             // ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
@@ -359,12 +345,6 @@ class PostDetailFragment : Fragment() {
         }
 
     }
-
-
-
-
-
-
     private fun animateDot(dot: ImageView, isSelected: Boolean) {
         val scale = if (isSelected) 1.4f else 1.0f
         ObjectAnimator.ofFloat(dot, "scaleX", scale).apply {

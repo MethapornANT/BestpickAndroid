@@ -77,13 +77,13 @@
             app:itemRippleColor="@android:color/transparent">
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_following"
+                android:id="@+id/tab_foryou"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FORYOU" />
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_foryou"
+                android:id="@+id/tab_following"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FOLLOW" />
@@ -113,5 +113,16 @@
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/loading" />
+
+    <!-- แสดงข้อความ "You are not following anyone" เมื่อไม่มีโพสต์ที่ติดตาม -->
+    <TextView
+        android:id="@+id/no_following_posts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:text="You are not following anyone."
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

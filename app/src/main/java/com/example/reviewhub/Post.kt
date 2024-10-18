@@ -20,10 +20,6 @@ data class Post(
     val videoUrl: List<String>?,
     val likeCount: Int,
     val commentCount: Int,
-
-
-
-
 )
 
 
