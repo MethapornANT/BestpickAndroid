@@ -100,9 +100,9 @@ class ProfileFragment : Fragment() {
         menuImageView.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), menuImageView)
             popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
-
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
+
                     R.id.deleteAccount -> {
                         showDeleteAccountDialog()
                         true
