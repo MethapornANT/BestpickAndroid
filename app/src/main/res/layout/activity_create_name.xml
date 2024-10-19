@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/gray_light"
     tools:context=".CreateName_Activity">
 
     <androidx.cardview.widget.CardView
@@ -111,6 +112,7 @@
                 android:layout_height="60dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/custom_iconlogin"
+                android:backgroundTint="@color/blue"
                 android:text="Ready to Start"
                 android:textColor="@color/white"
                 android:textSize="18sp" />

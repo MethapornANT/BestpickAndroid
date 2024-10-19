@@ -9,7 +9,7 @@
     android:gravity="center"
     tools:context=".LoginActivity"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/gray_light">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -35,7 +35,13 @@
                 android:textSize="36sp"
                 android:textStyle="bold"
                 android:textColor="@color/blue"
-                android:textAlignment="center"/>
+                android:textAlignment="center"
+                android:shadowColor="#55000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="5"
+                android:letterSpacing="0.05"
+                android:elevation="4dp" />
 
             <TextView
                 android:layout_width="match_parent"

@@ -35,9 +35,6 @@
             android:name=".PostAdapter"
             android:exported="false" />
         <activity
-            android:name=".LoadingDialogActivity"
-            android:exported="false" />
-        <activity
             android:name=".Register_Create_PasswordActivity"
             android:exported="false" />
         <activity android:name=".SearchFragment" />
@@ -49,9 +46,6 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
-        <activity
-            android:name=".SplashScreenActivity"
-            android:exported="false" />
         <activity
             android:name=".Change_PasswordActivity"
             android:exported="false" />
@@ -72,6 +66,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
