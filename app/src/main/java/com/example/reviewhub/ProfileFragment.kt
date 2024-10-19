@@ -146,14 +146,11 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showDeleteAccountDialog() {
-        val options = arrayOf("Option 1", "Option 2")
         val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
-            .setTitle("Delete Account Option")
-            .setSingleChoiceItems(options, -1) { dialog, which ->
-                // Handle option selection
-            }
+            .setTitle("Delete Account")
+            .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
             .setPositiveButton("Confirm") { dialog, _ ->
-                // Handle confirmation
+                deleteAccount()  // Call deleteAccount API here
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel") { dialog, _ ->
@@ -383,4 +380,48 @@ class ProfileFragment : Fragment() {
             sharedPreferences.edit().clear().apply()
         }
     }
+
+    private fun deleteAccount() {
+        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("TOKEN", null)
+        val userId = sharedPreferences.getString("USER_ID", null)
+
+        if (token != null && userId != null) {
+            val rootUrl = getString(R.string.root_url)
+            val deleteAccountEndpoint = "/users/$userId"
+            val url = "$rootUrl$deleteAccountEndpoint"
+
+            val request = Request.Builder()
+                .url(url)
+                .delete()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("ProfileFragment", "Failed to delete account: ${e.message}")
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "Error deleting account", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (response.isSuccessful) {
+                        activity?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                            performLogout()  // Log out user after account deletion
+                        }
+                    } else {
+                        Log.e("ProfileFragment", "Failed to delete account: ${response.message}")
+                        activity?.runOnUiThread {
+                            Toast.makeText(requireContext(), "Failed to delete account", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        } else {
+            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 }
