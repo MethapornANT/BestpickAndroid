@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:layout_marginBottom="5dp"
     android:padding="10dp"
     android:background="@color/white">
 
-
-    <!-- User Info Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +17,6 @@
         android:layout_marginTop="10dp"
         android:paddingTop="5dp">
 
-        <!-- Profile Image -->
         <ImageView
             android:id="@+id/user_profile_image"
             android:layout_width="40dp"
@@ -30,7 +28,6 @@
             android:src="@drawable/user"
             android:clipToOutline="true" />
 
-        <!-- Username and Post Time -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -55,24 +52,16 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <!-- Follower Text -->
         <TextView
-            android:id="@+id/follower"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Following"
+            android:text="Support By"
             android:layout_marginEnd="5dp"
             android:textColor="@color/nightblue"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/report"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/report"
-            android:layout_marginEnd="5dp" />
     </LinearLayout>
 
     <TextView
