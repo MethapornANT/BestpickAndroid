@@ -21,6 +21,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import okhttp3.*
@@ -61,6 +62,28 @@ class ProfileFragment : Fragment() {
         // Set up RecyclerView
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
         recyclerViewPosts.setHasFixedSize(true)
+
+        val isSelfProfile = arguments?.getBoolean("isSelfProfile", false) ?: false
+        val backButton = view.findViewById<ImageView>(R.id.back_button)
+        val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        // ตั้งค่า visibility ของ backButton เริ่มต้นเป็น GONE
+        backButton.visibility = View.GONE
+
+        // ตั้งค่าการทำงานเมื่อกด backButton
+        backButton.setOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+            bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
+        }
+
+        if (!isSelfProfile) {
+            editProfileButton.visibility = View.VISIBLE
+        } else {
+            editProfileButton.visibility = View.GONE
+            backButton.visibility = View.VISIBLE
+
+        }
+
 
         if (userId != null && token != null) {
             fetchUserProfile(view, userId, token)
@@ -188,7 +211,6 @@ class ProfileFragment : Fragment() {
 
         // Set user profile data
         view.findViewById<TextView>(R.id.username)?.text = username
-        view.findViewById<TextView>(R.id.back)?.text = username
         followerTextView.text = followerCount.toString()
         view.findViewById<TextView>(R.id.following_count)?.text = followingCount.toString()
         view.findViewById<TextView>(R.id.post_count)?.text = postCount.toString()

@@ -316,11 +316,16 @@ class PostDetailFragment : Fragment() {
         val token = sharedPreferences.getString("TOKEN", null)
         if (userId == currentUserId) {
             // ลิงก์ไปที่หน้าโปรไฟล์ของตัวเอง
-            val profileFragment = ProfileFragment()
+            val profileFragment = ProfileFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean("isSelfProfile", true) // หรือ false หากไม่ใช่โปรไฟล์ตัวเอง
+                }
+            }
             parentFragmentManager.beginTransaction()
                 .replace(R.id.nav_host_fragment, profileFragment)
                 .addToBackStack(null)
                 .commit()
+
         } else {
             // สร้าง AnotherUserFragment และส่ง USER_ID
             val anotherUserFragment = AnotherUserFragment()

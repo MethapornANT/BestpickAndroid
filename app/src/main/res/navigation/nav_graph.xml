@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -20,7 +19,6 @@
             app:destination="@id/homeFragment" />
     </fragment>
 
-
     <fragment
         android:id="@+id/notificationsFragment"
         android:name="com.example.reviewhub.NotificationsFragment"
@@ -39,12 +37,20 @@
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.reviewhub.ProfileFragment"
-        android:label="Profile" />
+        android:label="Profile">
+        <action
+            android:id="@+id/action_to_anotherUserFragment"
+            app:destination="@id/AnotherUserFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/AnotherUserFragment"
         android:name="com.example.reviewhub.AnotherUserFragment"
-        android:label="AnotherUser" />
+        android:label="AnotherUser">
+        <action
+            android:id="@+id/action_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
 
     <!-- Fragment ที่ไม่ต้องการแสดง BottomNavigationView -->
     <fragment
@@ -56,5 +62,4 @@
         android:id="@+id/editprofileFragment"
         android:name="com.example.reviewhub.EditprofileFragment"
         android:label="Edit Profile" />
-
 </navigation>
