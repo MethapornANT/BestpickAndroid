@@ -225,9 +225,6 @@
 
         </LinearLayout>
 
-
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -252,7 +249,6 @@
             android:visibility="visible"
             android:padding="5dp"
             tools:listitem="@layout/comment_postdetail_item" />
-
 
         <LinearLayout
             android:id="@+id/comment"

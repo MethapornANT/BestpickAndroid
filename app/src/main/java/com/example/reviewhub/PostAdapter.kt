@@ -61,7 +61,6 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
         var isBookmark = false
 
 
-
         fun bind(post: Post) {
             val context = itemView.context
             val baseUrl = context.getString(R.string.root_url)
@@ -148,9 +147,6 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                     Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
                 }
             }
-
-
-
 
             // Load profile image using the full URL
             Glide.with(context)

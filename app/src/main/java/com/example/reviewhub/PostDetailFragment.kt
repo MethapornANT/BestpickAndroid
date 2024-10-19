@@ -151,7 +151,6 @@ class PostDetailFragment : Fragment() {
             openUserProfile(followingId)
         }
 
-
         val commentButton = view.findViewById<ImageView>(R.id.send_button)
         val commentEditText = view.findViewById<EditText>(R.id.comment_input)
 

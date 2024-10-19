@@ -21,6 +21,8 @@
     <string name="postlikeorunlike">/posts/like/</string>">
     <string name="userprofile">/api/users/</string>
     <string name="Search">/search</string>
+    <string name="listfollowers">/api/users/followers/</string>
+    <string name="listfolloweing">/api/users/following/</string>
     <string name="interactions">/api/interactions</string>
     <string name="userprofileupdate">/api/users/</string>
     <string name="photo_description">This is the photo description.</string>

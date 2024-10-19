@@ -62,4 +62,10 @@
         android:id="@+id/editprofileFragment"
         android:name="com.example.reviewhub.EditprofileFragment"
         android:label="Edit Profile" />
+
+    <fragment
+        android:id="@+id/checkfollowFragment"
+        android:name="com.example.reviewhub.CheckFollowFragment"
+        android:label="Home" />
+
 </navigation>

@@ -130,7 +130,6 @@ class EditprofileFragment : Fragment() {
             }
             return
         }
-
         // Convert birthday from "d MMM yyyy" back to "yyyy-MM-dd" for the server
         val formattedBirthday = formatDateForServer(birthdayStr)
 

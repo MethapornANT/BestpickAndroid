@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/CheckFollowFragment"
     android:layout_height="wrap_content"
     android:background="#e0e0e0"
     tools:context=".CheckFollowFragment">
@@ -12,40 +13,57 @@
         android:background="@color/white"
         android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/white"
-        android:padding="10dp">
-        <TextView
-            android:layout_width="wrap_content"
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Name"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_gravity="center"/>
+            android:background="@color/white"
+            android:orientation="horizontal"
+            android:padding="10dp">
 
-    </androidx.appcompat.widget.Toolbar>
+            <ImageView
+                android:id="@+id/back_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="left"
+                android:src="@drawable/ic_baseline_arrow_back_24"
+                android:textColor="@color/black" />
 
+            <TextView
+                android:id="@+id/username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Name"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
             android:layout_gravity="center"
-            android:background="@color/white">
+            android:background="@color/white"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:tabIndicatorColor="@color/blue"
+            app:tabSelectedTextColor="@color/blue"
+            android:theme="@style/NoClickSound"
+            app:itemIconTint="@color/color_navigate_whenclick"
+            app:itemTextColor="@color/color_navigate_whenclick"
+            app:itemRippleColor="@android:color/transparent">
+
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_following"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Follower" />
-            <com.google.android.material.tabs.TabItem
-                android:id="@+id/tab_foryou"
+                android:id="@+id/tab_post"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Following" />
+
+            <com.google.android.material.tabs.TabItem
+                android:id="@+id/tab_bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Follower" />
         </com.google.android.material.tabs.TabLayout>
 
 
@@ -59,19 +77,27 @@
             <androidx.appcompat.widget.AppCompatEditText
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
                 android:background="@drawable/custom_edittext"
                 android:drawableStart="@drawable/baseline_search_home"
                 android:drawablePadding="8dp"
-                android:hint="Search User"
+                android:hint="Search"
                 android:paddingStart="10dp" />
         </androidx.appcompat.widget.Toolbar>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_posts"
+            android:id="@+id/recycler_view_following"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="10dp"
+            android:padding="5dp"
             tools:listitem="@layout/item_checkfollow" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_followers"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dp"
+            tools:listitem="@layout/item_checkfollower" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -14,10 +14,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.preference.DialogPreference
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -66,6 +68,13 @@ class ProfileFragment : Fragment() {
         val isSelfProfile = arguments?.getBoolean("isSelfProfile", false) ?: false
         val backButton = view.findViewById<ImageView>(R.id.back_button)
         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        val checkfollow = view.findViewById<LinearLayout>(R.id.checkfollow)
+
+        checkfollow.setOnClickListener {
+            // นำทางไปยัง Fragment ที่ต้องการ
+            findNavController().navigate(R.id.checkfollowFragment)
+        }
 
         // ตั้งค่า visibility ของ backButton เริ่มต้นเป็น GONE
         backButton.visibility = View.GONE
