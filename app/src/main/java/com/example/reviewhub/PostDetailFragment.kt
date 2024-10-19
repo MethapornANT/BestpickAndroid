@@ -399,7 +399,21 @@ class PostDetailFragment : Fragment() {
                     true
                 }
                 R.id.delete_post -> {
-                    deletePost(postId, context)
+                    // Show confirmation dialog before deleting the post
+                    val confirmDeleteBuilder = AlertDialog.Builder(context)
+                    confirmDeleteBuilder.setTitle("Confirm Deletion")
+                    confirmDeleteBuilder.setMessage("Are you sure you want to delete this post?")
+
+                    confirmDeleteBuilder.setPositiveButton("Yes") { dialog, _ ->
+                        deletePost(postId, context)
+                        dialog.dismiss()
+                    }
+
+                    confirmDeleteBuilder.setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss() // Close the dialog if user cancels
+                    }
+
+                    confirmDeleteBuilder.show() // Display the confirmation dialog
                     true
                 }
                 else -> false
@@ -504,6 +518,7 @@ class PostDetailFragment : Fragment() {
                         } else {
                             Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
                             // Instead of adding a callback, simply pop the back stack
+                            bottomNav?.visibility = View.VISIBLE
                             parentFragmentManager.popBackStack()
                         }
                     }

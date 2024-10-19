@@ -94,7 +94,7 @@ class HomeFragment : Fragment() {
         menuImageView.setOnClickListener {
             val popupMenu = PopupMenu(ContextThemeWrapper(requireContext(), R.style.CustomPopupMenuHomepage), menuImageView)
             popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
-
+            popupMenu.menu.findItem(R.id.deleteAccount).isVisible = false
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.logout -> {

@@ -618,56 +618,71 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
         }
 
 
-            private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
-                val popupMenu = PopupMenu(context, anchorView)
-                popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
+        private fun showReportMenu(context: Context, anchorView: View, postId: Int, isUserPost: Boolean) {
+            val popupMenu = PopupMenu(context, anchorView)
+            popupMenu.menuInflater.inflate(R.menu.menu_report, popupMenu.menu)
 
-                popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
-                popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
-                popupMenu.menu.findItem(R.id.report).isVisible = !isUserPost
+            popupMenu.menu.findItem(R.id.edit_post).isVisible = isUserPost
+            popupMenu.menu.findItem(R.id.delete_post).isVisible = isUserPost
+            popupMenu.menu.findItem(R.id.report).isVisible = !isUserPost
 
-                popupMenu.setOnMenuItemClickListener { menuItem ->
-                    when (menuItem.itemId) {
-                        R.id.report -> {
-                            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                            val token = sharedPreferences.getString("TOKEN", null)
-                            val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.report -> {
+                        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                        val token = sharedPreferences.getString("TOKEN", null)
+                        val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
 
-                            if (token != null && userId != null) {
-                                val reportOptions = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam", "Violence or Threats", "Misinformation or False Information", "Fraud or Malicious Intent")
+                        if (token != null && userId != null) {
+                            val reportOptions = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam", "Violence or Threats", "Misinformation or False Information", "Fraud or Malicious Intent")
 
-                                // Create an AlertDialog to show the options
-                                val builder = AlertDialog.Builder(context, R.style.CustomAlertDialog)
-                                builder.setTitle("Report Post")
-                                builder.setSingleChoiceItems(reportOptions, -1) { dialog, which ->
-                                    val selectedReason = reportOptions[which]
-                                    reportPost(postId, userId, selectedReason, token, context) // Call reportPost with the selected reason
-                                    dialog.dismiss() // Close the dialog after selection
-                                }
-                                builder.setNegativeButton("Cancel") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                builder.show() // Display the dialog
-                            } else {
-                                Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                            // Create an AlertDialog to show the options
+                            val builder = AlertDialog.Builder(context, R.style.CustomAlertDialog)
+                            builder.setTitle("Report Post")
+                            builder.setSingleChoiceItems(reportOptions, -1) { dialog, which ->
+                                val selectedReason = reportOptions[which]
+                                reportPost(postId, userId, selectedReason, token, context) // Call reportPost with the selected reason
+                                dialog.dismiss() // Close the dialog after selection
                             }
+                            builder.setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            builder.show() // Display the dialog
+                        } else {
+                            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                        }
 
-                            true
-                        }
-                        R.id.edit_post -> {
-                            Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
-                            true
-                        }
-                        R.id.delete_post -> {
-                            deletePost(postId, context)
-                            true
-                        }
-                        else -> false
+                        true
                     }
-                }
+                    R.id.edit_post -> {
+                        Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.delete_post -> {
+                        // Show confirmation dialog before deleting the post
+                        val confirmDeleteBuilder = AlertDialog.Builder(context)
+                        confirmDeleteBuilder.setTitle("Confirm Deletion")
+                        confirmDeleteBuilder.setMessage("Are you sure you want to delete this post?")
 
-                popupMenu.show()
+                        confirmDeleteBuilder.setPositiveButton("Yes") { dialog, _ ->
+                            deletePost(postId, context)
+                            dialog.dismiss()
+                        }
+
+                        confirmDeleteBuilder.setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss() // Close the dialog if user cancels
+                        }
+
+                        confirmDeleteBuilder.show() // Display the confirmation dialog
+                        true
+                    }
+                    else -> false
+                }
             }
+
+            popupMenu.show()
+        }
+
 
 
 

@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
@@ -100,6 +101,18 @@ class RegisterActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     }
+                    message.contains("Account reactivated successfully. You can now log in.") -> {
+                        Log.d("CreateResponse", "Account reactivated successfully")
+                        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
+                        // Use a coroutine to add a delay before redirecting to the login screen
+                        CoroutineScope(Dispatchers.Main).launch {
+                            delay(3000) // Delay for 5 seconds
+                            val intent = Intent(this@RegisterActivity, LoginActivity::class.java)
+                            startActivity(intent)
+                            finish() // Finish the current activity
+                        }
+                    }
+
                     else -> {
                         Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
                     }
