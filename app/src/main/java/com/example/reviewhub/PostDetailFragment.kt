@@ -137,6 +137,7 @@ class PostDetailFragment : Fragment() {
         }
         val back = view.findViewById<ImageView>(R.id.back_button)
         back.setOnClickListener {
+            bottomNav?.visibility = View.VISIBLE
             parentFragmentManager.popBackStack()
         }
         val report = view.findViewById<ImageView>(R.id.report)
@@ -313,11 +314,6 @@ class PostDetailFragment : Fragment() {
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
         val token = sharedPreferences.getString("TOKEN", null)
-        Log.d("userId", userId.toString())
-        // ซ่อน BottomNavigationView เมื่อเปิดหน้าโปรไฟล์
-        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNav?.visibility = View.GONE
-        // ตรวจสอบว่าเป็นโปรไฟล์ของตัวเองหรือไม่
         if (userId == currentUserId) {
             // ลิงก์ไปที่หน้าโปรไฟล์ของตัวเอง
             val profileFragment = ProfileFragment()
@@ -343,8 +339,8 @@ class PostDetailFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
-
     }
+
     private fun animateDot(dot: ImageView, isSelected: Boolean) {
         val scale = if (isSelected) 1.4f else 1.0f
         ObjectAnimator.ofFloat(dot, "scaleX", scale).apply {
