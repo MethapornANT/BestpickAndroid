@@ -36,7 +36,7 @@
             android:id="@+id/unfollow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Follow"
+            android:text="Follow Back"
             android:layout_gravity="end"
             android:layout_marginEnd="10dp"
             android:textColor="@color/blue"

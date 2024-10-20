@@ -82,7 +82,6 @@ class CheckFollowFragment : Fragment() {
 
 
 
-
         return view
     }
 
