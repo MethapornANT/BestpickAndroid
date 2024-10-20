@@ -420,5 +420,3 @@ class CheckFollowFragment : Fragment() {
         })
     }
 }
-
-

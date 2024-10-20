@@ -1,120 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardViewAd"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:layout_marginBottom="5dp"
-    android:padding="10dp"
-    android:background="@color/white">
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="10dp"
-        android:paddingTop="5dp">
+        android:padding="12dp">
 
         <ImageView
-            android:id="@+id/user_profile_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/rounded_image"
-            android:scaleType="centerCrop"
-            android:src="@drawable/user"
-            android:clipToOutline="true" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/user_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Name"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/post_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0 hours ago"
-                android:textColor="@android:color/darker_gray"
-                android:textSize="14sp" />
-        </LinearLayout>
+            android:id="@+id/adImage"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop" />
 
         <TextView
+            android:id="@+id/adTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="Support By"
-            android:layout_marginEnd="5dp"
-            android:textColor="@color/nightblue"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_below="@id/adImage"
+            android:layout_marginTop="8dp"
+            android:text="Ad Title"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/adDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/adTitle"
+            android:text="Ad Description"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="4dp" />
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="This is the post title"
-        android:layout_marginTop="5dp"
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        android:padding="5dp" />
-    <TextView
-        android:id="@+id/post_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="This is the post content, it can be a description or message in the post."
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:padding="5dp" />
+        <TextView
+            android:id="@+id/adLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/adDescription"
+            android:text="Visit Now"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_blue_dark"
+            android:layout_marginTop="8dp" />
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/media_view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="5dp" />
+    </RelativeLayout>
 
-    <androidx.appcompat.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/like_button"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:src="@drawable/heart" />
-
-        <ImageView
-            android:id="@+id/share_button"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="10dp"
-            android:src="@drawable/shareclick" />
-
-        <ImageView
-            android:id="@+id/bookmark_button"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="10dp"
-            android:src="@drawable/bookmark" />
-    </androidx.appcompat.widget.Toolbar>
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

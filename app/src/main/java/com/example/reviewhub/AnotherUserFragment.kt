@@ -144,7 +144,7 @@ class AnotherUserFragment : Fragment() {
 
         val posts = userProfile.optJSONArray("posts") ?: return
 
-        val postList = mutableListOf<Post>()
+        val postList = mutableListOf<Any>()
         for (i in 0 until posts.length()) {
             val post = posts.getJSONObject(i)
             postList.add(

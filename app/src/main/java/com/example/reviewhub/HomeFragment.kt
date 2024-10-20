@@ -30,7 +30,7 @@ import java.io.IOException
 class HomeFragment : Fragment() {
 
     private lateinit var postAdapter: PostAdapter
-    private val postList = mutableListOf<Post>()
+    private val postList = mutableListOf<Any>()
     private val client = OkHttpClient()
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var recyclerView: RecyclerView
@@ -118,6 +118,21 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun insertAds(posts: List<Post>, ads: List<PostAdapter.Ad>, interval: Int = 5): List<Any> {
+        val mixedList = mutableListOf<Any>()
+        var adIndex = 0
+        for ((index, post) in posts.withIndex()) {
+            mixedList.add(post)
+            // Insert ad after every `interval` number of posts
+            if ((index + 1) % interval == 0 && adIndex < ads.size) {
+                mixedList.add(ads[adIndex])
+                adIndex++
+            }
+        }
+        return mixedList
+    }
+
+
     // Function to refresh posts when Home is double clicked
     fun refreshPosts() {
         view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
@@ -133,16 +148,12 @@ class HomeFragment : Fragment() {
         fetchForYouPosts()
     }
 
-    private fun loadFollowingData() {
-        fetchFollowingPosts()
-    }
 
     private fun fetchForYouPosts() {
-        swipeRefreshLayout.isRefreshing = true // เริ่มการรีเฟรช
-        noFollowingPostsTextView.visibility = View.GONE // ซ่อนข้อความ
+        swipeRefreshLayout.isRefreshing = true
+        noFollowingPostsTextView.visibility = View.GONE
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
-
 
         val url = getString(R.string.root_url) + getString(R.string.Allpost)
 
@@ -154,16 +165,14 @@ class HomeFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
-
-                    swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                    swipeRefreshLayout.isRefreshing = false
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     requireActivity().runOnUiThread {
-
-                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                        swipeRefreshLayout.isRefreshing = false
                     }
                     return
                 }
@@ -173,32 +182,33 @@ class HomeFragment : Fragment() {
                         val gson = Gson()
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(jsonResponse, postType)
-                        Log.d("HomeFragment", "Posts fetched: $posts")
 
-                        requireActivity().runOnUiThread {
-                            postList.clear()
-                            postList.addAll(posts)
-                            postAdapter.notifyDataSetChanged()
+                        // Now fetch random ads and insert them into the list
+                        fetchRandomAds { ads ->
+                            requireActivity().runOnUiThread {
+                                val mixedList = insertAds(posts, ads, 5) // Insert an ad after every 5 posts
+                                postList.clear()
+                                postList.addAll(mixedList)
+                                postAdapter.notifyDataSetChanged()
 
-                            if (posts.isEmpty()) {
-                                noFollowingPostsTextView.visibility = View.VISIBLE // Show message
-                                recyclerView.visibility = View.GONE // Hide RecyclerView
-                            } else {
-                                noFollowingPostsTextView.visibility = View.GONE // Hide message
-                                recyclerView.visibility = View.VISIBLE // Show RecyclerView
+                                if (posts.isEmpty()) {
+                                    noFollowingPostsTextView.visibility = View.VISIBLE
+                                    recyclerView.visibility = View.GONE
+                                } else {
+                                    noFollowingPostsTextView.visibility = View.GONE
+                                    recyclerView.visibility = View.VISIBLE
+                                }
+                                swipeRefreshLayout.isRefreshing = false
                             }
-                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     } catch (e: Exception) {
                         requireActivity().runOnUiThread {
-
-                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                            swipeRefreshLayout.isRefreshing = false
                         }
                     }
                 } ?: run {
                     requireActivity().runOnUiThread {
-
-                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                        swipeRefreshLayout.isRefreshing = false
                     }
                 }
             }
@@ -279,6 +289,49 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
+    private fun fetchRandomAds(callback: (List<PostAdapter.Ad>) -> Unit) {
+        val url = getString(R.string.root_url) + "/ads/random?limit=5"
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+                callback(emptyList()) // Return empty ads in case of failure
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "Failed to fetch ads", Toast.LENGTH_SHORT).show()
+                    }
+                    callback(emptyList()) // Return empty ads in case of failure
+                    return
+                }
+
+                response.body?.string()?.let { jsonResponse ->
+                    try {
+                        val gson = Gson()
+                        val adType = object : TypeToken<List<PostAdapter.Ad>>() {}.type
+                        val ads: List<PostAdapter.Ad> = gson.fromJson(jsonResponse, adType)
+                        callback(ads) // Return fetched ads
+                    } catch (e: Exception) {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "Error parsing ads", Toast.LENGTH_SHORT).show()
+                        }
+                        callback(emptyList()) // Return empty ads in case of parsing error
+                    }
+                }
+            }
+        })
+    }
+
+
 
     private fun performLogout() {
         val firebaseAuth = FirebaseAuth.getInstance()

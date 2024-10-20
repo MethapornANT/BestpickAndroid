@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,7 +21,6 @@ import com.bumptech.glide.Glide
 import okhttp3.*
 import android.widget.PopupMenu
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.json.JSONException
 import org.json.JSONObject
@@ -29,19 +29,64 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
-        return PostViewHolder(view, this) // ส่งตัวแปร adapter เข้าไปใน ViewHolder
+    private val TYPE_POST = 0
+    private val TYPE_AD = 1
+
+    override fun getItemViewType(position: Int): Int {
+        return if (postList[position] is Ad) TYPE_AD else TYPE_POST
     }
 
-    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        val post = postList[position]
-        holder.bind(post)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == TYPE_AD) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ad, parent, false)
+            AdViewHolder(view)
+        } else {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+            PostViewHolder(view, this)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is AdViewHolder) {
+            val ad = postList[position] as Ad
+            holder.bind(ad)
+        } else if (holder is PostViewHolder) {
+            val post = postList[position] as Post
+            holder.bind(post)
+        }
     }
 
     override fun getItemCount(): Int = postList.size
+
+    fun updateData(newData: List<Any>) {
+        postList.clear()
+        postList.addAll(newData)
+        notifyDataSetChanged()
+    }
+
+    // ViewHolder for ads
+    class AdViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val adImage: ImageView = itemView.findViewById(R.id.adImage)
+        private val adTitle: TextView = itemView.findViewById(R.id.adTitle)
+        private val adDescription: TextView = itemView.findViewById(R.id.adDescription)
+        private val adLink: TextView = itemView.findViewById(R.id.adLink)
+
+        fun bind(ad: Ad) {
+            val baseUrl = itemView.context.getString(R.string.root_url) // Use itemView.context
+            adTitle.text = ad.title
+            adDescription.text = ad.content
+            adLink.setOnClickListener {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ad.link))
+                itemView.context.startActivity(intent)
+            }
+            Glide.with(itemView.context)
+                .load(baseUrl + ad.image)
+                .into(adImage)
+        }
+
+    }
 
     class PostViewHolder(itemView: View, private val adapter: PostAdapter) : RecyclerView.ViewHolder(itemView) { // รับ adapter เป็น parameter
         private val userName: TextView = itemView.findViewById(R.id.user_name)
@@ -868,4 +913,12 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             })
         }
     }
+    data class Ad(
+        val id: Int,
+        val title: String,
+        val content: String,
+        val image: String,
+        val link: String
+    )
+
 }
