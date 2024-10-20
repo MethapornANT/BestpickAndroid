@@ -3,11 +3,15 @@ package com.example.reviewhub
 import android.app.AlertDialog
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
+import android.os.Handler
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -34,6 +38,11 @@ class CheckFollowFragment : Fragment() {
     private lateinit var recyclerViewFollowing: RecyclerView
     private lateinit var recyclerViewFollowers: RecyclerView
     private lateinit var backButton: ImageView
+    private lateinit var searchEditText: EditText
+    private val searchHandler = Handler()
+    private var searchRunnable: Runnable? = null
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +53,9 @@ class CheckFollowFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
+
+        searchEditText = view.findViewById(R.id.search_checkfollow)
+
 
         backButton = view.findViewById(R.id.back_button)
         recyclerViewFollowing = view.findViewById(R.id.recycler_view_following)
@@ -56,6 +68,7 @@ class CheckFollowFragment : Fragment() {
         if (token != null && userId != null) {
             fetchListFollowing(view, userId, token)
             fetchUserProfile(view, userId, token)
+            setupSearchFunctionality(view, userId, token)
         } else {
             Toast.makeText(activity, "Token or User ID not found", Toast.LENGTH_SHORT).show()
         }
@@ -149,11 +162,155 @@ class CheckFollowFragment : Fragment() {
                     }
                 }
             }
-
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
     }
+
+
+    private fun setupSearchFunctionality(view: View, userId: String, token: String) {
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().trim()
+
+                if (query.isNotEmpty()) {
+                    // เมื่อมีการค้นหา ให้เรียกฟังก์ชันค้นหา
+                    searchFollowingOrFollowers(view, userId, token, query)
+                } else {
+                    // หากไม่มีการค้นหา (ช่องว่าง) ให้แสดงรายการทั้งหมด
+                    if (recyclerViewFollowing.visibility == View.VISIBLE) {
+                        fetchListFollowing(view, userId, token)
+                    } else if (recyclerViewFollowers.visibility == View.VISIBLE) {
+                        fetchListFollowers(view, userId, token)
+                    }
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+    }
+
+
+    private fun searchFollowingOrFollowers(view: View, userId: String, token: String, query: String) {
+        if (recyclerViewFollowing.visibility == View.VISIBLE) {
+            searchFollowing(view, userId, token, query)
+        } else if (recyclerViewFollowers.visibility == View.VISIBLE) {
+            searchFollowers(view, userId, token, query)
+        }
+    }
+
+    private fun searchFollowing(view: View, userId: String, token: String, query: String) {
+        // แปลง query เป็นตัวอักษรเล็กทั้งหมดเพื่อตรวจสอบให้ตรงกับ username แบบไม่สนใจตัวเล็ก-ใหญ่
+        val searchQuery = query.toLowerCase()
+        val url = "${getString(R.string.root_url)}/api/users/search/following?query=$searchQuery"
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("CheckFollowFragment", "Failed to search following: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseData = response.body?.string()
+                    responseData?.let {
+                        try {
+                            val jsonArray = JSONArray(it)
+                            val followingList = mutableListOf<Following>()
+
+                            for (i in 0 until jsonArray.length()) {
+                                val followingObject = jsonArray.getJSONObject(i)
+                                val userProfileUrl = followingObject.optString("profileImageUrl", null)
+
+                                // เปรียบเทียบ query กับชื่อผู้ใช้ โดยไม่สนใจตัวอักษรเล็ก-ใหญ่
+                                if (followingObject.getString("username").toLowerCase().contains(searchQuery)) {
+                                    val follower = Following(
+                                        followingObject.getInt("userId"),
+                                        followingObject.getString("username"),
+                                        userProfileUrl
+                                    )
+                                    followingList.add(follower)
+                                }
+                            }
+
+                            activity?.runOnUiThread {
+                                recyclerViewFollowing.layoutManager = LinearLayoutManager(context)
+                                recyclerViewFollowing.adapter = FollowingAdapter(followingList)
+                            }
+
+                        } catch (e: JSONException) {
+                            Log.e("CheckFollowFragment", "Error parsing JSON: ${e.message}")
+                        }
+                    }
+                } else {
+                    Log.e("CheckFollowFragment", "Server error: ${response.message}")
+                }
+            }
+        })
+    }
+
+    private fun searchFollowers(view: View, userId: String, token: String, query: String) {
+        // แปลง query เป็นตัวอักษรเล็กทั้งหมดเพื่อตรวจสอบให้ตรงกับ username แบบไม่สนใจตัวเล็ก-ใหญ่
+        val searchQuery = query.toLowerCase()
+        val url = "${getString(R.string.root_url)}/api/users/search/followers?query=$searchQuery"
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("CheckFollowFragment", "Failed to search followers: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseData = response.body?.string()
+                    responseData?.let {
+                        try {
+                            val jsonArray = JSONArray(it)
+                            val followerList = mutableListOf<Follower>()
+
+                            for (i in 0 until jsonArray.length()) {
+                                val followerObject = jsonArray.getJSONObject(i)
+                                val userProfileUrl = followerObject.optString("profileImageUrl", null)
+
+                                // เปรียบเทียบ query กับชื่อผู้ใช้ โดยไม่สนใจตัวอักษรเล็ก-ใหญ่
+                                if (followerObject.getString("username").toLowerCase().contains(searchQuery)) {
+                                    val follower = Follower(
+                                        followerObject.getInt("userId"),
+                                        followerObject.getString("username"),
+                                        userProfileUrl
+                                    )
+                                    followerList.add(follower)
+                                }
+                            }
+
+                            activity?.runOnUiThread {
+                                recyclerViewFollowers.layoutManager = LinearLayoutManager(context)
+                                recyclerViewFollowers.adapter = FollowersAdapter(followerList)
+                            }
+
+                        } catch (e: JSONException) {
+                            Log.e("CheckFollowFragment", "Error parsing JSON: ${e.message}")
+                        }
+                    }
+                } else {
+                    Log.e("CheckFollowFragment", "Server error: ${response.message}")
+                }
+            }
+        })
+    }
+
+
+
+
+
+
 
     private fun fetchListFollowing(view: View, userId: String, token: String) {
         val url = getString(R.string.root_url) + "/api/users/following/$userId"
