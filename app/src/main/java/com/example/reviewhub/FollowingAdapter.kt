@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.reviewhub.FollowersAdapter.FollowerViewHolder
@@ -16,6 +17,7 @@ class FollowingAdapter(private var followingList: MutableList<Following>) :
     class FollowingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageProfile: ImageView = itemView.findViewById(R.id.user_profile_image) // เปลี่ยนชื่อเป็น imageProfile
         val textUsername: TextView = itemView.findViewById(R.id.user_name)
+        val unfollow: TextView = itemView.findViewById(R.id.unfollow)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FollowingViewHolder {
@@ -40,6 +42,11 @@ class FollowingAdapter(private var followingList: MutableList<Following>) :
             .placeholder(R.drawable.ic_launcher_background)
             .error(R.drawable.ic_error) // เพิ่มรูป error หากโหลดรูปไม่ได้
             .into(holder.imageProfile) // ใส่รูปภาพใน ImageView
+
+
+            holder.imageProfile.setOnClickListener{
+                Toast.makeText(holder.itemView.context, "Clicked on ${follower.username}", Toast.LENGTH_SHORT).show()
+            }
 
 
     }
