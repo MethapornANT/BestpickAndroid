@@ -634,14 +634,21 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                         val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
 
                         if (token != null && userId != null) {
-                            val reportOptions = arrayOf("Inappropriate Content", "Copyright Violation", "Scam or Spam", "Violence or Threats", "Misinformation or False Information", "Fraud or Malicious Intent")
+                            val reportOptions = arrayOf(
+                                "Inappropriate Content",
+                                "Copyright Violation",
+                                "Scam or Spam",
+                                "Violence or Threats",
+                                "Misinformation or False Information",
+                                "Fraud or Malicious Intent"
+                            )
 
                             // Create an AlertDialog to show the options
                             val builder = AlertDialog.Builder(context, R.style.CustomAlertDialog)
                             builder.setTitle("Report Post")
                             builder.setSingleChoiceItems(reportOptions, -1) { dialog, which ->
                                 val selectedReason = reportOptions[which]
-                                reportPost(postId, userId, selectedReason, token, context) // Call reportPost with the selected reason
+                                reportPost(postId, userId, selectedReason, token, context)
                                 dialog.dismiss() // Close the dialog after selection
                             }
                             builder.setNegativeButton("Cancel") { dialog, _ ->
@@ -654,10 +661,34 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
 
                         true
                     }
+
                     R.id.edit_post -> {
                         Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                        val token = sharedPreferences.getString("TOKEN", null)
+
+                        token?.let {
+                            // Create the PostDetailFragment and pass the post ID
+                            val EditpostFragment = EditpostFragment()
+                            val bundle = Bundle().apply {
+                                putInt("POST_ID", postId)
+                                putString("From", "post")
+                            }
+                            EditpostFragment.arguments = bundle
+                            // Navigate to the PostDetailFragment
+                            val bottomNavigationView = (context as? Activity)?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                            bottomNavigationView!!.visibility = View.GONE
+                            (context as? FragmentActivity)?.supportFragmentManager?.beginTransaction()
+                                ?.replace(R.id.nav_host_fragment, EditpostFragment)
+                                ?.addToBackStack(null)
+                                ?.commit()
+                        } ?: run {
+                            // Handle the case when token is null
+                            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                        }
                         true
                     }
+
                     R.id.delete_post -> {
                         // Show confirmation dialog before deleting the post
                         val confirmDeleteBuilder = AlertDialog.Builder(context)
@@ -676,12 +707,14 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                         confirmDeleteBuilder.show() // Display the confirmation dialog
                         true
                     }
+
                     else -> false
                 }
             }
 
             popupMenu.show()
         }
+
 
 
 

@@ -24,6 +24,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -396,6 +397,26 @@ class PostDetailFragment : Fragment() {
                 }
                 R.id.edit_post -> {
                     Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
+                    val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                    val token = sharedPreferences.getString("TOKEN", null)
+
+                    token?.let {
+                        // Create the PostDetailFragment and pass the post ID
+                        val EditpostFragment = EditpostFragment()
+                        val bundle = Bundle().apply {
+                            putInt("POST_ID", postId)
+                            putString("From", "post_detail")
+                        }
+                        EditpostFragment.arguments = bundle
+                        // Navigate to the PostDetailFragment
+                        (context as? FragmentActivity)?.supportFragmentManager?.beginTransaction()
+                            ?.replace(R.id.nav_host_fragment, EditpostFragment)
+                            ?.addToBackStack(null)
+                            ?.commit()
+                    } ?: run {
+                        // Handle the case when token is null
+                        Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                    }
                     true
                 }
                 R.id.delete_post -> {
