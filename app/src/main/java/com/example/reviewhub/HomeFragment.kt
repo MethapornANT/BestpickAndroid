@@ -120,7 +120,6 @@ class HomeFragment : Fragment() {
 
     // Function to refresh posts when Home is double clicked
     fun refreshPosts() {
-        Toast.makeText(requireContext(), "Refreshing posts...", Toast.LENGTH_SHORT).show()
         view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
         val selectedTab = view?.findViewById<TabLayout>(R.id.tab_layout)?.selectedTabPosition
         if (selectedTab == 0) {
@@ -131,26 +130,19 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadForYouData() {
-        Toast.makeText(requireContext(), "Loading FORYOU data...", Toast.LENGTH_SHORT).show()
         fetchForYouPosts()
     }
 
     private fun loadFollowingData() {
-        Toast.makeText(requireContext(), "Loading FOLLOW data...", Toast.LENGTH_SHORT).show()
         fetchFollowingPosts()
     }
 
     private fun fetchForYouPosts() {
         swipeRefreshLayout.isRefreshing = true // เริ่มการรีเฟรช
         noFollowingPostsTextView.visibility = View.GONE // ซ่อนข้อความ
-
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
 
-        if (token == null) {
-            Toast.makeText(requireContext(), "Token not found. Please login again.", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         val url = getString(R.string.root_url) + getString(R.string.Allpost)
 
@@ -162,7 +154,7 @@ class HomeFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                 }
             }
@@ -170,7 +162,7 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch posts: ${response.message}", Toast.LENGTH_SHORT).show()
+
                         swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                     return
@@ -199,14 +191,13 @@ class HomeFragment : Fragment() {
                         }
                     } catch (e: Exception) {
                         requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
-                            Log.e("HomeFragment", "Error parsing data: ${e.message}", e)
+
                             swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     }
                 } ?: run {
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
+
                         swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                 }
@@ -221,10 +212,6 @@ class HomeFragment : Fragment() {
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
 
-        if (token == null) {
-            Toast.makeText(requireContext(), "Token not found. Please login again.", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         val url = getString(R.string.root_url) + "/api/following/posts"
 
@@ -279,13 +266,13 @@ class HomeFragment : Fragment() {
                         }
                     } catch (e: Exception) {
                         requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error parsing data: ${e.message}", Toast.LENGTH_SHORT).show()
+
                             swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     }
                 } else {
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), "Response body is null", Toast.LENGTH_SHORT).show()
+
                         swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                 }
