@@ -249,7 +249,7 @@ class ProfileFragment : Fragment() {
                     id = post.getInt("post_id"),
                     userName = username,
                     userId = userId,
-                    title = post.getString("content"),
+                    title = post.getString("title"),
                     time = post.getString("created_at"),
                     updated = post.optString("updated_at", null),
                     content = post.getString("content"),
