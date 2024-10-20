@@ -49,15 +49,17 @@ class CheckFollowFragment : Fragment() {
         recyclerViewFollowing = view.findViewById(R.id.recycler_view_following)
         recyclerViewFollowers = view.findViewById(R.id.recycler_view_followers)
 
-        // เริ่มต้นซ่อน RecyclerViewFollowers และแสดง RecyclerViewFollowing
         recyclerViewFollowers.visibility = View.GONE
         recyclerViewFollowing.visibility = View.VISIBLE
 
+
         if (token != null && userId != null) {
-            fetchListFollowing(view, userId, token) // Default to load "Following" tab first
+            fetchListFollowing(view, userId, token)
+            fetchUserProfile(view, userId, token)
         } else {
             Toast.makeText(activity, "Token or User ID not found", Toast.LENGTH_SHORT).show()
         }
+
 
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
@@ -66,6 +68,58 @@ class CheckFollowFragment : Fragment() {
 
         return view
     }
+
+    private fun fetchUserProfile(view: View, userId: String, token: String) {
+        val rootUrl = getString(R.string.root_url)
+        val userProfileEndpoint = "/api/users/"
+        val url = "$rootUrl$userProfileEndpoint$userId/view-profile"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("CheckFollowFragment", "Failed to fetch user profile: ${e.message}")
+                activity?.runOnUiThread {
+                    Toast.makeText(activity, "Failed to load profile", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (response.isSuccessful) {
+                        val responseData = response.body?.string()
+                        responseData?.let {
+                            try {
+                                val userProfile = JSONObject(it)
+                                activity?.runOnUiThread {
+                                    displayUserProfile(view, userProfile)
+                                }
+                            } catch (e: JSONException) {
+                                Log.e("CheckFollowFragment", "Error parsing JSON: ${e.message}")
+                                activity?.runOnUiThread {
+                                    Toast.makeText(activity, "Failed to parse profile data", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    } else {
+                        Log.e("CheckFollowFragment", "Server error: ${response.message}")
+                        activity?.runOnUiThread {
+                            Toast.makeText(activity, "Server error: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    private fun displayUserProfile(view: View, userProfile: JSONObject) {
+        val username = userProfile.optString("username", "Unknown user")
+        view.findViewById<TextView>(R.id.username_checkprofile)?.text = username
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
