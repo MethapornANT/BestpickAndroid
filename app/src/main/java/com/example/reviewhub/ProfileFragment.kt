@@ -238,7 +238,7 @@ class ProfileFragment : Fragment() {
 
     // Display user posts
     private fun displayUserPosts(posts: JSONArray, userProfile: JSONObject) {
-        val postList = mutableListOf<Post>()
+        val postList = mutableListOf<Any>()
         val username = userProfile.getString("username")
         val userId = userProfile.getInt("userId")
 
@@ -329,7 +329,7 @@ class ProfileFragment : Fragment() {
 
 
     private fun displayBookmarks(bookmarks: JSONArray) {
-        val bookmarkList = mutableListOf<Post>()
+        val bookmarkList = mutableListOf<Any>()
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toInt()
