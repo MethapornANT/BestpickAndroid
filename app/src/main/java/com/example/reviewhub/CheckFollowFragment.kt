@@ -43,7 +43,6 @@ class CheckFollowFragment : Fragment() {
     private var searchRunnable: Runnable? = null
 
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
