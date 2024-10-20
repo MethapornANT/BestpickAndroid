@@ -242,6 +242,7 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
             }
 
 
+
             likeButton.setOnClickListener {
                 isLiked = !isLiked
                 if (isLiked) {
@@ -260,6 +261,8 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                     }
                 }
             }
+
+
 
             // กำหนดการคลิกปุ่มติดตาม/เลิกติดตาม
             follower.setOnClickListener {
@@ -405,6 +408,7 @@ class PostAdapter(private val postList: MutableList<Post>) : RecyclerView.Adapte
                         Toast.makeText(context, "Failed to check follow status: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
+
 
                 override fun onResponse(call: Call, response: Response) {
                     val jsonResponse = response.body?.string()

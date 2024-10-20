@@ -24,7 +24,7 @@
     <string name="listfollowers">/api/users/followers/</string>
     <string name="listfollowing">/api/users/following/</string>
     <string name="listSearchfollowing">/api/users/search/following/</string>
-    <string name="listSearchfollowers">/api/users/search/followers</string>
+    <string name="listSearchfollowers">/api/users/search/followers/</string>
     <string name="interactions">/api/interactions</string>
     <string name="userprofileupdate">/api/users/</string>
     <string name="photo_description">This is the photo description.</string>

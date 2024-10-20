@@ -292,10 +292,6 @@ class PostDetailFragment : Fragment() {
     }
 
 
-
-
-
-
     private fun updatePageIndicators(selectedPosition: Int) {
         for (i in 0 until dotIndicatorLayout.childCount) {
             val dot = dotIndicatorLayout.getChildAt(i) as ImageView

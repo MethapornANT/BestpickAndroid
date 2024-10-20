@@ -1,6 +1,8 @@
 package com.example.reviewhub
 
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.os.Handler
@@ -25,6 +27,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -42,7 +45,6 @@ class CheckFollowFragment : Fragment() {
     private val searchHandler = Handler()
     private var searchRunnable: Runnable? = null
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,13 +55,13 @@ class CheckFollowFragment : Fragment() {
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
 
+
+
+
         searchEditText = view.findViewById(R.id.search_checkfollow)
-
-
         backButton = view.findViewById(R.id.back_button)
         recyclerViewFollowing = view.findViewById(R.id.recycler_view_following)
         recyclerViewFollowers = view.findViewById(R.id.recycler_view_followers)
-
         recyclerViewFollowers.visibility = View.GONE
         recyclerViewFollowing.visibility = View.VISIBLE
 
@@ -72,11 +74,14 @@ class CheckFollowFragment : Fragment() {
             Toast.makeText(activity, "Token or User ID not found", Toast.LENGTH_SHORT).show()
         }
 
-
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
             findNavController().navigate(R.id.profileFragment)
         }
+
+
+
+
 
         return view
     }
@@ -304,8 +309,6 @@ class CheckFollowFragment : Fragment() {
             }
         })
     }
-
-
 
 
 

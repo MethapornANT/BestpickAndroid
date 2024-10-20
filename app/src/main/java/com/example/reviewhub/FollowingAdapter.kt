@@ -40,9 +40,9 @@ class FollowingAdapter(private var followingList: MutableList<Following>) :
             .placeholder(R.drawable.ic_launcher_background)
             .error(R.drawable.ic_error) // เพิ่มรูป error หากโหลดรูปไม่ได้
             .into(holder.imageProfile) // ใส่รูปภาพใน ImageView
+
+
     }
-
-
 
     override fun getItemCount(): Int {
         return followingList.size
