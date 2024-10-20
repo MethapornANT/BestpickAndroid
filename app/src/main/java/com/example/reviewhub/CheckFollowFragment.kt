@@ -225,7 +225,7 @@ class CheckFollowFragment : Fragment() {
                                 val followingObject = jsonArray.getJSONObject(i)
                                 val userProfileUrl = followingObject.optString("profileImageUrl", null)
 
-                                // เปรียบเทียบ query กับชื่อผู้ใช้ โดยไม่สนใจตัวอักษรเล็ก-ใหญ่
+
                                 if (followingObject.getString("username").toLowerCase().contains(searchQuery)) {
                                     val follower = Following(
                                         followingObject.getInt("userId"),
