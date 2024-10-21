@@ -346,6 +346,7 @@ class EditPostFragment : Fragment() {
                         Toast.makeText(requireContext(), "แก้ไขโพสต์สำเร็จ", Toast.LENGTH_SHORT).show()
                         parentFragmentManager.popBackStack()
                         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                        bottomNavigationView?.visibility = View.VISIBLE // ทำให้แน่ใจว่าแสดงผล
                         bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
                     } else {
                         val errorBody = response.body?.string() ?: "เกิดข้อผิดพลาดที่ไม่ทราบ"

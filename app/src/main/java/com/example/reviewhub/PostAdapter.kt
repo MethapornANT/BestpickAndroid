@@ -718,7 +718,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
                         token?.let {
                             // Create the PostDetailFragment and pass the post ID
-                            val EditpostFragment = EditpostFragment()
+                            val EditpostFragment = EditPostFragment()
                             val bundle = Bundle().apply {
                                 putInt("POST_ID", postId)
                                 putString("From", "post")
