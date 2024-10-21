@@ -22,71 +22,123 @@ data class SearchResult(
 
 // Interface สำหรับคลิกที่ Item ใน RecyclerView
 interface OnItemClickListener {
-    fun onItemClick(postId: Int)
+    fun onItemClick(postId: Int?, userId: Int)
 }
 
+// Adapter สำหรับจัดการแสดงผลใน RecyclerView
 // Adapter สำหรับจัดการแสดงผลใน RecyclerView
 class SearchAdapter(
     private val searchResults: List<SearchResult>,
     private val listener: OnItemClickListener
-) : RecyclerView.Adapter<SearchAdapter.ContentViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    // ViewHolder สำหรับจัดการการแสดงผลของแต่ละ Item
-    class ContentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val usernameTextView: TextView = itemView.findViewById(R.id.usernamesearch)
-        val mainImageView: ImageView = itemView.findViewById(R.id.main_image)
+    companion object {
+        private const val VIEW_TYPE_USER_NO_POST = 0
+        private const val VIEW_TYPE_USER_WITH_POST = 1
+    }
+
+    // ViewHolder สำหรับผู้ใช้ที่ไม่มีโพสต์
+    class UserNoPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImageView: ImageView = itemView.findViewById(R.id.profile_image)
-        val titleTextView: TextView = itemView.findViewById(R.id.title_text_view)
-        val contentTextView: TextView = itemView.findViewById(R.id.content) // เชื่อมโยง `content` ใน XML
+        val usernameTextView: TextView = itemView.findViewById(R.id.username)
 
-
-        // ฟังก์ชัน bind สำหรับกำหนดข้อมูลใน View แต่ละตัว
-        fun bind(result: SearchResult, listener: OnItemClickListener) {
+        fun bind(result: SearchResult, listener: OnItemClickListener) { // เพิ่ม listener เป็นพารามิเตอร์
             usernameTextView.text = result.username
-            titleTextView.text = result.title
-            contentTextView.text = result.content ?: "No Content"
-
-
-            // กำหนด URL ของรูปภาพโปรไฟล์และรูปภาพโพสต์จาก Resource
-            val profileUrl = itemView.context.getString(R.string.root_url) + result.profileImageUrl
-            val postUrl = itemView.context.getString(R.string.root_url) + result.imageUrl
-            Log.d("SearchAdapter", "Profile URL: $profileUrl")
-
+            val baseUrl = itemView.context.getString(R.string.root_url)
 
             // โหลดรูปภาพโปรไฟล์
             Glide.with(itemView.context)
-                .load(profileUrl) // URL ของรูปภาพโปรไฟล์
-                .placeholder(R.drawable.profiletest2) // รูปภาพที่แสดงก่อนโหลดเสร็จ
+                .load(baseUrl + result.profileImageUrl)
+                .placeholder(R.drawable.profile) // รูปภาพที่แสดงก่อนโหลดเสร็จ
                 .into(profileImageView)
 
-            // โหลดรูปภาพโพสต์หลัก
-            Glide.with(itemView.context)
-                .load(postUrl) // URL ของรูปภาพโพสต์หลัก
-                .placeholder(R.drawable.testpic) // รูปภาพที่แสดงก่อนโหลดเสร็จ
-                .into(mainImageView)
-
-            // ตั้งค่า Click Listener สำหรับโพสต์นี้
+            // ตั้งค่า Click Listener สำหรับผู้ใช้ที่ไม่มีโพสต์
             itemView.setOnClickListener {
-                result.postId?.let { postId ->
-                    listener.onItemClick(postId)
-                }
+                listener.onItemClick(null, result.userId) // ส่ง userId และ null สำหรับ postId
             }
         }
     }
 
-    // กำหนด Layout ของแต่ละ ViewHolder
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContentViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_searchlayout, parent, false)
-        return ContentViewHolder(view)
+
+    // ViewHolder สำหรับผู้ใช้ที่มีโพสต์
+    class UserWithPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val usernameTextView: TextView = itemView.findViewById(R.id.usernamesearch)
+        val mainImageView: ImageView = itemView.findViewById(R.id.main_image)
+        val profileImageView: ImageView = itemView.findViewById(R.id.profile_image)
+        val titleTextView: TextView = itemView.findViewById(R.id.title_text_view)
+        val contentTextView: TextView = itemView.findViewById(R.id.content)
+
+        // ฟังก์ชัน bind สำหรับกำหนดข้อมูลใน View แต่ละตัว
+        fun bind(result: SearchResult, listener: OnItemClickListener) {
+            usernameTextView.text = result.username
+            titleTextView.text = result.title ?: "No Title"
+            contentTextView.text = result.content ?: "No Content"
+
+            // กำหนด URL ของรูปภาพโปรไฟล์และรูปภาพโพสต์จาก Resource
+            val baseUrl = itemView.context.getString(R.string.root_url)
+            val profileUrl = result.profileImageUrl
+
+            // โหลดรูปภาพโปรไฟล์
+            Glide.with(itemView.context)
+                .load(baseUrl + profileUrl) // URL ของรูปภาพโปรไฟล์
+                .placeholder(R.drawable.profiletest2) // รูปภาพที่แสดงก่อนโหลดเสร็จ
+                .into(profileImageView)
+
+            // เช็คว่ามีโพสต์หรือไม่ ถ้ามีจึงจะแสดงรูปภาพและข้อมูลโพสต์
+            if (result.postId != null) {
+                val postUrl = result.imageUrl
+                Glide.with(itemView.context)
+                    .load(baseUrl + postUrl) // URL ของรูปภาพโพสต์หลัก
+                    .placeholder(R.drawable.testpic) // รูปภาพที่แสดงก่อนโหลดเสร็จ
+                    .into(mainImageView)
+
+                // ตั้งค่า Click Listener สำหรับโพสต์นี้
+                itemView.setOnClickListener {
+                    listener.onItemClick(result.postId, result.userId)
+                }
+            } else {
+                // ถ้าไม่มีโพสต์ ซ่อน ImageView ที่แสดงรูปโพสต์
+                mainImageView.visibility = View.GONE
+
+                // ปิดการคลิกถ้าไม่มีโพสต์
+                itemView.setOnClickListener(null)
+            }
+        }
     }
 
-    // กำหนดการแสดงผลข้อมูลใน ViewHolder
-    override fun onBindViewHolder(holder: ContentViewHolder, position: Int) {
-        holder.bind(searchResults[position], listener)
+    override fun getItemViewType(position: Int): Int {
+        return if (searchResults[position].postId == null) {
+            VIEW_TYPE_USER_NO_POST
+        } else {
+            VIEW_TYPE_USER_WITH_POST
+        }
     }
 
-    // จำนวนข้อมูลทั้งหมดในรายการ
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_USER_NO_POST -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_user_search, parent, false)
+                UserNoPostViewHolder(view)
+            }
+            else -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_searchlayout, parent, false)
+                UserWithPostViewHolder(view)
+            }
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val result = searchResults[position]
+
+        when (holder.itemViewType) {
+            VIEW_TYPE_USER_NO_POST -> (holder as UserNoPostViewHolder).bind(result, listener) // ส่ง listener เข้าไปใน bind
+            VIEW_TYPE_USER_WITH_POST -> (holder as UserWithPostViewHolder).bind(result, listener) // ส่ง listener เข้าไปใน bind
+        }
+    }
+
+
     override fun getItemCount(): Int {
         return searchResults.size
     }
 }
+

@@ -1,8 +1,10 @@
 package com.example.reviewhub
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import okhttp3.*
@@ -62,7 +65,7 @@ class SearchFragment : Fragment(), OnItemClickListener {
 
     private fun performSearch(query: String) {
         progressBar.visibility = View.VISIBLE
-        val url = getString(R.string.root_url) + getString(R.string.Search) + "?query=$query"
+        val url = getString(R.string.root_url) + "/search?query=$query"
 
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
@@ -89,6 +92,7 @@ class SearchFragment : Fragment(), OnItemClickListener {
         })
     }
 
+
     private fun parseResults(json: String): List<SearchResult> {
         val jsonObject = Gson().fromJson(json, JsonObject::class.java)
         val resultsArray = jsonObject.getAsJsonArray("results") ?: return emptyList()
@@ -97,59 +101,31 @@ class SearchFragment : Fragment(), OnItemClickListener {
         resultsArray.forEach { element ->
             val userObject = element.asJsonObject
 
-            val userId = if (userObject.has("user_id") && !userObject.get("user_id").isJsonNull) {
-                userObject.get("user_id").asInt
-            } else {
-                -1 // กำหนดค่าเริ่มต้นสำหรับ userId ถ้าไม่มีข้อมูล
-            }
+            val userId = userObject.get("user_id")?.asInt ?: -1
+            val username = userObject.get("username")?.asString ?: "Unknown User"
+            val profileImageUrl = userObject.get("profile_image")?.asString ?: ""
 
-            val username = if (userObject.has("username") && !userObject.get("username").isJsonNull) {
-                userObject.get("username").asString
+            // ตรวจสอบว่ามี posts หรือไม่
+            if (!userObject.has("posts") || userObject.get("posts").isJsonNull) {
+                // เพิ่มผู้ใช้ที่ไม่มีโพสต์
+                searchResults.add(SearchResult(userId, username, profileImageUrl = profileImageUrl))
             } else {
-                "Unknown User"
-            }
-
-            val profileImageUrl = if (userObject.has("profile_image") && !userObject.get("profile_image").isJsonNull) {
-                userObject.get("profile_image").asString
-            } else {
-                "" // กำหนดค่าเริ่มต้นเป็นว่างถ้าไม่มีรูปโปรไฟล์
-            }
-
-            // ตรวจสอบว่ามี posts และไม่เป็น null
-            if (userObject.has("posts") && !userObject.get("posts").isJsonNull) {
+                // ดึง posts ซึ่งเป็น JsonArray และเลือกเฉพาะรูปแรกจาก photo_url
                 val postsArray = userObject.getAsJsonArray("posts")
                 postsArray.forEach { postElement ->
                     val postObject = postElement.asJsonObject
+                    val postId = postObject.get("post_id")?.asInt ?: -1
+                    val title = postObject.get("title")?.asString ?: "Untitled"
+                    val content = postObject.get("content_preview")?.asString ?: "No Content"
 
-                    // ตรวจสอบและดึงค่าของ postId
-                    val postId = if (postObject.has("post_id") && !postObject.get("post_id").isJsonNull) {
-                        postObject.get("post_id").asInt
+                    // เลือกรูปภาพแรกจาก photo_url
+                    val photoArray = postObject.getAsJsonArray("photo_url")
+                    val firstPhotoUrl = if (photoArray != null && photoArray.size() > 0) {
+                        photoArray[0].asString // ดึงรูปภาพแรกจากอาร์เรย์
                     } else {
-                        -1 // กำหนดค่าเริ่มต้นสำหรับ postId ถ้าไม่มีข้อมูล
+                        "" // ถ้าไม่มีรูปภาพให้เป็นค่าว่าง
                     }
 
-                    // ตรวจสอบและดึงค่าของ title
-                    val title = if (postObject.has("title") && !postObject.get("title").isJsonNull) {
-                        postObject.get("title").asString
-                    } else {
-                        "Untitled"
-                    }
-
-                    // ตรวจสอบและดึงค่าของ content_preview
-                    val content = if (postObject.has("content_preview") && !postObject.get("content_preview").isJsonNull) {
-                        postObject.get("content_preview").asString
-                    } else {
-                        "No Content"
-                    }
-
-                    // ตรวจสอบและดึงค่าของ photo_url
-                    val imageUrl = if (postObject.has("photo_url") && !postObject.get("photo_url").isJsonNull) {
-                        postObject.get("photo_url").asString
-                    } else {
-                        ""
-                    }
-
-                    // เพิ่มข้อมูลเข้าไปในรายการ SearchResult
                     searchResults.add(
                         SearchResult(
                             userId = userId,
@@ -158,7 +134,7 @@ class SearchFragment : Fragment(), OnItemClickListener {
                             title = title,
                             content = content,
                             profileImageUrl = profileImageUrl,
-                            imageUrl = imageUrl
+                            imageUrl = firstPhotoUrl // ใช้รูปภาพแรกจาก photo_url
                         )
                     )
                 }
@@ -167,10 +143,36 @@ class SearchFragment : Fragment(), OnItemClickListener {
         return searchResults
     }
 
-    override fun onItemClick(postId: Int) {
-        // เมื่อคลิกที่โพสต์ ให้เปลี่ยนไปยัง `PostDetailFragment`
+
+
+    override fun onItemClick(postId: Int?, userId: Int) {
         val bundle = Bundle()
-        bundle.putInt("POST_ID", postId)
-        findNavController().navigate(R.id.action_searchFragment_to_postDetailFragment, bundle)
+
+        // ดึง currentUserId ของผู้ใช้ที่เข้าสู่ระบบในขณะนั้นจาก SharedPreferences
+        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val userIdString = sharedPreferences.getString("USER_ID", null)
+        val currentUserId = userIdString?.toIntOrNull() ?: -1
+        Log.d("SearchFragment", "Current User ID: $currentUserId")
+        Log.d("SearchFragment", "User ID from Bundle: $userId")
+
+        if (postId != null && postId != -1) {
+            // เมื่อคลิกที่โพสต์ ให้เปลี่ยนไปยัง `PostDetailFragment`
+            bundle.putInt("POST_ID", postId)
+            findNavController().navigate(R.id.action_searchFragment_to_postDetailFragment, bundle)
+        } else {
+            // ตรวจสอบว่าผู้ใช้ที่ถูกคลิกเป็นผู้ใช้ที่เข้าสู่ระบบหรือไม่
+            if (userId == currentUserId) {
+                // หากเป็นโปรไฟล์ของผู้ใช้เอง
+                val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                bottomNavigationView?.menu?.findItem(R.id.profile)?.isChecked = true
+                findNavController().navigate(R.id.action_searchFragment_to_myProfileFragment) // ใช้ action ที่กำหนดไว้
+            } else {
+                // หากเป็นผู้ใช้คนอื่น ให้ไปที่ `UserProfileFragment`
+                bundle.putInt("USER_ID", userId) // ส่ง ID ของผู้ใช้ที่คลิก
+                findNavController().navigate(R.id.action_searchFragment_to_userProfileFragment, bundle)
+            }
+        }
     }
+
+
 }
