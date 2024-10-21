@@ -34,7 +34,7 @@ class AddPostFragment : Fragment() {
     private lateinit var selectMediaButton: Button
     private lateinit var dotIndicatorLayout: LinearLayout
     private lateinit var deleteButton: ImageView
-    private lateinit var ProductNumberEditText: EditText
+    private lateinit var ProductNameEditText: EditText
     private val client = OkHttpClient()
 
     override fun onCreateView(
@@ -52,7 +52,7 @@ class AddPostFragment : Fragment() {
         backButton = view.findViewById(R.id.ic_baseline_arrow_back_24)
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
         deleteButton = view.findViewById(R.id.deleteButton)
-        ProductNumberEditText = view.findViewById(R.id.ProductNumberEditText)
+        ProductNameEditText = view.findViewById(R.id.ProductNameEditText)
 
 
         selectMediaButton.setOnClickListener {
@@ -155,7 +155,7 @@ class AddPostFragment : Fragment() {
         val content = contentEditText.text.toString().trim()
         val Title = TitleEditText.text.toString().trim()
         val category = categorySpinner.selectedItem.toString().trim()
-        val ProductNumber = ProductNumberEditText.text.toString().trim()
+        val ProductNumber = ProductNameEditText.text.toString().trim()
 
         // ตรวจสอบว่าฟิลด์ต่างๆ ไม่ใช่ค่าว่าง
         if (content.isEmpty()) {

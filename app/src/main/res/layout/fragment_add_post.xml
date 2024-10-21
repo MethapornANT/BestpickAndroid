@@ -88,8 +88,9 @@
                 android:paddingStart="30dp"
                 android:background="@color/white" />
 
+            <!-- เปลี่ยนชื่อจาก ProductNumberEditText เป็น ProductNameEditText -->
             <EditText
-                android:id="@+id/ProductNumberEditText"
+                android:id="@+id/ProductNameEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
@@ -118,6 +119,7 @@
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
             <ImageView
                 android:id="@+id/deleteButton"
                 android:layout_width="30dp"
