@@ -493,17 +493,16 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
         private fun formatTime(timeString: String): String {
             return try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-                    timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC") // The time is in UTC
                 }
                 val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
-                    timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
+                    timeZone = TimeZone.getTimeZone("Asia/Bangkok") // Convert to Asia/Bangkok time
                 }
-                val date = inputFormat.parse(timeString ?: "")
+                val date = inputFormat.parse(timeString)
                 date?.let { outputFormat.format(it) } ?: "N/A"
-
             } catch (e: Exception) {
-                timeString
+                timeString // Return original string if parsing fails
             }
         }
 
