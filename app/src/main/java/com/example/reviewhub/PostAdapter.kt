@@ -146,52 +146,21 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             }
 
             title.setOnClickListener {
-                // Check if the token is not null
-                token?.let {
-                    // Create the PostDetailFragment and pass the post ID
-                    val postDetailFragment = PostDetailFragment()
-                    val bundle = Bundle().apply {
-                        putInt("POST_ID", post.id)
-                    }
-                    postDetailFragment.arguments = bundle
-
-                    // Record the interaction
-                    recordInteraction(post.id, "view", null, it, context)
-
-                    // Navigate to the PostDetailFragment
-                    (context as? FragmentActivity)?.supportFragmentManager?.beginTransaction()
-                        ?.replace(R.id.nav_host_fragment, postDetailFragment)
-                        ?.addToBackStack(null)
-                        ?.commit()
-                } ?: run {
-                    // Handle the case when token is null
-                    Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                val bundle = Bundle().apply {
+                    putInt("POST_ID", post.id)
                 }
+                val navController = itemView.findNavController()
+                navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
             }
 
             postContent.setOnClickListener {
-                // Check if the token is not null
-                token?.let {
-                    // Create the PostDetailFragment and pass the post ID
-                    val postDetailFragment = PostDetailFragment()
-                    val bundle = Bundle().apply {
-                        putInt("POST_ID", post.id)
-                    }
-                    postDetailFragment.arguments = bundle
-
-                    // Record the interaction
-                    recordInteraction(post.id, "view", null, it, context)
-
-                    // Navigate to the PostDetailFragment
-                    (context as? FragmentActivity)?.supportFragmentManager?.beginTransaction()
-                        ?.replace(R.id.nav_host_fragment, postDetailFragment)
-                        ?.addToBackStack(null)
-                        ?.commit()
-                } ?: run {
-                    // Handle the case when token is null
-                    Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                val bundle = Bundle().apply {
+                    putInt("POST_ID", post.id)
                 }
+                val navController = itemView.findNavController()
+                navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
             }
+
 
             // Load profile image using the full URL
             Glide.with(context)
