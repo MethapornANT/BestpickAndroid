@@ -154,14 +154,17 @@ class HomeFragment : Fragment() {
         noFollowingPostsTextView.visibility = View.GONE
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
+        Log.d("FetchForYouPosts", "Token: $token")
 
-        val url = getString(R.string.root_url) + getString(R.string.Allpost)
-
+        val url = getString(R.string.root_url).dropLast(4) + "5000" + "/recommend"
+        Log.d("FetchForYouPosts", "URL: $url")
+        val requestBody = FormBody.Builder()
+            .build() // Empty body or you can add parameters here if needed.
         val request = Request.Builder()
             .url(url)
+            .post(requestBody)  // Specify POST method with a request body
             .addHeader("Authorization", "Bearer $token")
             .build()
-
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
@@ -182,11 +185,14 @@ class HomeFragment : Fragment() {
                         val gson = Gson()
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(jsonResponse, postType)
+                        Log.d("FetchForYouPosts", "Posts: $posts")
 
                         // Now fetch random ads and insert them into the list
                         fetchRandomAds { ads ->
                             requireActivity().runOnUiThread {
-                                val mixedList = insertAds(posts, ads, 5) // Insert an ad after every 5 posts
+                                val randomSize = (5..10).random() // Get a random number between 5 and 10
+                                val randomAds = ads.shuffled().take(randomSize) // Shuffle and take that random number of ads
+                                val mixedList = insertAds(posts, randomAds, randomSize / 2)
                                 postList.clear()
                                 postList.addAll(mixedList)
                                 postAdapter.notifyDataSetChanged()

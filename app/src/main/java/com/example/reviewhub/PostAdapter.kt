@@ -33,13 +33,13 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
     private val TYPE_POST = 0
     private val TYPE_AD = 1
-
     override fun getItemViewType(position: Int): Int {
         return if (postList[position] is Ad) TYPE_AD else TYPE_POST
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_AD) {
+            Log.d("PostAdapter", "Posts added to postList: $postList")
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ad, parent, false)
             AdViewHolder(view)
         } else {
@@ -118,7 +118,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
-
 
             // Set user details
             postTime.text = formatTime(displayTime)
