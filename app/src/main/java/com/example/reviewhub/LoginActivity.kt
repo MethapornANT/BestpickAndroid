@@ -152,7 +152,6 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
-
     private fun performLogin(email: String, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val url = getString(R.string.root_url) + getString(R.string.Login)
@@ -173,6 +172,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -212,6 +212,7 @@ class LoginActivity : AppCompatActivity() {
                             }
 
                         } else {
+                            progressBar.visibility = View.GONE
                             Toast.makeText(applicationContext, "Error: Missing token or user data", Toast.LENGTH_LONG).show()
                         }
                     }
@@ -224,9 +225,11 @@ class LoginActivity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
+                progressBar.visibility = View.GONE
                 Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
+            progressBar.visibility = View.GONE
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
@@ -263,6 +266,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             } else {
                 Log.e("GoogleSignIn", "No email found")
+                progressBar.visibility = View.GONE
                 Toast.makeText(this, "Google Sign-In failed: No email", Toast.LENGTH_LONG).show()
             }
         } catch (e: ApiException) {
@@ -273,7 +277,7 @@ class LoginActivity : AppCompatActivity() {
                 GoogleSignInStatusCodes.SIGN_IN_CURRENTLY_IN_PROGRESS -> "Sign-In already in progress"
                 else -> "Unknown error occurred"
             }
-
+            progressBar.visibility = View.GONE
             Log.e("GoogleSignIn", "Google Sign-In failed: ${e.message} (Code: $statusCode)")
             Toast.makeText(this, "Google Sign-In failed: $errorMessage", Toast.LENGTH_LONG).show()
         }
