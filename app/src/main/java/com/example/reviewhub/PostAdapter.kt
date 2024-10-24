@@ -147,7 +147,9 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             title.setOnClickListener {
                 val bundle = Bundle().apply {
                     putInt("POST_ID", post.id)
+                    putString("SOURCE", "HomeFragment")
                 }
+                Toast.makeText(context, "Clicked on post content", Toast.LENGTH_SHORT).show()
                 val navController = itemView.findNavController()
                 navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
             }
@@ -155,7 +157,9 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             postContent.setOnClickListener {
                 val bundle = Bundle().apply {
                     putInt("POST_ID", post.id)
+                    putString("SOURCE", "HomeFragment")
                 }
+                Toast.makeText(context, "Clicked on post content", Toast.LENGTH_SHORT).show()
                 val navController = itemView.findNavController()
                 navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
             }
@@ -180,6 +184,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                         val postDetailFragment = PostDetailFragment()
                         val bundle = Bundle()
                         bundle.putInt("POST_ID", post.id)
+                        bundle.putString("SOURCE", "HomeFragment")
                         postDetailFragment.arguments = bundle
                         recordInteraction(post.id, "view", null, token!!, context)
                         context.supportFragmentManager.beginTransaction()
