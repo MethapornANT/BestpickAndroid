@@ -68,6 +68,7 @@ class PostDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         // กำหนดค่า View ให้กับตัวแปรต่างๆ
         follower = view.findViewById(R.id.follower)
         recyclerViewComments = view.findViewById(R.id.recycler_view_comments)
@@ -308,137 +309,31 @@ class PostDetailFragment : Fragment() {
     }
 
     private fun openUserProfile(userId: Int) {
+        // รับค่า SharedPreferences
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
         val token = sharedPreferences.getString("TOKEN", null)
 
         // ใช้ findNavController() จาก Fragment
-        val navController = view?.findNavController() ?: run {
-            Log.e("UserProfile", "NavController not found")
-            return
-        }
+        val navController = findNavController()
 
         if (currentUserId == null) {
             Log.e("UserProfile", "USER_ID is null or invalid")
             return
         }
 
-        // ตรวจสอบว่า Fragment มาจากไหน
-        val sourceFragment = arguments?.getString("SOURCE")
-
-        if (sourceFragment == "HomeFragment") {
-            if (userId == currentUserId) {
-                // ลิงก์ไปที่หน้าโปรไฟล์ของตัวเอง
-                val profileFragment = ProfileFragment().apply {
-                    arguments = Bundle().apply {
-                        putBoolean("isSelfProfile", true) // บอกว่าเป็นโปรไฟล์ของตัวเอง
-                    }
-                }
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.nav_host_fragment, profileFragment)
-                    .addToBackStack(null)
-                    .commit()
-            } else {
-                // สร้าง AnotherUserFragment และส่ง USER_ID
-                val anotherUserFragment = AnotherUserFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt("USER_ID", userId)  // ใช้ userId ที่ถูกส่งเข้ามา
-                    }
-                }
-
-                // บันทึกการทำงานของผู้ใช้ ถ้า token ไม่เป็น null
-                token?.let {
-                    recordInteraction(null, "view_profile", null, it, requireContext())
-                }
-
-                // แทนที่ Fragment ปัจจุบันด้วย AnotherUserFragment
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.nav_host_fragment, anotherUserFragment)
-                    .addToBackStack(null)
-                    .commit()
-            }
+        if (userId == currentUserId) {
+            navController.navigate(R.id.action_postDetailFragment_to_myProfileFragment)
         } else {
-            // หากมาจาก Fragment อื่น
-            if (userId == currentUserId) {
-                navController.navigate(R.id.action_postDetailFragment_to_myProfileFragment)
-            } else {
-                val bundle = Bundle().apply {
-                    putInt("USER_ID", userId)
-                }
-                token?.let {
-                    recordInteraction(null, "view_profile", null, it, requireContext())
-                }
-                navController.navigate(R.id.action_postDetailFragment_to_userProfileFragment, bundle)
+            val bundle = Bundle().apply {
+                putInt("USER_ID", userId)
             }
+            token?.let {
+                recordInteraction(null, "view_profile", null, it, requireContext())
+            }
+            navController.navigate(R.id.action_postDetailFragment_to_userProfileFragment, bundle)
         }
     }
-
-
-
-//    private fun openUserProfile(userId: Int) {
-//        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-//        val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
-//        val token = sharedPreferences.getString("TOKEN", null)
-//        if (userId == currentUserId) {
-//            // ลิงก์ไปที่หน้าโปรไฟล์ของตัวเอง
-//            val profileFragment = ProfileFragment().apply {
-//                arguments = Bundle().apply {
-//                    putBoolean("isSelfProfile", true) // หรือ false หากไม่ใช่โปรไฟล์ตัวเอง
-//                }
-//            }
-//            parentFragmentManager.beginTransaction()
-//                .replace(R.id.nav_host_fragment, profileFragment)
-//                .addToBackStack(null)
-//                .commit()
-//
-//        } else {
-//            // สร้าง AnotherUserFragment และส่ง USER_ID
-//            val anotherUserFragment = AnotherUserFragment()
-//            val bundle = Bundle()
-//            bundle.putInt("USER_ID", userId)  // ใช้ userId ที่ถูกส่งเข้ามา
-//            anotherUserFragment.arguments = bundle
-//
-//            // บันทึกการทำงานของผู้ใช้ ถ้า token ไม่เป็น null
-//            token?.let {
-//                recordInteraction(null, "view_profile", null, it, requireContext())
-//            }
-//
-//            // แทนที่ Fragment ปัจจุบันด้วย AnotherUserFragment
-//            parentFragmentManager.beginTransaction()
-//                .replace(R.id.nav_host_fragment, anotherUserFragment)
-//                .addToBackStack(null)
-//                .commit()
-//        }
-//    }
-
-
-
-//    private fun openUserProfile(userId: Int) {
-//        // รับค่า SharedPreferences
-//        val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-//        val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
-//        val token = sharedPreferences.getString("TOKEN", null)
-//
-//        // ใช้ findNavController() จาก Fragment
-//        val navController = findNavController()
-//
-//        if (currentUserId == null) {
-//            Log.e("UserProfile", "USER_ID is null or invalid")
-//            return
-//        }
-//
-//        if (userId == currentUserId) {
-//            navController.navigate(R.id.action_postDetailFragment_to_myProfileFragment)
-//        } else {
-//            val bundle = Bundle().apply {
-//                putInt("USER_ID", userId)
-//            }
-//            token?.let {
-//                recordInteraction(null, "view_profile", null, it, requireContext())
-//            }
-//            navController.navigate(R.id.action_postDetailFragment_to_userProfileFragment, bundle)
-//        }
-//    }
 
 
 
