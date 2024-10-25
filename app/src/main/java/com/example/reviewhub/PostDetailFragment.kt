@@ -378,28 +378,41 @@ class PostDetailFragment : Fragment() {
     }
 
     private fun openUserProfile(userId: Int) {
-        // รับค่า SharedPreferences
+        // Retrieve SharedPreferences
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
         val token = sharedPreferences.getString("TOKEN", null)
 
-        // ใช้ findNavController() จาก Fragment
+        // Use findNavController() from Fragment
         val navController = findNavController()
 
+        // Check if the current user ID is valid
         if (currentUserId == null) {
             Log.e("UserProfile", "USER_ID is null or invalid")
             return
         }
 
+        // Navigate to the appropriate profile
         if (userId == currentUserId) {
+            // Navigate to the current user's profile
             navController.navigate(R.id.action_postDetailFragment_to_myProfileFragment)
+
+            // Set up BottomNavigationView visibility and selected item
+            val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+            bottomNav?.visibility = View.VISIBLE
+            bottomNav?.menu?.findItem(R.id.profileFragment)?.isChecked = true
+            bottomNav?.selectedItemId = R.id.profileFragment // Ensure this line is included
         } else {
+            // Navigate to another user's profile
             val bundle = Bundle().apply {
-                putInt("USER_ID", userId)
+                putInt("USER_ID", userId) // Pass the user ID
             }
+
+            // Record the interaction when viewing another user's profile
             token?.let {
                 recordInteraction(null, "view_profile", null, it, requireContext())
             }
+
             navController.navigate(R.id.action_postDetailFragment_to_userProfileFragment, bundle)
         }
     }
