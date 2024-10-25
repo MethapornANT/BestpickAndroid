@@ -6,6 +6,7 @@ import android.os.CountDownTimer
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -14,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ import org.json.JSONObject
 
 class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
+    private lateinit var progressBar: LottieAnimationView
     private lateinit var countdownTextView: TextView
     private lateinit var emailTextView: TextView
     private lateinit var otp1: EditText
@@ -46,6 +49,8 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+         progressBar = findViewById(R.id.lottie_loading)
          emailTextView = findViewById(R.id.email)
          countdownTextView = findViewById(R.id.countdown)
          otp1 = findViewById(R.id.otp1)
@@ -82,11 +87,13 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
         updateButtonState(sentOTPButton, otpFields)
 
         sentOTPButton.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             val otp = otp1.text.toString() + otp2.text.toString() + otp3.text.toString() + otp4.text.toString()
             performRegister(email, otp)
         }
 
         resendButton.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             val email = intent.getStringExtra("email") ?: return@setOnClickListener
             onclickResend(email)
         }
@@ -119,13 +126,16 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "New OTP sent", Toast.LENGTH_SHORT).show()
                     } else {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "Failed to resend OTP", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -183,6 +193,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -197,6 +208,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
                 when {
                     message.contains("OTP is valid, you can set a new password") -> {
+                        progressBar.visibility = View.GONE
                         Log.d("CreateResponse", "OTP sent to $email")
 
                         val intent = Intent(this, Change_PasswordActivity::class.java) // Change to the appropriate activity
@@ -205,6 +217,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
                         finish()
                     }
                     else -> {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -215,10 +228,11 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
-
+                progressBar.visibility = View.GONE
                 Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
+            progressBar.visibility = View.GONE
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }

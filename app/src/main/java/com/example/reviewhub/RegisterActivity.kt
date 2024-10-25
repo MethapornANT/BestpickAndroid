@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,6 +27,8 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class RegisterActivity : AppCompatActivity() {
+
+    private lateinit var progressBar: LottieAnimationView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,6 +41,8 @@ class RegisterActivity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.registerusername)
         val create = findViewById<Button>(R.id.btnregister)
         val cooldownTime = 5000L
+        progressBar = findViewById(R.id.lottie_loading)
+
         create.setOnClickListener {
             val email = emailEditText.text.toString()
             if (email.isEmpty()) {
@@ -48,6 +53,7 @@ class RegisterActivity : AppCompatActivity() {
                 emailEditText.error = "Please use a valid email from common domains like Gmail, Yahoo, Outlook, etc."
             }
             else{
+                progressBar.visibility = View.VISIBLE
                 performRegister(email)
                 create.isEnabled = false
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -81,6 +87,7 @@ class RegisterActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -114,6 +121,7 @@ class RegisterActivity : AppCompatActivity() {
                     }
 
                     else -> {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -125,16 +133,14 @@ class RegisterActivity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
-
+                progressBar.visibility = View.GONE
                 Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
+            progressBar.visibility = View.GONE
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
-
-
-
     fun onclickHaveaccount(view: View) {
         // Intent to navigate to the new page
         val intent = Intent(this, LoginActivity::class.java)

@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,13 +27,12 @@ import org.json.JSONObject
 
 class Forget_Password_Activity : AppCompatActivity() {
 
+    private lateinit var progressBar: LottieAnimationView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_forget_password)
-
-
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -40,13 +40,14 @@ class Forget_Password_Activity : AppCompatActivity() {
         }
         val emailEditText = findViewById<EditText>(R.id.Email)
         val SendOTPbutton = findViewById<Button>(R.id.btnsent)
-
+        progressBar = findViewById(R.id.lottie_loading)
 
         SendOTPbutton.setOnClickListener {
             val email = emailEditText.text.toString()
             if (email.isEmpty()) {
                 emailEditText.error = "Email is required"
             }else{
+                progressBar.visibility = View.VISIBLE
                 performRegister(email)
             }
         }
@@ -74,6 +75,7 @@ class Forget_Password_Activity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -95,6 +97,7 @@ class Forget_Password_Activity : AppCompatActivity() {
                         finish()
                     }
                     else -> {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -106,10 +109,11 @@ class Forget_Password_Activity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
-
+                progressBar.visibility = View.GONE
                 Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
+            progressBar.visibility = View.GONE
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }

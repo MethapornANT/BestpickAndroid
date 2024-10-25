@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -12,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +26,8 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class Change_PasswordActivity : AppCompatActivity() {
+    private lateinit var progressBar: LottieAnimationView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -33,6 +37,7 @@ class Change_PasswordActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        progressBar = findViewById(R.id.lottie_loading)
         val passwordEditText = findViewById<EditText>(R.id.password)
         val confirmPasswordEditText = findViewById<EditText>(R.id.conpassword)
         val button = findViewById<Button>(R.id.confirm)
@@ -50,6 +55,7 @@ class Change_PasswordActivity : AppCompatActivity() {
                 togglePassword1.setImageResource(R.drawable.eye_open)
             }
             // Move the cursor to the end of the text
+            progressBar.visibility = View.VISIBLE
             passwordEditText.setSelection(passwordEditText.text.length)
         }
 
@@ -68,6 +74,7 @@ class Change_PasswordActivity : AppCompatActivity() {
             confirmPasswordEditText.setSelection(confirmPasswordEditText.text.length)
         }
         val email = intent.getStringExtra("email") ?: run {
+            progressBar.visibility = View.GONE
             Toast.makeText(this, "No email found", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -77,8 +84,10 @@ class Change_PasswordActivity : AppCompatActivity() {
             val confirmPassword = confirmPasswordEditText.text.toString()
 
             if (password != confirmPassword) {
+                progressBar.visibility = View.GONE
                 confirmPasswordEditText.error = "Passwords do not match"
             } else if (password.isEmpty()) {
+                progressBar.visibility = View.GONE
                 passwordEditText.error = "Password cannot be empty"
                 confirmPasswordEditText.error = "Confirm password cannot be empty"
             } else {
@@ -110,6 +119,7 @@ class Change_PasswordActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -129,6 +139,7 @@ class Change_PasswordActivity : AppCompatActivity() {
                         finish()
                     }
                     else -> {
+                        progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "Unknown response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -140,10 +151,11 @@ class Change_PasswordActivity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
-
+                progressBar.visibility = View.GONE
                 Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
+            progressBar.visibility = View.GONE
             Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
