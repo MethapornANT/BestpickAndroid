@@ -55,7 +55,7 @@ class PostDetailFragment : Fragment() {
     private lateinit var recyclerViewProducts: RecyclerView
     private lateinit var comments: MutableList<Comment>
 
-
+    private var isBookmark: Boolean = false
     private var followingId: Int = -1
     private var isLiked: Boolean = false
 
@@ -108,8 +108,14 @@ class PostDetailFragment : Fragment() {
             isBookmark = !isBookmark
             if (isBookmark) {
                 bookmarkButton.setImageResource(R.drawable.bookmarkclick)
+                if (token != null && userId != null) {
+                    bookmarkPost(postId, token, requireContext())
+                }
             } else {
                 bookmarkButton.setImageResource(R.drawable.bookmark)
+                if (token != null && userId != null) {
+                    bookmarkPost(postId, token, requireContext())
+                }
             }
         }
         // ตั้งค่า Listener ให้กับปุ่มไลค์
@@ -207,7 +213,70 @@ class PostDetailFragment : Fragment() {
             dotIndicatorLayout.addView(dot)
         }
     }
+    private fun checkBookmarkStatus(postId: Int, userId: Int, token: String) {
+        val client = OkHttpClient()
+        val url = "${requireContext().getString(R.string.root_url)}/api/bookmarks/$postId" // Adjust the URL as needed
 
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    if (responseBody != null) {
+                        val jsonObject = JSONObject(responseBody)
+                        isBookmark = jsonObject.getBoolean("isBookmarked") // Assuming your API returns this
+                        withContext(Dispatchers.Main) {
+                            val bookmarkButton = requireView().findViewById<ImageView>(R.id.bookmark_button)
+                            bookmarkButton.setImageResource(if (isBookmark) R.drawable.bookmarkclick else R.drawable.bookmark)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Failed to check bookmark status: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+    private fun bookmarkPost(postId: Int, token: String, context: Context) {
+        val client = OkHttpClient()
+        val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark" // Endpoint to bookmark a post
+
+        val request = Request.Builder()
+            .url(url)
+            .post(FormBody.Builder().build()) // Send a POST request
+            .addHeader("Authorization", "Bearer $token") // Attach token in the header
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                (context as? Activity)?.runOnUiThread {
+                    Toast.makeText(context, "Failed to bookmark post: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Error bookmarking post: ${response.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Post bookmarked successfully", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        })
+    }
     private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
         val client = OkHttpClient()
         val rooturl = getString(R.string.root_url).substring(0, getString(R.string.root_url).length - 5) + ":5000"
@@ -713,6 +782,7 @@ class PostDetailFragment : Fragment() {
                                     follower.visibility = View.GONE
                                 } else {
                                     checkFollowStatus(userId, followingId, token)
+                                    checkBookmarkStatus(postId, userId, token)
                                 }
 
                                 // Load profile image
