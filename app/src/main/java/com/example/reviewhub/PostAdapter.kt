@@ -179,20 +179,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                 mediaViewPager.adapter = adapter
                 mediaViewPager.visibility = View.VISIBLE
 
-                adapter.setOnItemClickListener { position, mediaType ->
-                    if (context is FragmentActivity) {
-                        val postDetailFragment = PostDetailFragment()
-                        val bundle = Bundle()
-                        bundle.putInt("POST_ID", post.id)
-                        bundle.putString("SOURCE", "HomeFragment")
-                        postDetailFragment.arguments = bundle
-                        recordInteraction(post.id, "view", null, token!!, context)
-                        context.supportFragmentManager.beginTransaction()
-                            .replace(R.id.nav_host_fragment, postDetailFragment)
-                            .addToBackStack(null)
-                            .commit()
-                    }
-                }
             } else {
                 mediaViewPager.visibility = View.GONE
             }
