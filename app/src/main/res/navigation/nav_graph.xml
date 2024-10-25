@@ -52,6 +52,9 @@
         <action
             android:id="@+id/action_to_anotherUserFragment"
             app:destination="@id/AnotherUserFragment" />
+        <action
+            android:id="@+id/action_postListFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
     </fragment>
 
     <fragment
