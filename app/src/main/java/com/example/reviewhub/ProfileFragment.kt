@@ -69,6 +69,8 @@ class ProfileFragment : Fragment() {
         val backButton = view.findViewById<ImageView>(R.id.back_button)
         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
+        bottomNavigationView!!.menu.findItem(R.id.profile).isChecked = true
+
         val checkfollow = view.findViewById<LinearLayout>(R.id.checkfollow)
 
         checkfollow.setOnClickListener {
