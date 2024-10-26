@@ -1075,12 +1075,16 @@ class PostDetailFragment : Fragment() {
             val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
 
-            holder.itemView.findViewById<ImageView>(R.id.comment_report).setOnClickListener {
-                val isCommentOwner = userId == comment.user_id
-                if (isCommentOwner) {
-                    // ถ้าเป็นเจ้าของคอมเมนต์ให้แสดงเมนูลบ
-                    showDeleteMenu(requireContext(), it, comment.id, postId)
+            if (userId == comment.user_id) {
+                holder.itemView.findViewById<ImageView>(R.id.comment_report).setOnClickListener {
+                    val isCommentOwner = userId == comment.user_id
+                    if (isCommentOwner) {
+                        // ถ้าเป็นเจ้าของคอมเมนต์ให้แสดงเมนูลบ
+                        showDeleteMenu(requireContext(), it, comment.id, postId)
+                    }
                 }
+            }else{
+                holder.itemView.findViewById<ImageView>(R.id.comment_report).visibility = View.GONE
             }
         }
 
