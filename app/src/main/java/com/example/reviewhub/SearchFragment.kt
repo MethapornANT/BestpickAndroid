@@ -65,7 +65,7 @@ class SearchFragment : Fragment(), OnItemClickListener {
 
     private fun performSearch(query: String) {
         progressBar.visibility = View.VISIBLE
-        val url = getString(R.string.root_url) + "/search?query=$query"
+        val url = getString(R.string.root_url) + "/api/search?query=$query"
 
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()

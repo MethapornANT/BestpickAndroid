@@ -397,7 +397,7 @@ class ProfileFragment : Fragment() {
 
         if (token != null && userId != null) {
             val rootUrl = getString(R.string.root_url)
-            val deleteAccountEndpoint = "/users/$userId"
+            val deleteAccountEndpoint = "/api/users/$userId"
             val url = "$rootUrl$deleteAccountEndpoint"
 
             val request = Request.Builder()

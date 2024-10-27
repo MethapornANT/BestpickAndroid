@@ -297,7 +297,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchRandomAds(callback: (List<PostAdapter.Ad>) -> Unit) {
-        val url = getString(R.string.root_url) + "/ads/random"
+        val url = getString(R.string.root_url) + "/api/ads/random"
 
         val request = Request.Builder()
             .url(url)

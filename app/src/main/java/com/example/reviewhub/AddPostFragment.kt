@@ -223,7 +223,7 @@ class AddPostFragment : Fragment() {
             requestBody.addFormDataPart("photo_url", photoFileNames.joinToString(",")) // แปลง List เป็น String
         }
 
-        val url = getString(R.string.root_url) + "/posts/create"
+        val url = getString(R.string.root_url) + "/api/posts/create"
         val request = Request.Builder()
             .url(url)
             .post(requestBody.build())
@@ -288,7 +288,7 @@ class AddPostFragment : Fragment() {
             return
         }
 
-        val url = getString(R.string.root_url) + "/type" // Endpoint to fetch categories
+        val url = getString(R.string.root_url) + "/api/type" // Endpoint to fetch categories
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")

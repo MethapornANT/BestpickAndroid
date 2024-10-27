@@ -733,7 +733,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             val userId = sharedPreferences.getString("USER_ID", null)
 
             if (token != null && userId != null) {
-                val url = "${context.getString(R.string.root_url)}/posts/$postId"
+                val url = "${context.getString(R.string.root_url)}/api/posts/$postId"
                 val requestBody = FormBody.Builder()
                     .add("user_id", userId)
                     .build()
@@ -772,7 +772,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
         private fun bookmarkPost(postId: Int, token: String, context: Context) {
             val client = OkHttpClient()
-            val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark" // Endpoint to bookmark a post
+            val url = "${context.getString(R.string.root_url)}/api/posts/$postId/bookmark" // Endpoint to bookmark a post
 
             val request = Request.Builder()
                 .url(url)
@@ -805,7 +805,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
         private fun reportPost(postId: Int, userId: Int, reason: String, token: String, context: Context) {
             val client = OkHttpClient()
-            val url = "${context.getString(R.string.root_url)}/posts/$postId/report"
+            val url = "${context.getString(R.string.root_url)}/api/posts/$postId/report"
 
             val requestBody = FormBody.Builder()
                 .add("user_id", userId.toString())
@@ -840,7 +840,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
         private fun checkBookmarkStatus(postId: Int, token: String, context: Context, callback: (Boolean) -> Unit) {
             val client = OkHttpClient()
-            val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark/status"
+            val url = "${context.getString(R.string.root_url)}/api/posts/$postId/bookmark/status"
 
             val request = Request.Builder()
                 .url(url)

@@ -133,7 +133,7 @@ class EditPostFragment : Fragment() {
             return
         }
 
-        val url = getString(R.string.root_url) + "/type"
+        val url = getString(R.string.root_url) + "/api/type"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
@@ -214,7 +214,7 @@ class EditPostFragment : Fragment() {
             return
         }
 
-        val url = getString(R.string.root_url) + "/posts/$postId"
+        val url = getString(R.string.root_url) + "/api/posts/$postId"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
@@ -325,7 +325,7 @@ class EditPostFragment : Fragment() {
             }
         }
 
-        val url = getString(R.string.root_url) + "/posts/$postId"
+        val url = getString(R.string.root_url) + "/api/posts/$postId"
         val request = Request.Builder()
             .url(url)
             .put(requestBody.build())

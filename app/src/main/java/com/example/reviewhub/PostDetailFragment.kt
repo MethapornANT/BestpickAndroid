@@ -280,7 +280,7 @@ class PostDetailFragment : Fragment() {
     private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
         val client = OkHttpClient()
         val rooturl = getString(R.string.root_url).substring(0, getString(R.string.root_url).length - 5) + ":5000"
-        val url = "$rooturl/search?productname=$productName"
+        val url = "$rooturl/api/search?productname=$productName"
 
         Log.d("fetchProductData", "Requesting URL: $url")
 
@@ -544,7 +544,7 @@ class PostDetailFragment : Fragment() {
         val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
 
         if (token != null) {
-            val url = "${context.getString(R.string.root_url)}/posts/$postId/comment/$commentId"
+            val url = "${context.getString(R.string.root_url)}/api/posts/$postId/comment/$commentId"
             val request = Request.Builder()
                 .url(url)
                 .delete()
@@ -587,7 +587,7 @@ class PostDetailFragment : Fragment() {
         val userId = sharedPreferences.getString("USER_ID", null)
 
         if (token != null && userId != null) {
-            val url = "${context.getString(R.string.root_url)}/posts/$postId"
+            val url = "${context.getString(R.string.root_url)}/api/posts/$postId"
             val requestBody = FormBody.Builder()
                 .add("user_id", userId)
                 .build()
@@ -884,7 +884,7 @@ class PostDetailFragment : Fragment() {
     // ฟังก์ชันสำหรับการส่งคอมเมนต์ไปยัง API
     private fun postComment(postId: Int, userId: Int, content: String, token: String, callback: (Int?) -> Unit) {
         val client = OkHttpClient()
-        val url = getString(R.string.root_url) + "/posts/$postId/comment"
+        val url = getString(R.string.root_url) + "/api/posts/$postId/comment"
 
         val requestBody = FormBody.Builder()
             .add("content", content)
@@ -1230,7 +1230,7 @@ class PostDetailFragment : Fragment() {
     // Updated reportPost function with an additional reason parameter
     private fun reportPost(postId: Int, userId: Int, reason: String, token: String) {
         val client = OkHttpClient()
-        val url = "${requireContext().getString(R.string.root_url)}/posts/$postId/report"
+        val url = "${requireContext().getString(R.string.root_url)}/api/posts/$postId/report"
 
         // Prepare request body with user ID and reason for reporting
         val requestBody = FormBody.Builder()
