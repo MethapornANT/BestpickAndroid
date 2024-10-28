@@ -39,26 +39,29 @@ class SearchAdapter(
 
     // ViewHolder สำหรับผู้ใช้ที่ไม่มีโพสต์
     class UserNoPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val profileImageView: ImageView = itemView.findViewById(R.id.profile_image)
-        val usernameTextView: TextView = itemView.findViewById(R.id.username)
+        private val profileImageView: ImageView = itemView.findViewById(R.id.profile_image)
+        private val usernameTextView: TextView = itemView.findViewById(R.id.username)
 
-        fun bind(result: SearchResult, listener: OnItemClickListener) { // เพิ่ม listener เป็นพารามิเตอร์
+        fun bind(result: SearchResult, listener: OnItemClickListener) {
             usernameTextView.text = result.username
-            val baseUrl = itemView.context.getString(R.string.root_url) + "/api"
 
-            // โหลดรูปภาพโปรไฟล์
+            val baseUrl = itemView.context.getString(R.string.root_url) + "/api"
+            val profileImageUrl = baseUrl + result.profileImageUrl
+
+            // Log the URL for debugging
+            Log.d("UserNoPostViewHolder", "Loading profile image from: $profileImageUrl")
+
             Glide.with(itemView.context)
-                .load(baseUrl + result.profileImageUrl)
-                .placeholder(R.drawable.profile) // รูปภาพที่แสดงก่อนโหลดเสร็จ
+                .load(profileImageUrl)
+                .placeholder(R.drawable.user)
                 .into(profileImageView)
 
-            // ตั้งค่า Click Listener สำหรับผู้ใช้ที่ไม่มีโพสต์
+            // Set click listener for users without posts
             itemView.setOnClickListener {
-                listener.onItemClick(null, result.userId) // ส่ง userId และ null สำหรับ postId
+                listener.onItemClick(null, result.userId) // Send userId and null for postId
             }
         }
     }
-
 
     // ViewHolder สำหรับผู้ใช้ที่มีโพสต์
     class UserWithPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -89,7 +92,7 @@ class SearchAdapter(
                 val postUrl = result.imageUrl
                 Glide.with(itemView.context)
                     .load(baseUrl + postUrl) // URL ของรูปภาพโพสต์หลัก
-                    .placeholder(R.drawable.testpic) // รูปภาพที่แสดงก่อนโหลดเสร็จ
+                    .placeholder(R.drawable.user) // รูปภาพที่แสดงก่อนโหลดเสร็จ
                     .into(mainImageView)
 
                 // ตั้งค่า Click Listener สำหรับโพสต์นี้

@@ -287,11 +287,6 @@ class PostDetailFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 activity?.runOnUiThread {
                     Log.e("fetchProductData", "Failed to fetch data: ${e.message}")
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed to fetch data: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
                     // Hide the ProgressBar
                     view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
                 }
