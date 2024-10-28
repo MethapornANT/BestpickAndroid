@@ -44,7 +44,7 @@ class SearchAdapter(
 
         fun bind(result: SearchResult, listener: OnItemClickListener) { // เพิ่ม listener เป็นพารามิเตอร์
             usernameTextView.text = result.username
-            val baseUrl = itemView.context.getString(R.string.root_url)
+            val baseUrl = itemView.context.getString(R.string.root_url) + "/api/"
 
             // โหลดรูปภาพโปรไฟล์
             Glide.with(itemView.context)
