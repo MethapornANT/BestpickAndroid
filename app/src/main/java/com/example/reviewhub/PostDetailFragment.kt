@@ -273,8 +273,8 @@ class PostDetailFragment : Fragment() {
     }
     private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
         val client = OkHttpClient()
-        val rooturl = getString(R.string.root_url) + "/ai/search"
-        val url = "$rooturl/api/search?productname=$productName"
+        val rooturl = getString(R.string.root_url)
+        val url = "$rooturl/ai/search?productname=$productName"
 
         Log.d("fetchProductData", "Requesting URL: $url")
 
@@ -296,64 +296,56 @@ class PostDetailFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     val responseBody = it.body?.string()
+                    activity?.runOnUiThread {
+                        view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
+                    }
 
                     if (responseBody != null && responseBody.startsWith("{")) { // ตรวจสอบว่าเป็น JSON Object
                         try {
                             val jsonObject = JSONObject(responseBody)
-
-                            // Extract prices and URLs from all shops
                             val products = mutableListOf<Product>()
 
-                            // Extracting data from each shop
+                            // ดึงข้อมูลจากแต่ละร้านใน JSON
                             jsonObject.keys().forEach { key ->
                                 val shopDetails = jsonObject.getJSONObject(key)
-
-                                // Advice
-                                val adviceArray = shopDetails.optJSONArray("Advice")
-                                if (adviceArray != null && adviceArray.length() > 0) {
-                                    val adviceProduct = adviceArray.getJSONObject(0)
-                                    products.add(Product(adviceProduct.getString("name"), adviceProduct.getString("price"), adviceProduct.getString("url")))
-                                }
-
-                                // Banana
-                                val bananaArray = shopDetails.optJSONArray("Banana")
-                                if (bananaArray != null && bananaArray.length() > 0) {
-                                    val bananaProduct = bananaArray.getJSONObject(0)
-                                    products.add(Product(bananaProduct.getString("name"), bananaProduct.getString("price"), bananaProduct.getString("url")))
-                                }
-
-                                // JIB
-                                val jibArray = shopDetails.optJSONArray("JIB")
-                                if (jibArray != null && jibArray.length() > 0) {
-                                    val jibProduct = jibArray.getJSONObject(0)
-                                    products.add(Product(jibProduct.getString("name"), jibProduct.getString("price"), jibProduct.getString("url")))
+                                listOf("Advice", "Banana", "JIB").forEach { shopName ->
+                                    shopDetails.optJSONArray(shopName)?.let { shopArray ->
+                                        if (shopArray.length() > 0) {
+                                            val product = shopArray.getJSONObject(0)
+                                            val productName = product.getString("name")
+                                            if (productName != "Not found") { // ตรวจสอบว่าไม่ใช่ 'Not found'
+                                                products.add(
+                                                    Product(
+                                                        productName,
+                                                        product.getString("price"),
+                                                        product.getString("url")
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
                             activity?.runOnUiThread {
-                                if (isAdded && view != null) {
-                                    if (products.isEmpty()) {
-                                        Log.d("fetchProductData", "No products found")
-                                    } else {
-                                        Log.d("fetchProductData", "Products fetched: $products")
-                                        callback(products) // ส่งรายการสินค้าไปยัง callback
-                                    }
+                                if (products.isNotEmpty()) {
+                                    Log.d("fetchProductData", "Products fetched: $products")
+                                    callback(products)
+                                } else {
+                                    Log.d("fetchProductData", "No products found")
+                                    callback(emptyList())
                                 }
                             }
                         } catch (e: JSONException) {
-                            Log.e("fetchProductData", "Failed to parse JSON: ${e.message}")
+                            Log.e("fetchProductData", "JSON parsing error: ${e.message}")
+                            activity?.runOnUiThread { callback(emptyList()) }
                         }
                     } else {
-                        Log.e("fetchProductData", "Invalid JSON response or non-JSON response received")
-                    }
-
-                    // ซ่อน ProgressBar หลังจากประมวลผลคำตอบ
-                    activity?.runOnUiThread {
-                        view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
+                        Log.e("fetchProductData", "Invalid JSON or non-JSON response")
+                        activity?.runOnUiThread { callback(emptyList()) }
                     }
                 }
             }
-
 
         })
     }
