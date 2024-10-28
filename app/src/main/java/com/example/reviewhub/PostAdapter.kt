@@ -113,13 +113,12 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
             val photoUrls = post.photoUrl?.map { Pair(baseUrl + it,"photo") } ?: emptyList()
-            Log.d("PhotoUrls", "Photo URLs: $photoUrls")
+            Log.d("PhotoUrls", "Photo URLs: $profileImageUrl")
             val videoUrls = post.videoUrl?.map { Pair(baseUrl + it,"video") } ?: emptyList()
             Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
 
-            // Set user details
             postTime.text = formatTime(displayTime)
             userName.text = post.userName
             title.text = post.title
@@ -169,11 +168,11 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             Glide.with(context)
                 .load(profileImageUrl)
                 .circleCrop()
-                .placeholder(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.user)
                 .error(R.drawable.ic_error)
                 .into(userProfileImage)
 
-            // Set up ViewPager2 for photo and video slideshow if there is any media
+
             if (mediaUrls.isNotEmpty()) {
                 val adapter = PhotoPagerAdapter(mediaUrls)
                 mediaViewPager.adapter = adapter

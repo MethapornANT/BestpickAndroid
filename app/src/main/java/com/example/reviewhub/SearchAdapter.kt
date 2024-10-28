@@ -77,7 +77,7 @@ class SearchAdapter(
             // กำหนด URL ของรูปภาพโปรไฟล์และรูปภาพโพสต์จาก Resource
             val baseUrl = itemView.context.getString(R.string.root_url) + "/api"
             val profileUrl =result.profileImageUrl
-
+            
             // โหลดรูปภาพโปรไฟล์
             Glide.with(itemView.context)
                 .load(baseUrl + profileUrl) // URL ของรูปภาพโปรไฟล์

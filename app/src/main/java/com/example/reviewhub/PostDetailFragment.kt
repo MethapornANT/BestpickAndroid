@@ -44,6 +44,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 import androidx.navigation.fragment.findNavController
+import com.facebook.Profile
 import java.sql.Types.NULL
 
 
@@ -724,16 +725,15 @@ class PostDetailFragment : Fragment() {
                         followingId = jsonObject.getInt("user_id")
                         val time = jsonObject.getString("updated_at")
                         val profileImage = jsonObject.getString("picture")
-                        val profileUrl = getString(R.string.root_url) + profileImage
+                        val profileUrl = getString(R.string.root_url) +"/api"+ profileImage
                         val productname = jsonObject.getString("ProductName")
 
-                        Log.d("PostDetailFragment", "Product Name: $productname")
+                        Log.d("PostDetailFragment", "Product Name: ${profileUrl}")
 
                         fetchProductData(productname) { products ->
                             // Update UI with the list of products from all shops
                             updateProductDetailsUI(products)
                         }
-
                         // Initialize comments list
                         comments = mutableListOf()
 

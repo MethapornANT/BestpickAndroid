@@ -125,7 +125,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
         // ใช้การตั้งค่า Glide ที่ปรับปรุงแล้ว
         Glide.with(holder.itemView.context)
-            .load("/api" +mediaUrl)
+            .load(mediaUrl)
             .diskCacheStrategy(DiskCacheStrategy.ALL) // ใช้การจัดการ Cache
             .override(800, 800) // กำหนดความละเอียดของภาพ
             .fitCenter() // ปรับให้ภาพแสดงได้เต็มพื้นที่โดยไม่บิดเบี้ยว
