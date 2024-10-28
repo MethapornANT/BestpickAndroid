@@ -44,11 +44,11 @@ class SearchAdapter(
 
         fun bind(result: SearchResult, listener: OnItemClickListener) { // เพิ่ม listener เป็นพารามิเตอร์
             usernameTextView.text = result.username
-            val baseUrl = itemView.context.getString(R.string.root_url)
+            val baseUrl = itemView.context.getString(R.string.root_url) + "/api"
 
             // โหลดรูปภาพโปรไฟล์
             Glide.with(itemView.context)
-                .load("/api" +baseUrl + result.profileImageUrl)
+                .load(baseUrl + result.profileImageUrl)
                 .placeholder(R.drawable.profile) // รูปภาพที่แสดงก่อนโหลดเสร็จ
                 .into(profileImageView)
 
@@ -86,7 +86,7 @@ class SearchAdapter(
 
             // เช็คว่ามีโพสต์หรือไม่ ถ้ามีจึงจะแสดงรูปภาพและข้อมูลโพสต์
             if (result.postId != null) {
-                val postUrl = "/api" +result.imageUrl
+                val postUrl = result.imageUrl
                 Glide.with(itemView.context)
                     .load(baseUrl + postUrl) // URL ของรูปภาพโพสต์หลัก
                     .placeholder(R.drawable.testpic) // รูปภาพที่แสดงก่อนโหลดเสร็จ

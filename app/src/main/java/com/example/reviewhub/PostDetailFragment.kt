@@ -775,7 +775,7 @@ class PostDetailFragment : Fragment() {
                             if (view.isAttachedToWindow) {
                                 // Update comments adapter
                                 if (comments.isEmpty()) {
-                                    Toast.makeText(requireContext(), "No comments found", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), "No Comments", Toast.LENGTH_SHORT).show()
                                 } else {
                                     recyclerViewComments.adapter = CommentAdapter(comments, postId)
                                     recyclerViewComments.adapter?.notifyDataSetChanged()
