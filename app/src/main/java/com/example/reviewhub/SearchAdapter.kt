@@ -48,7 +48,7 @@ class SearchAdapter(
 
             // โหลดรูปภาพโปรไฟล์
             Glide.with(itemView.context)
-                .load(baseUrl +"/api" + result.profileImageUrl)
+                .load(baseUrl + result.profileImageUrl)
                 .placeholder(R.drawable.profile) // รูปภาพที่แสดงก่อนโหลดเสร็จ
                 .into(profileImageView)
 
@@ -77,7 +77,7 @@ class SearchAdapter(
             // กำหนด URL ของรูปภาพโปรไฟล์และรูปภาพโพสต์จาก Resource
             val baseUrl = itemView.context.getString(R.string.root_url) + "/api"
             val profileUrl =result.profileImageUrl
-            
+
             // โหลดรูปภาพโปรไฟล์
             Glide.with(itemView.context)
                 .load(baseUrl + profileUrl) // URL ของรูปภาพโปรไฟล์

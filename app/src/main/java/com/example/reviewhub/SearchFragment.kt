@@ -101,6 +101,7 @@ class SearchFragment : Fragment(), OnItemClickListener {
         resultsArray.forEach { element ->
             val userObject = element.asJsonObject
 
+            // ตรวจสอบการเข้าถึงข้อมูลผู้ใช้
             val userId = userObject.get("user_id")?.asInt ?: -1
             val username = userObject.get("username")?.asString ?: "Unknown User"
             val profileImageUrl = userObject.get("profile_image")?.asString ?: ""
@@ -114,34 +115,41 @@ class SearchFragment : Fragment(), OnItemClickListener {
                 val postsArray = userObject.getAsJsonArray("posts")
                 postsArray.forEach { postElement ->
                     val postObject = postElement.asJsonObject
-                    val postId = postObject.get("post_id")?.asInt ?: -1
-                    val title = postObject.get("title")?.asString ?: "Untitled"
-                    val content = postObject.get("content_preview")?.asString ?: "No Content"
 
-                    // เลือกรูปภาพแรกจาก photo_url
-                    val photoArray = postObject.getAsJsonArray("photo_url")
-                    val firstPhotoUrl = if (photoArray != null && photoArray.size() > 0) {
-                        photoArray[0].asString // ดึงรูปภาพแรกจากอาร์เรย์
-                    } else {
-                        "" // ถ้าไม่มีรูปภาพให้เป็นค่าว่าง
-                    }
+                    // ใช้ try-catch เพื่อจัดการกับข้อผิดพลาด
+                    try {
+                        val postId = postObject.get("post_id")?.asInt ?: -1
+                        val title = postObject.get("title")?.asString ?: "Untitled"
+                        val content = postObject.get("content_preview")?.asString ?: "No Content"
 
-                    searchResults.add(
-                        SearchResult(
-                            userId = userId,
-                            username = username,
-                            postId = postId,
-                            title = title,
-                            content = content,
-                            profileImageUrl = profileImageUrl,
-                            imageUrl = firstPhotoUrl // ใช้รูปภาพแรกจาก photo_url
+                        // เลือกรูปภาพแรกจาก photo_url
+                        val photoArray = postObject.getAsJsonArray("photo_url")
+                        val firstPhotoUrl = if (photoArray != null && photoArray.size() > 0) {
+                            photoArray[0].asString // ดึงรูปภาพแรกจากอาร์เรย์
+                        } else {
+                            "" // ถ้าไม่มีรูปภาพให้เป็นค่าว่าง
+                        }
+
+                        searchResults.add(
+                            SearchResult(
+                                userId = userId,
+                                username = username,
+                                postId = postId,
+                                title = title,
+                                content = content,
+                                profileImageUrl = profileImageUrl,
+                                imageUrl = firstPhotoUrl
+                            )
                         )
-                    )
+                    } catch (e: Exception) {
+                        Log.e("ParseResults", "Error parsing post data", e)
+                    }
                 }
             }
         }
         return searchResults
     }
+
 
 
 
