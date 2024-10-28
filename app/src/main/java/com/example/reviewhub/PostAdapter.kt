@@ -108,7 +108,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
         fun bind(post: Post) {
             val context = itemView.context
-            val baseUrl = context.getString(R.string.root_url) +"/api"
+            val baseUrl = context.getString(R.string.root_url) + "/api"
 
             // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
@@ -124,7 +124,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             userName.text = post.userName
             title.text = post.title
             postContent.text = if (post.content.length > 40) {
-                post.content.substring(0, 40) + " See more.."
+                post.content.substring(0, 40) + " See more detail.."
             } else {
                 post.content
             }
@@ -167,7 +167,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
             // Load profile image using the full URL
             Glide.with(context)
-                .load("/api" +profileImageUrl)
+                .load(profileImageUrl)
                 .circleCrop()
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(R.drawable.ic_error)
