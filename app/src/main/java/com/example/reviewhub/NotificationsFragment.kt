@@ -33,6 +33,7 @@ class NotificationsFragment : Fragment() {
         notificationsAdapter = NotificationsAdapter(notificationList) { notification ->
             // เมื่อผู้ใช้คลิกที่ Notification ให้ทำการอัปเดตสถานะ
             updatestatus(notification.id)
+            Log.d("NotificationsFragment", "Notification clicked: ${notification.id}")
         }
         recyclerView.adapter = notificationsAdapter
 
@@ -88,7 +89,7 @@ class NotificationsFragment : Fragment() {
     private fun updatestatus(notificationId: Int) {
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
-
+        Log.d("CheckStatus", "notificationId: $notificationId")
         if (token.isNullOrEmpty()) {
             Log.e("CheckStatus", "Token not found")
             return
@@ -109,24 +110,28 @@ class NotificationsFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    Log.d("CheckStatus", "Notification marked as read")
+                response.use {
+                    if (response.isSuccessful) {
+                        val responseBody = response.body?.string()
+                        Log.d("CheckStatus", "Notification marked as read. Response: $responseBody")
 
-                    // อัปเดตสถานะ read_status ใน notificationList
-                    val index = notificationList.indexOfFirst { it.id == notificationId }
-                    if (index != -1) {
-                        notificationList[index].read_status = 1  // เปลี่ยน read_status เป็น 1 (อ่านแล้ว)
+                        // อัปเดตสถานะ read_status ใน notificationList
+                        val index = notificationList.indexOfFirst { it.id == notificationId }
+                        if (index != -1) {
+                            notificationList[index].read_status = 1  // เปลี่ยน read_status เป็น 1 (อ่านแล้ว)
 
-                        // อัปเดต UI ใน Main Thread
-                        activity?.runOnUiThread {
-                            notificationsAdapter.notifyItemChanged(index)  // อัปเดตเฉพาะรายการที่เปลี่ยนแปลง
+                            // อัปเดต UI ใน Main Thread
+                            activity?.runOnUiThread {
+                                notificationsAdapter.notifyItemChanged(index)  // อัปเดตเฉพาะรายการที่เปลี่ยนแปลง
+                            }
+
+                            // อัปเดต Badge
+                            updateBadge()
+                        } else {
                         }
-
-                        // อัปเดต Badge
-                        updateBadge()
+                    } else {
+                        Log.e("CheckStatus", "Error: ${response.message} - ${response.body?.string()}")
                     }
-                } else {
-                    Log.e("CheckStatus", "Error: ${response.message}")
                 }
             }
         })
