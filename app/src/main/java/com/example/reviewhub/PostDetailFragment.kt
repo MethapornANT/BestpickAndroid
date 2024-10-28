@@ -247,7 +247,7 @@ class PostDetailFragment : Fragment() {
     }
     private fun bookmarkPost(postId: Int, token: String, context: Context) {
         val client = OkHttpClient()
-        val url = "${context.getString(R.string.root_url)}/posts/$postId/bookmark" // Endpoint to bookmark a post
+        val url = "${context.getString(R.string.root_url)}/api/posts/$postId/bookmark" // Endpoint to bookmark a post
 
         val request = Request.Builder()
             .url(url)
@@ -724,7 +724,7 @@ class PostDetailFragment : Fragment() {
                         followingId = jsonObject.getInt("user_id")
                         val time = jsonObject.getString("updated_at")
                         val profileImage = jsonObject.getString("picture")
-                        val profileUrl = getString(R.string.root_url) + "/api" + profileImage
+                        val profileUrl = getString(R.string.root_url) + profileImage
                         val productname = jsonObject.getString("ProductName")
 
                         Log.d("PostDetailFragment", "Product Name: $productname")
