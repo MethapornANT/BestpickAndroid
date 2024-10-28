@@ -25,12 +25,14 @@ interface OnItemClickListener {
     fun onItemClick(postId: Int?, userId: Int)
 }
 
-// Adapter สำหรับจัดการแสดงผลใน RecyclerView
-// Adapter สำหรับจัดการแสดงผลใน RecyclerView
-class SearchAdapter(
-    private val searchResults: List<SearchResult>,
-    private val listener: OnItemClickListener
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        // Adapter สำหรับจัดการแสดงผลใน RecyclerView
+        // Adapter สำหรับจัดการแสดงผลใน RecyclerView
+        class SearchAdapter(
+            private val searchResults: List<SearchResult>,
+            private val listener: OnItemClickListener
+        ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+
 
     companion object {
         private const val VIEW_TYPE_USER_NO_POST = 0

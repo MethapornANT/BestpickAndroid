@@ -33,7 +33,6 @@
         android:id="@+id/searchFragment"
         android:name="com.example.reviewhub.SearchFragment"
         android:label="Search">
-        <!-- กำหนด action สำหรับการนำทางจาก SearchFragment ไปยัง PostDetailFragment -->
         <action
             android:id="@+id/action_searchFragment_to_postDetailFragment"
             app:destination="@id/postDetailFragment" />
@@ -64,10 +63,15 @@
         <action
             android:id="@+id/action_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_postListFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+        <action
+            android:id="@+id/action_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
     </fragment>
 
 
-    <!-- Fragment ที่ไม่ต้องการแสดง BottomNavigationView -->
     <fragment
         android:id="@+id/postDetailFragment"
         android:name="com.example.reviewhub.PostDetailFragment"

@@ -202,14 +202,18 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/policy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="9sp"
                 android:textAlignment="center"
                 android:layout_marginTop="20dp"
+                android:textColor="@color/red"
                 android:text="By proceeding, you agree to the terms of use of the Bestpick app and confirm that you have read and understood the privacy policy."
                 android:maxLines="3"
                 android:ellipsize="end"/>
+
+
 
         </LinearLayout>
 

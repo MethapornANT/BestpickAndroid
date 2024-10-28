@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -65,6 +66,8 @@ class AnotherUserFragment : Fragment() {
         }
 
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
+
+
 
         val userId = arguments?.getInt("USER_ID") ?: -1
         if (userId != -1) {
@@ -148,7 +151,7 @@ class AnotherUserFragment : Fragment() {
                     id = post.getInt("post_id"),
                     userName = userProfile.getString("username"),
                     userId = userProfile.getInt("userId"),
-                    title = post.getString("content"),
+                    title = post.getString("title"),
                     time = post.getString("created_at"),
                     updated = post.optString("updated_at", null),
                     content = post.getString("content"),

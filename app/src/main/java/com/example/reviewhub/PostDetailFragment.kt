@@ -1030,7 +1030,7 @@ class PostDetailFragment : Fragment() {
             holder.createdAt.text = formatTime(comment.createdAt)
 
             Glide.with(this@PostDetailFragment)
-                .load(requireContext().getString(R.string.root_url) + comment.profileImage)
+                .load(requireContext().getString(R.string.root_url) +"/api"+ comment.profileImage)
                 .into(holder.Imageprofile)
 
 
