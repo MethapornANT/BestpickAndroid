@@ -185,8 +185,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             userProfileImage.setOnClickListener {
                 val fragmentManager = (context as? FragmentActivity)?.supportFragmentManager
                 if (fragmentManager != null) {
-                    val transaction = fragmentManager.beginTransaction()
-                    val anotherUserFragment = AnotherUserFragment()
                     val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
                     val userid = sharedPreferences.getString("USER_ID", null)
 
@@ -200,14 +198,13 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     }
 
                     // ส่งข้อมูล USER_ID ไปยัง Fragment
-                    val bundle = Bundle()
-                    bundle.putInt("USER_ID", post.userId)
-                    anotherUserFragment.arguments = bundle
+                    val navController = itemView.findNavController() // ค้นหา NavController จาก itemView
+                    val bundle = Bundle().apply {
+                        putInt("USER_ID", post.userId) // ใส่ USER_ID ลงใน Bundle
+                    }
+                    // บันทึกการทำงานของ interaction
                     recordInteraction(post.id, "view_profile", null, token!!, context)
-                    // แทนที่ Fragment ปัจจุบันด้วย AnotherUserFragment
-                    transaction.replace(R.id.nav_host_fragment, anotherUserFragment)
-                    transaction.addToBackStack(null)
-                    transaction.commit()
+                    navController.navigate(R.id.action_postListFragment_to_profiledetailFragment, bundle)
                 }
             }
 
