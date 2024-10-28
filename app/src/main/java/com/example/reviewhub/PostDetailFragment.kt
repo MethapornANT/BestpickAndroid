@@ -461,7 +461,6 @@ class PostDetailFragment : Fragment() {
                     true
                 }
                 R.id.edit_post -> {
-                    Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
                     val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
                     val token = sharedPreferences.getString("TOKEN", null)
 
@@ -587,7 +586,6 @@ class PostDetailFragment : Fragment() {
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to delete post: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -894,7 +892,6 @@ class PostDetailFragment : Fragment() {
                         }
                     } else {
                         (requireActivity() as? Activity)?.runOnUiThread {
-                            Toast.makeText(requireContext(), "Failed: ${response.message}", Toast.LENGTH_SHORT).show()
                             callback(null) // ส่ง null หากไม่สำเร็จ
                         }
                     }
@@ -938,7 +935,6 @@ class PostDetailFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 (context as? Activity)?.runOnUiThread {
                     if (!response.isSuccessful) {
-                        Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
                     }
@@ -978,7 +974,6 @@ class PostDetailFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 (context as? Activity)?.runOnUiThread {
                     if (!response.isSuccessful) {
-                        Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Notification deleted successfully", Toast.LENGTH_SHORT).show()
                     }
@@ -1135,7 +1130,6 @@ class PostDetailFragment : Fragment() {
                         val jsonResponse = response.body?.string()
                         val message = JSONObject(jsonResponse).getString("message")
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -1193,7 +1187,6 @@ class PostDetailFragment : Fragment() {
                         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(product.url))
                         holder.itemView.context.startActivity(browserIntent)
                     } catch (e: ActivityNotFoundException) {
-                        Toast.makeText(holder.itemView.context, "No application found to open this URL", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -1228,7 +1221,6 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (requireActivity() as? Activity)?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to report post: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -1236,8 +1228,6 @@ class PostDetailFragment : Fragment() {
                 (requireActivity() as? Activity)?.runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(requireContext(), "Post reported successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(requireContext(), "Error reporting post: ${response.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

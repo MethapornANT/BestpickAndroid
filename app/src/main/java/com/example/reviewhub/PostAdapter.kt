@@ -753,8 +753,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                         }
                     }
                 })
-            } else {
-                Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
             }
         }
 
