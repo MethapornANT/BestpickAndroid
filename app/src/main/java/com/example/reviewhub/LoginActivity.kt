@@ -87,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
         } else {
             // Configure Google Sign-In
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+            
                 .requestEmail()
                 .build()
             googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -173,7 +173,6 @@ class LoginActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -213,10 +212,8 @@ class LoginActivity : AppCompatActivity() {
 
                         } else {
                             progressBar.visibility = View.GONE
-                            Toast.makeText(applicationContext, "Error: Missing token or user data", Toast.LENGTH_LONG).show()
                         }
                     }
-                    else -> Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
                 }
             } else {
                 val errorMessage = try {
@@ -226,11 +223,9 @@ class LoginActivity : AppCompatActivity() {
                     "Unknown error"
                 }
                 progressBar.visibility = View.GONE
-                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
             progressBar.visibility = View.GONE
-            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 

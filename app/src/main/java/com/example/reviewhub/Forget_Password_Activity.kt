@@ -76,7 +76,6 @@ class Forget_Password_Activity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -98,7 +97,6 @@ class Forget_Password_Activity : AppCompatActivity() {
                     }
                     else -> {
                         progressBar.visibility = View.GONE
-                        Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
             } else {
@@ -110,11 +108,9 @@ class Forget_Password_Activity : AppCompatActivity() {
                     "Unknown error"
                 }
                 progressBar.visibility = View.GONE
-                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
             progressBar.visibility = View.GONE
-            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 }

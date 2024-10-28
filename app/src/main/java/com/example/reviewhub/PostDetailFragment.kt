@@ -134,8 +134,6 @@ class PostDetailFragment : Fragment() {
                     sendNotification(postId, userId, null,"like", token, requireContext())
                     recordInteraction(postId, "like", null, token, requireContext())
                 }
-            } else {
-                Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -181,8 +179,6 @@ class PostDetailFragment : Fragment() {
                 } else {
                     Toast.makeText(requireContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(requireContext(), "Please login to comment", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -194,8 +190,6 @@ class PostDetailFragment : Fragment() {
                 fetchPostDetails(postId, token, userId.toInt(), view)
                 checkLikeStatus(postId, userId, token, view)
             }
-        } else {
-            Toast.makeText(requireContext(), "Invalid Post ID", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -241,7 +235,6 @@ class PostDetailFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Failed to check bookmark status: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -259,7 +252,7 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Failed to bookmark post: ${e.message}", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -267,11 +260,10 @@ class PostDetailFragment : Fragment() {
                 response.use {
                     if (!response.isSuccessful) {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Error bookmarking post: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Post bookmarked successfully", Toast.LENGTH_SHORT).show()
+
                         }
                     }
                 }
@@ -344,7 +336,6 @@ class PostDetailFragment : Fragment() {
                             if (isAdded && view != null) {
                                 if (products.isEmpty()) {
                                     Log.d("fetchProductData", "No products found")
-                                    Toast.makeText(requireContext(), "No products found", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Log.d("fetchProductData", "Products fetched: $products")
                                     callback(products) // Send the list of products back
@@ -466,8 +457,6 @@ class PostDetailFragment : Fragment() {
                             dialog.dismiss()
                         }
                         builder.show() // Display the dialog
-                    } else {
-                        Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
                     }
                     true
                 }
@@ -491,7 +480,6 @@ class PostDetailFragment : Fragment() {
                             ?.commit()
                     } ?: run {
                         // Handle the case when token is null
-                        Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
                     }
                     true
                 }
@@ -555,7 +543,6 @@ class PostDetailFragment : Fragment() {
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to delete comment: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -573,8 +560,6 @@ class PostDetailFragment : Fragment() {
                     }
                 }
             })
-        } else {
-            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -621,8 +606,6 @@ class PostDetailFragment : Fragment() {
                     }
                 }
             })
-        } else {
-            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -689,7 +672,6 @@ class PostDetailFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error checking follow status", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -761,7 +743,7 @@ class PostDetailFragment : Fragment() {
                             val innerImageArray = postImageUrls.getJSONArray(i)
                             for (j in 0 until innerImageArray.length()) {
                                 val imageUrl = innerImageArray.getString(j)
-                                mediaUrls.add(Pair(getString(R.string.root_url) +"api"+ imageUrl, "photo"))
+                                mediaUrls.add(Pair(getString(R.string.root_url) +"/api"+ imageUrl, "photo"))
                             }
                         }
 
@@ -769,7 +751,7 @@ class PostDetailFragment : Fragment() {
                             val innerVideoArray = postVideoUrls.getJSONArray(i)
                             for (j in 0 until innerVideoArray.length()) {
                                 val videoUrl = innerVideoArray.getString(j)
-                                mediaUrls.add(Pair(getString(R.string.root_url) +"api"+ videoUrl, "video"))
+                                mediaUrls.add(Pair(getString(R.string.root_url) +"/api"+ videoUrl, "video"))
                             }
                         }
 
@@ -777,7 +759,6 @@ class PostDetailFragment : Fragment() {
                             if (view.isAttachedToWindow) {
                                 // Update comments adapter
                                 if (comments.isEmpty()) {
-                                    Toast.makeText(requireContext(), "No comments found", Toast.LENGTH_SHORT).show()
                                 } else {
                                     recyclerViewComments.adapter = CommentAdapter(comments, postId)
                                     recyclerViewComments.adapter?.notifyDataSetChanged()
@@ -823,13 +804,11 @@ class PostDetailFragment : Fragment() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Failed to load post details", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     Log.e("PostDetailFragment", "Error: ${e.message}", e)
                 }
             }
@@ -853,7 +832,6 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (requireActivity() as? Activity)?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to like/unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -861,7 +839,6 @@ class PostDetailFragment : Fragment() {
                 response.use {
                     if (!response.isSuccessful) {
                         (requireActivity() as? Activity)?.runOnUiThread {
-                            Toast.makeText(requireContext(), "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         // ดึงข้อมูลไลค์ใหม่จาก JSON response
@@ -901,7 +878,6 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (requireActivity() as? Activity)?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to post comment: ${e.message}", Toast.LENGTH_SHORT).show()
                     callback(null) // ส่ง null ในกรณีที่ล้มเหลว
                 }
             }
@@ -913,7 +889,7 @@ class PostDetailFragment : Fragment() {
                         val jsonObject = responseBody?.let { JSONObject(it) }
                         val commentId = jsonObject?.getInt("comment_id") // ดึง commentId จาก response
                         (requireActivity() as? Activity)?.runOnUiThread {
-                            Toast.makeText(requireContext(), "Comment posted successfully", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Comment successfully", Toast.LENGTH_SHORT).show()
                             callback(commentId) // ส่ง commentId กลับ
                         }
                     } else {
@@ -955,7 +931,7 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Failed to send notification: ${e.message}", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -1041,7 +1017,6 @@ class PostDetailFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Failed to check like status: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -1148,7 +1123,6 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -1156,7 +1130,6 @@ class PostDetailFragment : Fragment() {
                 response.use {
                     if (!response.isSuccessful) {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         val jsonResponse = response.body?.string()

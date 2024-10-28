@@ -129,7 +129,6 @@ class SentOTPActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -186,7 +185,6 @@ class SentOTPActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -207,9 +205,6 @@ class SentOTPActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     }
-                    else -> {
-                        Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
-                    }
                 }
             } else {
                 val errorMessage = try {
@@ -218,11 +213,8 @@ class SentOTPActivity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
-
-                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
-            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 }

@@ -74,7 +74,6 @@ class SearchFragment : Fragment(), OnItemClickListener {
             override fun onFailure(call: Call, e: IOException) {
                 activity?.runOnUiThread {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 

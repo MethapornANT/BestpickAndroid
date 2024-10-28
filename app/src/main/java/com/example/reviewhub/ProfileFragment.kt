@@ -97,8 +97,6 @@ class ProfileFragment : Fragment() {
 
         if (userId != null && token != null) {
             fetchUserProfile(view, userId, token)
-        } else {
-            Toast.makeText(requireContext(), "User ID or token is null", Toast.LENGTH_SHORT).show()
         }
 
         // Set up Edit Profile button
@@ -288,7 +286,6 @@ class ProfileFragment : Fragment() {
                 activity?.runOnUiThread {
                     noBookmarksTextView.visibility = View.VISIBLE
                     recyclerViewPosts.visibility = View.GONE
-                    Toast.makeText(requireContext(), "Error fetching bookmarks: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -430,8 +427,6 @@ class ProfileFragment : Fragment() {
                     }
                 }
             })
-        } else {
-            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
 

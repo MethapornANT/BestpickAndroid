@@ -139,7 +139,6 @@ class Register_Create_PasswordActivity : AppCompatActivity() {
                     }
                     else -> {
                         progressBar.visibility = View.GONE
-                        Toast.makeText(applicationContext, "Unknown response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
             } else {
@@ -151,11 +150,9 @@ class Register_Create_PasswordActivity : AppCompatActivity() {
                     "Unknown error"
                 }
                 progressBar.visibility = View.GONE
-                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
             progressBar.visibility = View.GONE
-            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 }

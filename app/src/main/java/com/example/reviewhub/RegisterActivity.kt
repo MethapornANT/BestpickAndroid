@@ -88,7 +88,6 @@ class RegisterActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -110,7 +109,6 @@ class RegisterActivity : AppCompatActivity() {
                     }
                     message.contains("Account reactivated successfully. You can now log in.") -> {
                         Log.d("CreateResponse", "Account reactivated successfully")
-                        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
                         // Use a coroutine to add a delay before redirecting to the login screen
                         CoroutineScope(Dispatchers.Main).launch {
                             delay(3000) // Delay for 5 seconds
@@ -122,7 +120,6 @@ class RegisterActivity : AppCompatActivity() {
 
                     else -> {
                         progressBar.visibility = View.GONE
-                        Toast.makeText(applicationContext, "Response: $message", Toast.LENGTH_LONG).show()
                     }
                 }
             } else {
@@ -134,11 +131,9 @@ class RegisterActivity : AppCompatActivity() {
                     "Unknown error"
                 }
                 progressBar.visibility = View.GONE
-                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
             progressBar.visibility = View.GONE
-            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
     fun onclickHaveaccount(view: View) {

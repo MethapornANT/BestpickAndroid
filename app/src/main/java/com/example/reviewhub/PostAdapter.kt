@@ -148,7 +148,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     putInt("POST_ID", post.id)
                     putString("SOURCE", "HomeFragment")
                 }
-                Toast.makeText(context, "Clicked on post content", Toast.LENGTH_SHORT).show()
                 val navController = itemView.findNavController()
                 navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
             }
@@ -158,7 +157,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     putInt("POST_ID", post.id)
                     putString("SOURCE", "HomeFragment")
                 }
-                Toast.makeText(context, "Clicked on post content", Toast.LENGTH_SHORT).show()
                 val navController = itemView.findNavController()
                 navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
             }
@@ -279,8 +277,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                         deleteNotification(post.id, userId.toInt(), "follow", token, context) // เพิ่มฟังก์ชันลบแจ้งเตือน
                         recordInteraction(post.id, "unfollow", null, token, context)
                     }
-                } else {
-                    Toast.makeText(context, "Token or UserID not available", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -324,7 +320,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to check like status: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -371,7 +366,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to like/unlike post: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     }
                 }
 
@@ -382,11 +377,11 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     response.use {
                         if (!response.isSuccessful) {
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+
                             }
                         } else {
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
                             }
                         }
                     }
@@ -408,7 +403,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to check follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     }
                 }
 
@@ -428,12 +423,12 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                             }
                         } catch (e: JSONException) {
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, "Error parsing follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+
                             }
                         }
                     } else {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to get follow status", Toast.LENGTH_SHORT).show()
+
                         }
                     }
                 }
@@ -456,7 +451,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to follow/unfollow user: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     }
                 }
 
@@ -465,7 +460,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     if (!jsonResponse.isNullOrEmpty()) {
                         val message = JSONObject(jsonResponse).getString("message")
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
                             isFollowing = !isFollowing
                             follower.text = if (isFollowing) "Following" else "Follow"
 
@@ -473,7 +468,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                         }
                     } else {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to update follow status", Toast.LENGTH_SHORT).show()
+
                         }
                     }
                 }
@@ -515,7 +510,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to delete notification: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     }
                 }
 
@@ -557,7 +552,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to send notification: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     }
                 }
 
@@ -566,8 +561,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     (context as? Activity)?.runOnUiThread {
                         if (!response.isSuccessful) {
                             Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -601,7 +594,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
+
                     }
                 }
 
@@ -609,13 +602,13 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     response.use {
                         if (!response.isSuccessful) {
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
+
                             }
                         } else {
                             val jsonResponse = response.body?.string()
                             val message = JSONObject(jsonResponse).getString("message")
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
                             }
                         }
                     }
@@ -661,15 +654,12 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                                 dialog.dismiss()
                             }
                             builder.show() // Display the dialog
-                        } else {
-                            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
                         }
 
                         true
                     }
 
                     R.id.edit_post -> {
-                        Toast.makeText(context, "Edit Post selected", Toast.LENGTH_SHORT).show()
                         val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
                         val token = sharedPreferences.getString("TOKEN", null)
 
@@ -690,7 +680,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                                 ?.commit()
                         } ?: run {
                             // Handle the case when token is null
-                            Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
                         }
                         true
                     }
@@ -782,7 +771,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     (context as? Activity)?.runOnUiThread {
-                        Toast.makeText(context, "Failed to bookmark post: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -866,7 +854,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                             }
                         } catch (e: JSONException) {
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, "Error parsing bookmark status: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }

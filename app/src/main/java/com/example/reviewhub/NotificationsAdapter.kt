@@ -102,7 +102,6 @@ class NotificationsAdapter(
                     ?.addToBackStack(null)
                     ?.commit()
                     ?: run {
-                        Toast.makeText(itemView.context, "User not authenticated", Toast.LENGTH_SHORT).show()
                     }
             }
 

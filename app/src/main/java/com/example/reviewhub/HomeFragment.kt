@@ -247,7 +247,6 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch followed posts: ${response.message}", Toast.LENGTH_SHORT).show()
                         swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                     }
                     return
@@ -306,7 +305,6 @@ class HomeFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
                 callback(emptyList()) // Return empty ads in case of failure
             }
@@ -314,7 +312,6 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch ads", Toast.LENGTH_SHORT).show()
                     }
                     callback(emptyList()) // Return empty ads in case of failure
                     return
@@ -328,7 +325,6 @@ class HomeFragment : Fragment() {
                         callback(ads) // Return fetched ads
                     } catch (e: Exception) {
                         requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error parsing ads", Toast.LENGTH_SHORT).show()
                         }
                         callback(emptyList()) // Return empty ads in case of parsing error
                     }
