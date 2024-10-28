@@ -156,7 +156,7 @@ class HomeFragment : Fragment() {
         val token = sharedPreferences?.getString("TOKEN", null)
         Log.d("FetchForYouPosts", "Token: $token")
 
-        val url = getString(R.string.root_url).dropLast(4) + "5000" + "/recommend"
+        val url = getString(R.string.root_url) + "/ai" + "/recommend"
         Log.d("FetchForYouPosts", "URL: $url")
         val requestBody = FormBody.Builder()
             .build() // Empty body or you can add parameters here if needed.
@@ -174,24 +174,28 @@ class HomeFragment : Fragment() {
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
+                    Log.e("FetchForYouPosts", "Unsuccessful response: ${response.code}")
                     requireActivity().runOnUiThread {
                         swipeRefreshLayout.isRefreshing = false
                     }
                     return
                 }
 
-                response.body?.string()?.let { jsonResponse ->
+                val jsonResponse = response.body?.string()
+                Log.d("FetchForYouPosts", "Response Body: $jsonResponse") // Log response for debugging
+
+                jsonResponse?.let {
                     try {
                         val gson = Gson()
                         val postType = object : TypeToken<List<Post>>() {}.type
-                        val posts: List<Post> = gson.fromJson(jsonResponse, postType)
+                        val posts: List<Post> = gson.fromJson(it, postType)
                         Log.d("FetchForYouPosts", "Posts: $posts")
 
-                        // Now fetch random ads and insert them into the list
+                        // ดึงโฆษณาแบบสุ่มและแทรกเข้าไปในรายการโพสต์
                         fetchRandomAds { ads ->
                             requireActivity().runOnUiThread {
-                                val randomSize = (5..10).random() // Get a random number between 5 and 10
-                                val randomAds = ads.shuffled().take(randomSize) // Shuffle and take that random number of ads
+                                val randomSize = (5..10).random()
+                                val randomAds = ads.shuffled().take(randomSize)
                                 val mixedList = insertAds(posts, randomAds, randomSize / 2)
                                 postList.clear()
                                 postList.addAll(mixedList)
@@ -208,11 +212,13 @@ class HomeFragment : Fragment() {
                             }
                         }
                     } catch (e: Exception) {
+                        Log.e("FetchForYouPosts", "Error parsing JSON: ${e.message}")
                         requireActivity().runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
                         }
                     }
                 } ?: run {
+                    Log.e("FetchForYouPosts", "Empty response body")
                     requireActivity().runOnUiThread {
                         swipeRefreshLayout.isRefreshing = false
                     }

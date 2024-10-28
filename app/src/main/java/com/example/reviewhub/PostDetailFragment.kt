@@ -44,6 +44,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 import androidx.navigation.fragment.findNavController
+import org.json.JSONException
 import java.sql.Types.NULL
 
 
@@ -272,7 +273,7 @@ class PostDetailFragment : Fragment() {
     }
     private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
         val client = OkHttpClient()
-        val rooturl = getString(R.string.root_url).substring(0, getString(R.string.root_url).length - 5) + ":5000"
+        val rooturl = getString(R.string.root_url) + "/ai/search"
         val url = "$rooturl/api/search?productname=$productName"
 
         Log.d("fetchProductData", "Requesting URL: $url")
@@ -295,58 +296,64 @@ class PostDetailFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     val responseBody = it.body?.string()
-                    if (responseBody != null) {
-                        val jsonObject = JSONObject(responseBody)
 
-                        // Extract prices and URLs from all shops
-                        val products = mutableListOf<Product>()
+                    if (responseBody != null && responseBody.startsWith("{")) { // ตรวจสอบว่าเป็น JSON Object
+                        try {
+                            val jsonObject = JSONObject(responseBody)
 
-                        // Extracting data from each shop
-                        jsonObject.keys().forEach { key ->
-                            val shopDetails = jsonObject.getJSONObject(key)
+                            // Extract prices and URLs from all shops
+                            val products = mutableListOf<Product>()
 
-                            // Advice
-                            val adviceArray = shopDetails.optJSONArray("Advice")
-                            if (adviceArray != null && adviceArray.length() > 0) {
-                                val adviceProduct = adviceArray.getJSONObject(0)
-                                products.add(Product(adviceProduct.getString("name"), adviceProduct.getString("price"), adviceProduct.getString("url")))
-                            }
+                            // Extracting data from each shop
+                            jsonObject.keys().forEach { key ->
+                                val shopDetails = jsonObject.getJSONObject(key)
 
-                            // Banana
-                            val bananaArray = shopDetails.optJSONArray("Banana")
-                            if (bananaArray != null && bananaArray.length() > 0) {
-                                val bananaProduct = bananaArray.getJSONObject(0)
-                                products.add(Product(bananaProduct.getString("name"), bananaProduct.getString("price"), bananaProduct.getString("url")))
-                            }
+                                // Advice
+                                val adviceArray = shopDetails.optJSONArray("Advice")
+                                if (adviceArray != null && adviceArray.length() > 0) {
+                                    val adviceProduct = adviceArray.getJSONObject(0)
+                                    products.add(Product(adviceProduct.getString("name"), adviceProduct.getString("price"), adviceProduct.getString("url")))
+                                }
 
-                            // JIB
-                            val jibArray = shopDetails.optJSONArray("JIB")
-                            if (jibArray != null && jibArray.length() > 0) {
-                                val jibProduct = jibArray.getJSONObject(0)
-                                products.add(Product(jibProduct.getString("name"), jibProduct.getString("price"), jibProduct.getString("url")))
-                            }
-                        }
+                                // Banana
+                                val bananaArray = shopDetails.optJSONArray("Banana")
+                                if (bananaArray != null && bananaArray.length() > 0) {
+                                    val bananaProduct = bananaArray.getJSONObject(0)
+                                    products.add(Product(bananaProduct.getString("name"), bananaProduct.getString("price"), bananaProduct.getString("url")))
+                                }
 
-                        activity?.runOnUiThread {
-                            if (isAdded && view != null) {
-                                if (products.isEmpty()) {
-                                    Log.d("fetchProductData", "No products found")
-                                } else {
-                                    Log.d("fetchProductData", "Products fetched: $products")
-                                    callback(products) // Send the list of products back
+                                // JIB
+                                val jibArray = shopDetails.optJSONArray("JIB")
+                                if (jibArray != null && jibArray.length() > 0) {
+                                    val jibProduct = jibArray.getJSONObject(0)
+                                    products.add(Product(jibProduct.getString("name"), jibProduct.getString("price"), jibProduct.getString("url")))
                                 }
                             }
+
+                            activity?.runOnUiThread {
+                                if (isAdded && view != null) {
+                                    if (products.isEmpty()) {
+                                        Log.d("fetchProductData", "No products found")
+                                    } else {
+                                        Log.d("fetchProductData", "Products fetched: $products")
+                                        callback(products) // ส่งรายการสินค้าไปยัง callback
+                                    }
+                                }
+                            }
+                        } catch (e: JSONException) {
+                            Log.e("fetchProductData", "Failed to parse JSON: ${e.message}")
                         }
                     } else {
-                        Log.e("fetchProductData", "Response body is null")
+                        Log.e("fetchProductData", "Invalid JSON response or non-JSON response received")
                     }
 
-                    // Hide the ProgressBar after response handling
+                    // ซ่อน ProgressBar หลังจากประมวลผลคำตอบ
                     activity?.runOnUiThread {
                         view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
                     }
                 }
             }
+
 
         })
     }
