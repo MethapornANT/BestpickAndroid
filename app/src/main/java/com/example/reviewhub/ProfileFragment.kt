@@ -75,11 +75,9 @@ class ProfileFragment : Fragment() {
         val checkfollow = view.findViewById<LinearLayout>(R.id.checkfollow)
 
         checkfollow.setOnClickListener {
-            // นำทางไปยัง Fragment ที่ต้องการ
             findNavController().navigate(R.id.checkfollowFragment)
         }
 
-        // ตั้งค่า visibility ของ backButton เริ่มต้นเป็น GONE
         backButton.visibility = View.GONE
 
         // ตั้งค่าการทำงานเมื่อกด backButton

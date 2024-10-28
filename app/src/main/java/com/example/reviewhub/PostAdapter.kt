@@ -74,7 +74,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
         private val adLink: TextView = itemView.findViewById(R.id.adLink)
 
         fun bind(ad: Ad) {
-            val baseUrl = itemView.context.getString(R.string.root_url) // Use itemView.context
+            val baseUrl = itemView.context.getString(R.string.root_url) + "/api"
             adTitle.text = ad.title
             adDescription.text = ad.content
             adLink.setOnClickListener {
@@ -82,7 +82,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                 itemView.context.startActivity(intent)
             }
             Glide.with(itemView.context)
-                .load(baseUrl + "/api" + ad.image)
+                .load(baseUrl + ad.image)
                 .into(adImage)
         }
 

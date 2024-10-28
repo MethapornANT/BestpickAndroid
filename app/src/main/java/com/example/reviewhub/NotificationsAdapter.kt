@@ -65,11 +65,8 @@ class NotificationsAdapter(
             }
 
 
-
-
-
             // โหลดรูปโปรไฟล์ผู้ส่งการแจ้งเตือน ถ้าไม่มีแสดงรูปเริ่มต้น
-            val rootUrl = itemView.context.getString(R.string.root_url)
+            val rootUrl = itemView.context.getString(R.string.root_url) + "/api"
             val senderProfileImageUrl = if (!notification.sender_picture.isNullOrEmpty()) {
                 "$rootUrl${notification.sender_picture}"
             } else {

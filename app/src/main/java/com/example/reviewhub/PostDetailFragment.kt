@@ -760,7 +760,6 @@ class PostDetailFragment : Fragment() {
                             for (j in 0 until innerImageArray.length()) {
                                 val imageUrl = innerImageArray.getString(j)
                                 mediaUrls.add(Pair(getString(R.string.root_url) + "/api" + imageUrl, "photo"))
-                                Log.d("MyTag", "imageUrl: $mediaUrls")
                             }
                         }
 
