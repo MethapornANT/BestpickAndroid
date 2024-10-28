@@ -1100,7 +1100,6 @@ class PostDetailFragment : Fragment() {
     }
 
 
-
     private fun formatTime(timeString: String): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {

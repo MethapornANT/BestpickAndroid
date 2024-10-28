@@ -139,7 +139,7 @@ class AnotherUserFragment : Fragment() {
 
         Glide.with(requireContext())
             .load(getString(R.string.root_url) + "/api" + profileImageUrl)
-            .placeholder(R.drawable.profiletest2)
+            .placeholder(R.drawable.user)
             .into(userProfileImage)
 
         val posts = userProfile.optJSONArray("posts") ?: return

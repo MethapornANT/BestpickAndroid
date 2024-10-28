@@ -247,7 +247,7 @@ class EditprofileFragment : Fragment() {
                             val bio = jsonObject.getString("bio")
                             val birthday = formatTime(jsonObject.optString("birthday", ""))
                             val gender = jsonObject.getString("gender")
-                            val imgProfileUrl = rootUrl + profileImageUrl
+                            val imgProfileUrl = rootUrl +"/api"+ profileImageUrl
 
                             if (isAdded) {
                                 activity?.runOnUiThread {
