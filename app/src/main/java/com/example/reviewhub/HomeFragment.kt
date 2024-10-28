@@ -194,7 +194,7 @@ class HomeFragment : Fragment() {
                         // ดึงโฆษณาแบบสุ่มและแทรกเข้าไปในรายการโพสต์
                         fetchRandomAds { ads ->
                             requireActivity().runOnUiThread {
-                                val randomSize = (5..10).random()
+                                val randomSize = (10..15).random()
                                 val randomAds = ads.shuffled().take(randomSize)
                                 val mixedList = insertAds(posts, randomAds, randomSize / 2)
                                 postList.clear()
