@@ -109,7 +109,6 @@ class LoginActivity : AppCompatActivity() {
                 )
 
                 val backButton: TextView = dialog.findViewById(R.id.back_button)
-                // ตั้งค่าให้ backButton คลิกได้เพื่อปิด Dialog
                 backButton.setOnClickListener {
                     dialog.dismiss() // ปิด Dialog
                 }
