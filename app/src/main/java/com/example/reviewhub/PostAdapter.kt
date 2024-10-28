@@ -82,7 +82,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                 itemView.context.startActivity(intent)
             }
             Glide.with(itemView.context)
-                .load(baseUrl + ad.image)
+                .load(baseUrl + "/api" + ad.image)
                 .into(adImage)
         }
 
@@ -108,13 +108,13 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
         fun bind(post: Post) {
             val context = itemView.context
-            val baseUrl = context.getString(R.string.root_url)
+            val baseUrl = context.getString(R.string.root_url) +"/api"
 
             // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
-            val photoUrls = post.photoUrl?.map { Pair(baseUrl + it, "photo") } ?: emptyList()
+            val photoUrls = post.photoUrl?.map { Pair(baseUrl + it,"photo") } ?: emptyList()
             Log.d("PhotoUrls", "Photo URLs: $photoUrls")
-            val videoUrls = post.videoUrl?.map { Pair(baseUrl + it, "video") } ?: emptyList()
+            val videoUrls = post.videoUrl?.map { Pair(baseUrl + it,"video") } ?: emptyList()
             Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
@@ -167,7 +167,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
             // Load profile image using the full URL
             Glide.with(context)
-                .load(profileImageUrl)
+                .load("/api" +profileImageUrl)
                 .circleCrop()
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(R.drawable.ic_error)

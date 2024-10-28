@@ -724,7 +724,7 @@ class PostDetailFragment : Fragment() {
                         followingId = jsonObject.getInt("user_id")
                         val time = jsonObject.getString("updated_at")
                         val profileImage = jsonObject.getString("picture")
-                        val profileUrl = getString(R.string.root_url) + profileImage
+                        val profileUrl = getString(R.string.root_url) + "/api" + profileImage
                         val productname = jsonObject.getString("ProductName")
 
                         Log.d("PostDetailFragment", "Product Name: $productname")
@@ -759,7 +759,8 @@ class PostDetailFragment : Fragment() {
                             val innerImageArray = postImageUrls.getJSONArray(i)
                             for (j in 0 until innerImageArray.length()) {
                                 val imageUrl = innerImageArray.getString(j)
-                                mediaUrls.add(Pair(getString(R.string.root_url) + imageUrl, "photo"))
+                                mediaUrls.add(Pair(getString(R.string.root_url) + "/api" + imageUrl, "photo"))
+                                Log.d("MyTag", "imageUrl: $mediaUrls")
                             }
                         }
 
@@ -767,7 +768,7 @@ class PostDetailFragment : Fragment() {
                             val innerVideoArray = postVideoUrls.getJSONArray(i)
                             for (j in 0 until innerVideoArray.length()) {
                                 val videoUrl = innerVideoArray.getString(j)
-                                mediaUrls.add(Pair(getString(R.string.root_url) + videoUrl, "video"))
+                                mediaUrls.add(Pair(getString(R.string.root_url) + "/api" + videoUrl, "video"))
                             }
                         }
 
@@ -821,13 +822,12 @@ class PostDetailFragment : Fragment() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Failed to load post details", Toast.LENGTH_SHORT).show()
+
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     Log.e("PostDetailFragment", "Error: ${e.message}", e)
                 }
             }
@@ -1063,7 +1063,7 @@ class PostDetailFragment : Fragment() {
             holder.createdAt.text = formatTime(comment.createdAt)
 
             Glide.with(this@PostDetailFragment)
-                .load(requireContext().getString(R.string.root_url) + comment.profileImage)
+                .load(requireContext().getString(R.string.root_url) + "/api" + comment.profileImage)
                 .into(holder.Imageprofile)
 
 

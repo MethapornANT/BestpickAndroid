@@ -1,8 +1,6 @@
 package com.example.reviewhub
 
-import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
@@ -11,22 +9,25 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.preference.DialogPreference
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -216,7 +217,7 @@ class ProfileFragment : Fragment() {
         val followingCount = userProfile.getInt("followingCount")
         val postCount = userProfile.getInt("postCount")
         val bio = userProfile.getString("bio")
-
+        Log.d("UserProfile", "Profile Image URL: $profileImageUrl")
         // Set user profile data
         view.findViewById<TextView>(R.id.username)?.text = username
         followerTextView.text = followerCount.toString()
@@ -226,8 +227,9 @@ class ProfileFragment : Fragment() {
 
         // Load profile image using Glide
         val profileImageView = view.findViewById<ImageView>(R.id.user_profile_image)
+
         Glide.with(this)
-            .load(getString(R.string.root_url) + profileImageUrl)
+            .load(getString(R.string.root_url) + "/api" + profileImageUrl)
             .centerCrop()
             .placeholder(R.drawable.ic_launcher_background)
             .into(profileImageView)

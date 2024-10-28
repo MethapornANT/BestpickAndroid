@@ -41,7 +41,7 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
 
         // ดึง baseUrl จาก context และเชื่อมต่อกับ profileImageUrl
         val baseUrl = holder.itemView.context.getString(R.string.root_url)
-        val profileImageUrl = follower.profileImageUrl
+        val profileImageUrl = "/api" +follower.profileImageUrl
 
         Log.d("FollowersAdapter", "Full Image URL: $baseUrl$profileImageUrl")
         // ใช้ Glide เพื่อโหลดรูปภาพ

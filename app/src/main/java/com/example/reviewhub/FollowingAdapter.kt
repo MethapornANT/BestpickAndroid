@@ -42,7 +42,7 @@ class FollowingAdapter(private var followingList: MutableList<Following>) :
         holder.textUsername.text = follower.username
 
         val baseUrl = holder.itemView.context.getString(R.string.root_url)
-        val profileImageUrl = follower.profileImageUrl
+        val profileImageUrl = "/api" +follower.profileImageUrl
         Log.d("FollowingAdapter", "Full Image URL: $baseUrl$profileImageUrl")
 
         Glide.with(holder.itemView.context)

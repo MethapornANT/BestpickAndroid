@@ -138,7 +138,7 @@ class AnotherUserFragment : Fragment() {
         bioTextView.text = bio
 
         Glide.with(requireContext())
-            .load(getString(R.string.root_url) + profileImageUrl)
+            .load(getString(R.string.root_url) + "/api" + profileImageUrl)
             .placeholder(R.drawable.profiletest2)
             .into(userProfileImage)
 
