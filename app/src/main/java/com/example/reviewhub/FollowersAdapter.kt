@@ -100,13 +100,11 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Error checking follow status", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Error checking follow status", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -119,8 +117,6 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
         if (token != null) {
             unfollow.isEnabled = false // ปิดการใช้งานเพื่อป้องกันการคลิกซ้ำ
             followUnfollowUser(context, userId, token, unfollow)
-        } else {
-            Toast.makeText(context, "Token not available", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -141,7 +137,6 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Failed to follow/unfollow user: ${e.message}", Toast.LENGTH_SHORT).show()
                     unfollow.isEnabled = true // เปิดการใช้งานอีกครั้ง
                 }
             }
@@ -152,13 +147,11 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
                         val jsonResponse = response.body?.string()
                         val message = JSONObject(jsonResponse).getString("message")
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             unfollow.isEnabled = true
                             unfollow.text = if (unfollow.text == "Unfollow") "Follow" else "Unfollow"
                         }
                     } else {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -233,7 +226,6 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -241,13 +233,11 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
                 response.use {
                     if (!response.isSuccessful) {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         val jsonResponse = response.body?.string()
                         val message = JSONObject(jsonResponse).getString("message")
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }

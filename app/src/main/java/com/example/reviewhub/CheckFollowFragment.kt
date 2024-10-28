@@ -71,7 +71,7 @@ class CheckFollowFragment : Fragment() {
             fetchUserProfile(view, userId, token)
             setupSearchFunctionality(view, userId, token)
         } else {
-            Toast.makeText(activity, "Token or User ID not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, "UserID not found", Toast.LENGTH_SHORT).show()
         }
 
         backButton.setOnClickListener {
@@ -116,7 +116,6 @@ class CheckFollowFragment : Fragment() {
                             } catch (e: JSONException) {
                                 Log.e("CheckFollowFragment", "Error parsing JSON: ${e.message}")
                                 activity?.runOnUiThread {
-                                    Toast.makeText(activity, "Failed to parse profile data", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }

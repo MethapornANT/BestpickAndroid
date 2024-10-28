@@ -183,7 +183,7 @@ class AddPostFragment : Fragment() {
         val id = sharedPreferences?.getString("USER_ID", null)
 
         if (token == null || id == null) {
-            Toast.makeText(requireContext(), "Token หรือ User ID ไม่ถูกต้อง", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "UserID", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -284,7 +284,7 @@ class AddPostFragment : Fragment() {
         val token = sharedPreferences?.getString("TOKEN", null)
 
         if (token == null) {
-            Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+
             return
         }
 
@@ -297,7 +297,7 @@ class AddPostFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to fetch categories: ${e.message}", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -312,7 +312,7 @@ class AddPostFragment : Fragment() {
                     }
                 } else {
                     activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch categories", Toast.LENGTH_SHORT).show()
+
                     }
                 }
             }

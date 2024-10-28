@@ -69,8 +69,6 @@ class AnotherUserFragment : Fragment() {
         val userId = arguments?.getInt("USER_ID") ?: -1
         if (userId != -1) {
             fetchUserProfile(userId)
-        } else {
-            Toast.makeText(requireContext(), "Invalid User ID", Toast.LENGTH_SHORT).show()
         }
 
         followButton.setOnClickListener {
@@ -87,8 +85,6 @@ class AnotherUserFragment : Fragment() {
         if (token != null) {
             followButton.isEnabled = false // Disable button to prevent multiple clicks
             followUnfollowUser(userId, token)
-        } else {
-            Toast.makeText(context, "Token not available", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -199,7 +195,6 @@ class AnotherUserFragment : Fragment() {
                 if (!jsonResponse.isNullOrEmpty()) {
                     val message = JSONObject(jsonResponse).getString("message")
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                         isFollowing = !isFollowing
                         followButton.text = if (isFollowing) "Following" else "Follow"
                         followButton.isEnabled = true  // Re-enable the button
@@ -238,7 +233,7 @@ class AnotherUserFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to check follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -253,7 +248,7 @@ class AnotherUserFragment : Fragment() {
                         }
                     } catch (e: JSONException) {
                         requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Error parsing follow status: ${e.message}", Toast.LENGTH_SHORT).show()
+
                         }
                     }
                 }
@@ -289,7 +284,6 @@ class AnotherUserFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (context as? Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Failed to record interaction: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -297,13 +291,11 @@ class AnotherUserFragment : Fragment() {
                 response.use {
                     if (!response.isSuccessful) {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to record interaction: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         val jsonResponse = response.body?.string()
                         val message = JSONObject(jsonResponse).getString("message")
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }

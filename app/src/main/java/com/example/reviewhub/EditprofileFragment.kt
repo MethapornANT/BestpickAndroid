@@ -193,7 +193,6 @@ class EditprofileFragment : Fragment() {
                                 // กรณีที่ไม่สามารถแปลง JSON ได้
                                 Toast.makeText(requireContext(), "Error: ${response.message}", Toast.LENGTH_SHORT).show()
                             }
-                            Log.e("ProfileFragment", "API error: ${response.message}, Response body: $responseData")
                         }
                     }
                 }

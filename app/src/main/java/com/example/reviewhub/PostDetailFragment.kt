@@ -44,7 +44,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 import androidx.navigation.fragment.findNavController
-import com.facebook.Profile
 import java.sql.Types.NULL
 
 
@@ -76,6 +75,8 @@ class PostDetailFragment : Fragment() {
         recyclerViewProducts = view.findViewById(R.id.recycler_view_products)
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
 
+
+
         // กำหนดค่า LayoutManager และ Adapter ให้กับ RecyclerView
         recyclerViewComments.layoutManager = LinearLayoutManager(requireContext())
         recyclerViewComments.adapter = CommentAdapter(emptyList(), postId)
@@ -101,7 +102,6 @@ class PostDetailFragment : Fragment() {
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
-
 
         val bookmarkButton = view.findViewById<ImageView>(R.id.bookmark_button)
         var isBookmark = false
@@ -641,7 +641,7 @@ class PostDetailFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 (requireActivity() as? Activity)?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to follow/unfollow user", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -649,12 +649,10 @@ class PostDetailFragment : Fragment() {
                 response.use {
                     if (response.isSuccessful) {
                         (requireActivity() as? Activity)?.runOnUiThread {
-                            Toast.makeText(requireContext(), "Follow status changed successfully", Toast.LENGTH_SHORT).show()
                             checkFollowStatus(userId, followingId, token)
                         }
                     } else {
                         (requireActivity() as? Activity)?.runOnUiThread {
-                            Toast.makeText(requireContext(), "Failed: ${response.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -703,6 +701,7 @@ class PostDetailFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             val client = OkHttpClient()
             val url = getString(R.string.root_url) + getString(R.string.postdetail) + postId
+            val api = "/api"
 
             val request = Request.Builder()
                 .url(url)
@@ -725,15 +724,18 @@ class PostDetailFragment : Fragment() {
                         followingId = jsonObject.getInt("user_id")
                         val time = jsonObject.getString("updated_at")
                         val profileImage = jsonObject.getString("picture")
-                        val profileUrl = getString(R.string.root_url) +"/api"+ profileImage
+                        val profileUrl = getString(R.string.root_url) +api+ profileImage
                         val productname = jsonObject.getString("ProductName")
 
-                        Log.d("PostDetailFragment", "Product Name: ${profileUrl}")
+                        Log.d("PostDetailFragment", "Product Name: $productname")
+                        Log.d("PostDetailFragment", "Url: $url")
+
 
                         fetchProductData(productname) { products ->
                             // Update UI with the list of products from all shops
                             updateProductDetailsUI(products)
                         }
+
                         // Initialize comments list
                         comments = mutableListOf()
 
@@ -759,7 +761,7 @@ class PostDetailFragment : Fragment() {
                             val innerImageArray = postImageUrls.getJSONArray(i)
                             for (j in 0 until innerImageArray.length()) {
                                 val imageUrl = innerImageArray.getString(j)
-                                mediaUrls.add(Pair(getString(R.string.root_url) + "/api" + imageUrl, "photo"))
+                                mediaUrls.add(Pair(getString(R.string.root_url) +"api"+ imageUrl, "photo"))
                             }
                         }
 
@@ -767,7 +769,7 @@ class PostDetailFragment : Fragment() {
                             val innerVideoArray = postVideoUrls.getJSONArray(i)
                             for (j in 0 until innerVideoArray.length()) {
                                 val videoUrl = innerVideoArray.getString(j)
-                                mediaUrls.add(Pair(getString(R.string.root_url) + "/api" + videoUrl, "video"))
+                                mediaUrls.add(Pair(getString(R.string.root_url) +"api"+ videoUrl, "video"))
                             }
                         }
 
@@ -775,7 +777,7 @@ class PostDetailFragment : Fragment() {
                             if (view.isAttachedToWindow) {
                                 // Update comments adapter
                                 if (comments.isEmpty()) {
-                                    Toast.makeText(requireContext(), "No Comments", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), "No comments found", Toast.LENGTH_SHORT).show()
                                 } else {
                                     recyclerViewComments.adapter = CommentAdapter(comments, postId)
                                     recyclerViewComments.adapter?.notifyDataSetChanged()
@@ -821,12 +823,13 @@ class PostDetailFragment : Fragment() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-
+                        Toast.makeText(requireContext(), "Failed to load post details", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     Log.e("PostDetailFragment", "Error: ${e.message}", e)
                 }
             }
@@ -1062,7 +1065,7 @@ class PostDetailFragment : Fragment() {
             holder.createdAt.text = formatTime(comment.createdAt)
 
             Glide.with(this@PostDetailFragment)
-                .load(requireContext().getString(R.string.root_url) + "/api" + comment.profileImage)
+                .load(requireContext().getString(R.string.root_url) + comment.profileImage)
                 .into(holder.Imageprofile)
 
 
@@ -1098,6 +1101,7 @@ class PostDetailFragment : Fragment() {
             val createdAt: TextView = view.findViewById(R.id.comment_created_at)
         }
     }
+
 
 
     private fun formatTime(timeString: String): String {

@@ -75,7 +75,7 @@ class Change_PasswordActivity : AppCompatActivity() {
         }
         val email = intent.getStringExtra("email") ?: run {
             progressBar.visibility = View.GONE
-            Toast.makeText(this, "No email found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Email Not found", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -152,11 +152,10 @@ class Change_PasswordActivity : AppCompatActivity() {
                     "Unknown error"
                 }
                 progressBar.visibility = View.GONE
-                Toast.makeText(applicationContext, "Response: $errorMessage", Toast.LENGTH_LONG).show()
             }
         } catch (e: JSONException) {
             progressBar.visibility = View.GONE
-            Toast.makeText(applicationContext, "Error parsing response: ${e.message}", Toast.LENGTH_LONG).show()
+
         }
     }
 }
