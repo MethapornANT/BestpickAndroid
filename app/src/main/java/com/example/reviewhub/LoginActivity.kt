@@ -3,6 +3,7 @@
 package com.example.reviewhub
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -10,6 +11,7 @@ import android.os.Looper
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -80,7 +82,24 @@ class LoginActivity : AppCompatActivity() {
         val token = sharedPreferences.getString("TOKEN", null)
         val username = sharedPreferences.getString("USERNAME", null)
 
-        // If token and username exist, navigate to MainActivity
+        val policyTextView: TextView = findViewById(R.id.policy)
+
+        policyTextView.setOnClickListener {
+            val dialog = Dialog(this@LoginActivity)
+            dialog.setContentView(R.layout.item_policy) // ใช้ layout item_policy.xml
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+
+            val backButton: TextView = dialog.findViewById(R.id.back_button)
+            backButton.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
+
+
         if (!token.isNullOrEmpty() && !username.isNullOrEmpty()) {
             Log.d("LoginActivity", "Token and Username found, navigating to MainActivity")
             navigateToMainActivity()
@@ -105,6 +124,8 @@ class LoginActivity : AppCompatActivity() {
             }
             // Set up views and listeners
             setupViews()
+
+
         }
     }
 
