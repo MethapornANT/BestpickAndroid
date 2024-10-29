@@ -20,7 +20,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import kotlin.math.log
 
 class EditPostFragment : Fragment() {
 
@@ -225,7 +224,7 @@ class EditPostFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
                 activity?.runOnUiThread {
-
+                    Toast.makeText(requireContext(), "Failed to fetch post details", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -253,43 +252,36 @@ class EditPostFragment : Fragment() {
                             val photoUrlsArray = postJson.getJSONArray("photo_url")
                             val videoUrlsArray = postJson.getJSONArray("video_url")
 
+                            // เพิ่ม Uri ของรูปภาพที่มีอยู่เดิม
                             for (i in 0 until photoUrlsArray.length()) {
                                 val innerArray = photoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val photoUrl = innerArray.getString(j)
-                                    val photoPath = Uri.parse(photoUrl).path ?: ""
-                                    val fullUrl = if (photoPath.startsWith("/api")) {
-                                        url + photoPath // ใช้ URL ตรง ๆ เพราะมี /api อยู่แล้ว
-                                    } else {
-                                        url + "/api" + photoPath // เพิ่ม /api ถ้ายังไม่มี
-                                    }
-                                    selectedMedia.add(Uri.parse(fullUrl))
+                                    val fullUrl = Uri.parse(url + photoUrl)
+                                    Log.d("PhotoUrls", "Photo URL: $fullUrl")
+                                    selectedMedia.add(fullUrl)
                                 }
                             }
 
+                            // เพิ่ม Uri ของวิดีโอที่มีอยู่เดิม
                             for (i in 0 until videoUrlsArray.length()) {
                                 val innerArray = videoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val videoUrl = innerArray.getString(j)
-                                    val videoPath = Uri.parse(videoUrl).path ?: ""
-                                    val fullUrl = if (videoPath.startsWith("/api")) {
-                                        url + videoPath // ใช้ URL ตรง ๆ เพราะมี /api อยู่แล้ว
-                                    } else {
-                                        url + "/api" + videoPath // เพิ่ม /api ถ้ายังไม่มี
-                                    }
-                                    selectedMedia.add(Uri.parse(fullUrl))
+                                    val fullUrl = Uri.parse(url + videoUrl)
+                                    Log.d("VideoUrls", "Video URL: $fullUrl")
+                                    selectedMedia.add(fullUrl)
                                 }
                             }
 
+                            // อัปเดต ViewPager และ Dot Indicator
                             viewPager.adapter?.notifyDataSetChanged()
                             setupDotIndicator()
-
-
-
                         }
                     }
                 } else {
                     activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "Failed to fetch post details", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -319,7 +311,7 @@ class EditPostFragment : Fragment() {
             return
         }
 
-        // สร้าง request body สำหรับอัปเดตโพสต์
+// สร้าง request body สำหรับอัปเดตโพสต์
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("content", content)
             .addFormDataPart("Title", Title)
@@ -327,7 +319,7 @@ class EditPostFragment : Fragment() {
             .addFormDataPart("CategoryID", categoryID)  // ส่ง CategoryID
             .addFormDataPart("user_id", userId)
 
-        // เพิ่มรูปภาพ/วิดีโอที่เลือก
+// เพิ่มรูปภาพ/วิดีโอที่เลือก
         selectedMedia.forEach { uri ->
             if (uri.toString().startsWith("content://")) {
                 val file = getFileFromUri(uri)
@@ -344,8 +336,6 @@ class EditPostFragment : Fragment() {
                 val relativePath = Uri.parse(uri.toString()).path
                 relativePath?.let {
                     requestBody.addFormDataPart("existing_photos[]", it)
-                    Log.d("UPLOAD", "Adding existing photo: $it")
-                    Log.d("UPLOAD2", "Adding existing photo: $relativePath")
                 }
             }
         }
