@@ -289,11 +289,34 @@ class EditprofileFragment : Fragment() {
             { _, selectedYear, selectedMonth, selectedDay ->
                 val formattedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
                 editText.setText(formattedDate)
+
+                // Check if the selected date makes the user older than 13
+                val selectedDate = Calendar.getInstance()
+                selectedDate.set(selectedYear, selectedMonth, selectedDay)
+
+                if (isOlderThan13(selectedDate)) {
+
+                } else {
+                    // Show error if the user is under 13
+                    Toast.makeText(requireContext(), "You must be at least 13 years old.", Toast.LENGTH_SHORT).show()
+                }
             },
             year, month, day
         )
 
         datePickerDialog.show()
+    }
+
+    private fun isOlderThan13(birthDate: Calendar): Boolean {
+        val today = Calendar.getInstance()
+        var age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR)
+
+        // Adjust age if the birthday hasn’t occurred yet this year
+        if (today.get(Calendar.DAY_OF_YEAR) < birthDate.get(Calendar.DAY_OF_YEAR)) {
+            age--
+        }
+
+        return age >= 13
     }
 
     private fun formatTime(timeString: String): String {

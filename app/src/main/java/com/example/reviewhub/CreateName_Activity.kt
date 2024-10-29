@@ -22,6 +22,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
 class CreateName_Activity : AppCompatActivity() {
@@ -57,8 +58,25 @@ class CreateName_Activity : AppCompatActivity() {
             if (newUsername.isEmpty() || selectedImageUri == null || birthday.isEmpty()) {
                 txterror.text = "Please enter username, select a picture, and birthday"
             } else {
-                // Pass selectedImageUri to handle image upload
-                setProfile(newUsername, selectedImageUri, birthday, txterror)
+                // Check if the user is older than 13
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val birthDate = dateFormat.parse(birthday)
+                val currentDate = Calendar.getInstance().time
+
+                var age = currentDate.year - birthDate.year
+
+                // Adjust if birthdate hasn't occurred this year
+                if (currentDate.month < birthDate.month ||
+                    (currentDate.month == birthDate.month && currentDate.date < birthDate.date)) {
+                    age--
+                }
+
+                if (age < 13) {
+                    txterror.text = "You must be at least 13 years old to change the username."
+                } else {
+                    // Pass selectedImageUri to handle image upload
+                    setProfile(newUsername, selectedImageUri, birthday, txterror)
+                }
             }
         }
     }
