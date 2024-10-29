@@ -32,6 +32,9 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 class ProfileFragment : Fragment() {
 
@@ -250,7 +253,7 @@ class ProfileFragment : Fragment() {
                     userName = username,
                     userId = userId,
                     title = post.getString("title"),
-                    time = post.getString("created_at"),
+                    time = formatTime(post.getString("created_at")),
                     updated = post.optString("updated_at", null),
                     content = post.getString("content"),
                     is_liked = post.optBoolean("is_liked", false),
@@ -347,7 +350,7 @@ class ProfileFragment : Fragment() {
                     userName = post.optJSONObject("author")?.optString("username", "Unknown") ?: "Unknown",
                     userId = followingId,
                     title = post.optString("title", "No Content"),
-                    time = post.optString("created_at", "Unknown Date"),
+                    time = formatTime(post.optString("created_at", "Unknown Date")),
                     updated = post.optString("updated_at", null),
                     content = post.optString("content", ""),
                     is_liked = post.optBoolean("is_liked", false),
@@ -429,5 +432,24 @@ class ProfileFragment : Fragment() {
             })
         }
     }
+
+    private fun formatTime(timeString: String): String {
+        return try {
+            // Input format with fractional seconds and timezone identifier
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            // Desired output format
+            val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("Asia/Bangkok")
+            }
+            val date = inputFormat.parse(timeString)
+            date?.let { outputFormat.format(it) } ?: "N/A"
+        } catch (e: Exception) {
+            Log.e("TimeConversionError", "Error parsing date: $timeString", e)
+            timeString // Return original string if parsing fails
+        }
+    }
+
 
 }
