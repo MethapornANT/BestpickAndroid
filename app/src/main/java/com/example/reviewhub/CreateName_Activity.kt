@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.*
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +33,7 @@ class CreateName_Activity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_name)
-
+        enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
 
         val changeUsernameButton = findViewById<Button>(R.id.change)
