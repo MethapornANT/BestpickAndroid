@@ -105,21 +105,24 @@ class PostDetailFragment : Fragment() {
         val userId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
 
         val bookmarkButton = view.findViewById<ImageView>(R.id.bookmark_button)
-        var isBookmark = false
-        bookmarkButton.setOnClickListener{
+
+        bookmarkButton.setOnClickListener {
             isBookmark = !isBookmark
             if (isBookmark) {
                 bookmarkButton.setImageResource(R.drawable.bookmarkclick)
                 if (token != null && userId != null) {
+                    // Call the bookmark API to add the post to bookmarks
                     bookmarkPost(postId, token, requireContext())
                 }
             } else {
                 bookmarkButton.setImageResource(R.drawable.bookmark)
                 if (token != null && userId != null) {
+                    // Call the unbookmark API to remove the post from bookmarks
                     bookmarkPost(postId, token, requireContext())
                 }
             }
         }
+
         // ตั้งค่า Listener ให้กับปุ่มไลค์
         val likeButton = view.findViewById<ImageView>(R.id.like_button)
         likeButton.setOnClickListener {
@@ -264,7 +267,6 @@ class PostDetailFragment : Fragment() {
                         }
                     } else {
                         (context as? Activity)?.runOnUiThread {
-
                         }
                     }
                 }
@@ -770,9 +772,8 @@ class PostDetailFragment : Fragment() {
                                     follower.visibility = View.GONE
                                 } else {
                                     checkFollowStatus(userId, followingId, token)
-                                    checkBookmarkStatus(postId, userId, token)
                                 }
-
+                                checkBookmarkStatus(postId, userId, token)
                                 // Load profile image
                                 Glide.with(this@PostDetailFragment)
                                     .load(profileUrl)

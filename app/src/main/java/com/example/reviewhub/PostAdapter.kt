@@ -777,7 +777,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                             }
                         } else {
                             (context as? Activity)?.runOnUiThread {
-                                Toast.makeText(context, "Post bookmarked successfully", Toast.LENGTH_SHORT).show()
+
                             }
                         }
                     }
