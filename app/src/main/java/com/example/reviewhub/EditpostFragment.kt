@@ -224,7 +224,7 @@ class EditPostFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to fetch post details: ${e.message}", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -249,17 +249,30 @@ class EditPostFragment : Fragment() {
                             }
 
                             val photoUrlsArray = postJson.getJSONArray("photo_url")
+                            val videoUrlsArray = postJson.getJSONArray("video_url")
+
                             for (i in 0 until photoUrlsArray.length()) {
                                 val innerArray = photoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val photoUrl = innerArray.getString(j)
-                                    // ตัด URL base ออก แล้วเพิ่ม base URL กลับมาเพื่อให้แอปโหลดรูปภาพได้
-                                    val fullUrl = getString(R.string.root_url) + Uri.parse(photoUrl).path
-                                    selectedMedia.add(Uri.parse(fullUrl)) // ใช้ URL ที่แอปโหลดได้
+                                    val fullUrl = getString(R.string.root_url) + "/api" + Uri.parse(photoUrl).path
+                                    selectedMedia.add(Uri.parse(fullUrl)) // เพิ่ม URI ของรูปภาพ
                                 }
                             }
 
-// อัปเดต ViewPager หลังจากดึงข้อมูลเสร็จ
+                            for (i in 0 until videoUrlsArray.length()) {
+                                val innerArray = videoUrlsArray.getJSONArray(i)
+                                for (j in 0 until innerArray.length()) {
+                                    val videoUrl = innerArray.getString(j)
+                                    val fullUrl = getString(R.string.root_url) + "/api" + Uri.parse(videoUrl).path
+                                    selectedMedia.add(Uri.parse(fullUrl)) // เพิ่ม URI ของวิดีโอ
+                                }
+                            }
+
+                            viewPager.adapter?.notifyDataSetChanged()
+                            setupDotIndicator()
+
+
                             viewPager.adapter?.notifyDataSetChanged()
                             setupDotIndicator()
 
@@ -267,7 +280,6 @@ class EditPostFragment : Fragment() {
                     }
                 } else {
                     activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch post details", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -292,7 +304,7 @@ class EditPostFragment : Fragment() {
         val userId = sharedPreferences?.getString("USER_ID", null)
 
         if (token == null || postId == null || userId == null) {
-            Toast.makeText(requireContext(), "Token หรือ Post ID หรือ User ID ไม่ถูกต้อง", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "User ID ไม่ถูกต้อง", Toast.LENGTH_SHORT).show()
             return
         }
 
