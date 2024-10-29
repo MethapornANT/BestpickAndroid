@@ -69,7 +69,7 @@ class EditprofileFragment : Fragment() {
         birthday = view.findViewById(R.id.editTextBirthday)
         val editImg = view.findViewById<TextView>(R.id.editImg)
 
-        // Load gender array into Spinner
+
         ArrayAdapter.createFromResource(
             requireContext(),
             R.array.gender_array,
@@ -215,9 +215,6 @@ class EditprofileFragment : Fragment() {
     }
 
 
-
-
-
     private fun fetchUserProfile(view: View, userId: String, token: String?) {
         val rootUrl = getString(R.string.root_url)
         val userProfileEndpoint = getString(R.string.userprofile)
@@ -252,7 +249,7 @@ class EditprofileFragment : Fragment() {
                                 activity?.runOnUiThread {
                                     usernameEditText.setText(username)
                                     email.setText(emailuser)
-                                    bioEditText.setText(bio)
+                                    bioEditText.setText(bio ?: "Enter your bio")
                                     this@EditprofileFragment.birthday.setText(birthday)
                                     genderSpinner.setSelection(
                                         resources.getStringArray(R.array.gender_array).indexOf(gender)

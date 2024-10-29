@@ -20,6 +20,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import kotlin.math.log
 
 class EditPostFragment : Fragment() {
 
@@ -248,6 +249,7 @@ class EditPostFragment : Fragment() {
                                 setupCategorySpinner(categories, categoryId)
                             }
 
+                            val url = getString(R.string.root_url)
                             val photoUrlsArray = postJson.getJSONArray("photo_url")
                             val videoUrlsArray = postJson.getJSONArray("video_url")
 
@@ -255,8 +257,13 @@ class EditPostFragment : Fragment() {
                                 val innerArray = photoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val photoUrl = innerArray.getString(j)
-                                    val fullUrl = getString(R.string.root_url) + "/api" + Uri.parse(photoUrl).path
-                                    selectedMedia.add(Uri.parse(fullUrl)) // เพิ่ม URI ของรูปภาพ
+                                    val photoPath = Uri.parse(photoUrl).path ?: ""
+                                    val fullUrl = if (photoPath.startsWith("/api")) {
+                                        url + photoPath // ใช้ URL ตรง ๆ เพราะมี /api อยู่แล้ว
+                                    } else {
+                                        url + "/api" + photoPath // เพิ่ม /api ถ้ายังไม่มี
+                                    }
+                                    selectedMedia.add(Uri.parse(fullUrl))
                                 }
                             }
 
@@ -264,8 +271,13 @@ class EditPostFragment : Fragment() {
                                 val innerArray = videoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val videoUrl = innerArray.getString(j)
-                                    val fullUrl = getString(R.string.root_url) + "/api" + Uri.parse(videoUrl).path
-                                    selectedMedia.add(Uri.parse(fullUrl)) // เพิ่ม URI ของวิดีโอ
+                                    val videoPath = Uri.parse(videoUrl).path ?: ""
+                                    val fullUrl = if (videoPath.startsWith("/api")) {
+                                        url + videoPath // ใช้ URL ตรง ๆ เพราะมี /api อยู่แล้ว
+                                    } else {
+                                        url + "/api" + videoPath // เพิ่ม /api ถ้ายังไม่มี
+                                    }
+                                    selectedMedia.add(Uri.parse(fullUrl))
                                 }
                             }
 
@@ -273,8 +285,6 @@ class EditPostFragment : Fragment() {
                             setupDotIndicator()
 
 
-                            viewPager.adapter?.notifyDataSetChanged()
-                            setupDotIndicator()
 
                         }
                     }
@@ -285,6 +295,7 @@ class EditPostFragment : Fragment() {
             }
         })
     }
+
 
     private fun uploadPost() {
         val Title = TitleEditText.text.toString().trim()
@@ -308,7 +319,7 @@ class EditPostFragment : Fragment() {
             return
         }
 
-// สร้าง request body สำหรับอัปเดตโพสต์
+        // สร้าง request body สำหรับอัปเดตโพสต์
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("content", content)
             .addFormDataPart("Title", Title)
@@ -316,7 +327,7 @@ class EditPostFragment : Fragment() {
             .addFormDataPart("CategoryID", categoryID)  // ส่ง CategoryID
             .addFormDataPart("user_id", userId)
 
-// เพิ่มรูปภาพ/วิดีโอที่เลือก
+        // เพิ่มรูปภาพ/วิดีโอที่เลือก
         selectedMedia.forEach { uri ->
             if (uri.toString().startsWith("content://")) {
                 val file = getFileFromUri(uri)
@@ -333,6 +344,8 @@ class EditPostFragment : Fragment() {
                 val relativePath = Uri.parse(uri.toString()).path
                 relativePath?.let {
                     requestBody.addFormDataPart("existing_photos[]", it)
+                    Log.d("UPLOAD", "Adding existing photo: $it")
+                    Log.d("UPLOAD2", "Adding existing photo: $relativePath")
                 }
             }
         }
