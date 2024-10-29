@@ -248,7 +248,7 @@ class EditPostFragment : Fragment() {
                                 setupCategorySpinner(categories, categoryId)
                             }
 
-                            val url = getString(R.string.root_url)
+                            val url1 = getString(R.string.root_url) + "/api"
                             val photoUrlsArray = postJson.getJSONArray("photo_url")
                             val videoUrlsArray = postJson.getJSONArray("video_url")
 
@@ -257,7 +257,7 @@ class EditPostFragment : Fragment() {
                                 val innerArray = photoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val photoUrl = innerArray.getString(j)
-                                    val fullUrl = Uri.parse(url + photoUrl)
+                                    val fullUrl = Uri.parse(url1 + photoUrl)
                                     Log.d("PhotoUrls", "Photo URL: $fullUrl")
                                     selectedMedia.add(fullUrl)
                                 }
@@ -268,7 +268,7 @@ class EditPostFragment : Fragment() {
                                 val innerArray = videoUrlsArray.getJSONArray(i)
                                 for (j in 0 until innerArray.length()) {
                                     val videoUrl = innerArray.getString(j)
-                                    val fullUrl = Uri.parse(url + videoUrl)
+                                    val fullUrl = Uri.parse(url1 + videoUrl)
                                     Log.d("VideoUrls", "Video URL: $fullUrl")
                                     selectedMedia.add(fullUrl)
                                 }
@@ -319,7 +319,6 @@ class EditPostFragment : Fragment() {
             .addFormDataPart("CategoryID", categoryID)  // ส่ง CategoryID
             .addFormDataPart("user_id", userId)
 
-// เพิ่มรูปภาพ/วิดีโอที่เลือก
         selectedMedia.forEach { uri ->
             if (uri.toString().startsWith("content://")) {
                 val file = getFileFromUri(uri)
@@ -333,12 +332,16 @@ class EditPostFragment : Fragment() {
                     }
                 }
             } else {
-                val relativePath = Uri.parse(uri.toString()).path
+                // แยกเฉพาะ path ส่วนที่เป็น /uploads/...
+                val fullPath = uri.path
+                val relativePath = fullPath?.substringAfter("/uploads/")
+                Log.d("UPLOAD", "Relative Path: /uploads/$relativePath")
                 relativePath?.let {
-                    requestBody.addFormDataPart("existing_photos[]", it)
+                    requestBody.addFormDataPart("existing_photos[]", "/uploads/$relativePath")
                 }
             }
         }
+
 
         val url = getString(R.string.root_url) + "/api/posts/$postId"
         val request = Request.Builder()
