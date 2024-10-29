@@ -30,7 +30,14 @@
     <fragment
         android:id="@+id/notificationsFragment"
         android:name="com.example.reviewhub.NotificationsFragment"
-        android:label="Notifications" />
+        android:label="Notifications" >
+        <action
+            android:id="@+id/action_to_anotherUserFragment"
+            app:destination="@id/AnotherUserFragment" />
+        <action
+            android:id="@+id/action_to_postdetailFragment"
+            app:destination="@id/postDetailFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/searchFragment"

@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
@@ -88,22 +89,16 @@ class NotificationsAdapter(
             }
 
             itemView.setOnClickListener {
-                onNotificationClick(notification)  // เรียก onNotificationClick เมื่อผู้ใช้คลิก
-                val postDetailFragment = PostDetailFragment()
+                onNotificationClick(notification) // เรียก onNotificationClick เมื่อผู้ใช้คลิก
+
+                // ใช้ NavController เพื่อจัดการการนำทาง
+                val navController = Navigation.findNavController(itemView)
                 val bundle = Bundle().apply {
                     putInt("POST_ID", notification.post_id)
                 }
-                postDetailFragment.arguments = bundle
-
-                // แก้ไข context ให้ถูกต้องเป็น itemView.context
-                val fragmentActivity = itemView.context as? FragmentActivity
-                fragmentActivity?.supportFragmentManager?.beginTransaction()
-                    ?.replace(R.id.nav_host_fragment, postDetailFragment)
-                    ?.addToBackStack(null)
-                    ?.commit()
-                    ?: run {
-                    }
+                navController.navigate(R.id.action_to_postdetailFragment, bundle)
             }
+
 
 
         }
