@@ -112,14 +112,6 @@
             android:src="@drawable/heart" />
 
         <ImageView
-            android:id="@+id/share_button"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="10dp"
-            android:src="@drawable/shareclick" />
-
-        <ImageView
             android:id="@+id/bookmark_button"
             android:layout_width="30dp"
             android:layout_height="30dp"
