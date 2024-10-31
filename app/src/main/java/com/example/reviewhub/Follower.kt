@@ -1,6 +1,4 @@
-package com.example.reviewhub
-
-import com.google.gson.annotations.SerializedName
+package com.bestpick.reviewhub
 
 data class Follower(
     val userId: Int,

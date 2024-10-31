@@ -7,7 +7,7 @@
     <!-- Fragment ที่เชื่อมโยงกับเมนูใน BottomNavigationView -->
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.reviewhub.HomeFragment"
+        android:name="com.bestpick.reviewhub.HomeFragment"
         android:label="Home" >
         <action
             android:id="@+id/action_postListFragment_to_postDetailFragment"
@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/addPostFragment"
-        android:name="com.example.reviewhub.AddPostFragment"
+        android:name="com.bestpick.reviewhub.AddPostFragment"
         android:label="Add Post">
         <action
             android:id="@+id/action_addPostFragment_to_home"
@@ -29,7 +29,7 @@
 
     <fragment
         android:id="@+id/notificationsFragment"
-        android:name="com.example.reviewhub.NotificationsFragment"
+        android:name="com.bestpick.reviewhub.NotificationsFragment"
         android:label="Notifications" >
         <action
             android:id="@+id/action_to_anotherUserFragment"
@@ -41,7 +41,7 @@
 
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.example.reviewhub.SearchFragment"
+        android:name="com.bestpick.reviewhub.SearchFragment"
         android:label="Search">
         <action
             android:id="@+id/action_searchFragment_to_postDetailFragment"
@@ -56,7 +56,7 @@
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.example.reviewhub.ProfileFragment"
+        android:name="com.bestpick.reviewhub.ProfileFragment"
         android:label="Profile">
         <action
             android:id="@+id/action_to_anotherUserFragment"
@@ -71,7 +71,7 @@
 
     <fragment
         android:id="@+id/AnotherUserFragment"
-        android:name="com.example.reviewhub.AnotherUserFragment"
+        android:name="com.bestpick.reviewhub.AnotherUserFragment"
         android:label="AnotherUser">
         <action
             android:id="@+id/action_to_profileFragment"
@@ -90,7 +90,7 @@
 
     <fragment
         android:id="@+id/postDetailFragment"
-        android:name="com.example.reviewhub.PostDetailFragment"
+        android:name="com.bestpick.reviewhub.PostDetailFragment"
         android:label="Post Detail" >
     <action
         android:id="@+id/action_postDetailFragment_to_userProfileFragment"
@@ -102,12 +102,12 @@
 
     <fragment
         android:id="@+id/editprofileFragment"
-        android:name="com.example.reviewhub.EditprofileFragment"
+        android:name="com.bestpick.reviewhub.EditprofileFragment"
         android:label="Edit Profile" />
 
     <fragment
         android:id="@+id/checkfollowFragment"
-        android:name="com.example.reviewhub.CheckFollowFragment"
+        android:name="com.bestpick.reviewhub.CheckFollowFragment"
         android:label="Home" />
 
 </navigation>

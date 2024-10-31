@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import android.media.AudioAttributes
 import android.media.AudioManager

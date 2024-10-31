@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import android.net.Uri
 import android.view.LayoutInflater

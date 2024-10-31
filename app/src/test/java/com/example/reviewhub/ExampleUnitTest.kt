@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import org.junit.Test
 

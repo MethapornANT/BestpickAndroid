@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import android.content.Context
 import android.content.Intent

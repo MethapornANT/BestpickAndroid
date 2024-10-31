@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import android.app.AlertDialog
 import android.content.Context.MODE_PRIVATE

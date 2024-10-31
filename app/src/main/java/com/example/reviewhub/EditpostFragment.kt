@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import android.content.ContentResolver
 import android.content.Context.MODE_PRIVATE

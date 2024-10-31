@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
@@ -25,9 +25,6 @@ import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -45,7 +42,6 @@ import java.util.Locale
 import java.util.TimeZone
 import androidx.navigation.fragment.findNavController
 import org.json.JSONException
-import java.sql.Types.NULL
 
 
 class PostDetailFragment : Fragment() {

@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.reviewhub"
+    namespace = "com.bestpick.reviewhub"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.reviewhub"
+        applicationId = "com.bestpick.reviewhub"
         minSdk = 27
         targetSdk = 34
         versionCode = 1
