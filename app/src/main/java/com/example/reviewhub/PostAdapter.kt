@@ -97,7 +97,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
         private val userProfileImage: ImageView = itemView.findViewById(R.id.user_profile_image)
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
-        private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
         private val reportButton: ImageView = itemView.findViewById(R.id.report)
         private val bookmarkButton: ImageView = itemView.findViewById(R.id.bookmark_button)
 
@@ -278,10 +277,6 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             }
 
 
-
-            shareButton.setOnClickListener {
-                sharePost(context, post)
-            }
         }
 
         private fun sharePost(context: Context, post: Post) {
