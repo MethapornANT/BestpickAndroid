@@ -73,14 +73,8 @@ class HomeFragment : Fragment() {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
-                    0 -> {
-                        Log.d("TabSwitch", "Loading FORYOU data")
-                        fetchForYouPosts() // เรียกฟังก์ชันโหลดโพสต์ FOR YOU
-                    }
-                    1 -> {
-                        Log.d("TabSwitch", "Loading FOLLOW data")
-                        fetchFollowingPosts() // เรียกฟังก์ชันโหลดโพสต์ FOLLOW
-                    }
+                    0 -> fetchForYouPosts()
+                    1 -> fetchFollowingPosts()
                 }
             }
 
@@ -112,11 +106,7 @@ class HomeFragment : Fragment() {
         // Pull-to-refresh functionality
         swipeRefreshLayout.setOnRefreshListener {
             val selectedTab = tabLayout.selectedTabPosition
-            if (selectedTab == 0) {
-                fetchForYouPosts() // รีเฟรช FOR YOU
-            } else {
-                fetchFollowingPosts() // รีเฟรช FOLLOW
-            }
+            if (selectedTab == 0) fetchForYouPosts() else fetchFollowingPosts()
         }
     }
 
@@ -125,7 +115,6 @@ class HomeFragment : Fragment() {
         var adIndex = 0
         for ((index, post) in posts.withIndex()) {
             mixedList.add(post)
-            // Insert ad after every `interval` number of posts
             if ((index + 1) % interval == 0 && adIndex < ads.size) {
                 mixedList.add(ads[adIndex])
                 adIndex++
@@ -134,95 +123,88 @@ class HomeFragment : Fragment() {
         return mixedList
     }
 
-
-    // Function to refresh posts when Home is double clicked
     fun refreshPosts() {
         view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
         val selectedTab = view?.findViewById<TabLayout>(R.id.tab_layout)?.selectedTabPosition
-        if (selectedTab == 0) {
-            fetchForYouPosts()
-        } else {
-            fetchFollowingPosts()
-        }
+        if (selectedTab == 0) fetchForYouPosts() else fetchFollowingPosts()
     }
 
     private fun loadForYouData() {
         fetchForYouPosts()
     }
 
-
     private fun fetchForYouPosts() {
         swipeRefreshLayout.isRefreshing = true
         noFollowingPostsTextView.visibility = View.GONE
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
-        Log.d("FetchForYouPosts", "Token: $token")
 
         val url = getString(R.string.root_url) + "/ai" + "/recommend"
-        Log.d("FetchForYouPosts", "URL: $url")
-        val requestBody = FormBody.Builder()
-            .build() // Empty body or you can add parameters here if needed.
+        val requestBody = FormBody.Builder().build()
         val request = Request.Builder()
             .url(url)
-            .post(requestBody)  // Specify POST method with a request body
+            .post(requestBody)
             .addHeader("Authorization", "Bearer $token")
             .build()
+
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                requireActivity().runOnUiThread {
-                    swipeRefreshLayout.isRefreshing = false
+                if (isAdded) {
+                    requireActivity().runOnUiThread {
+                        swipeRefreshLayout.isRefreshing = false
+                    }
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    Log.e("FetchForYouPosts", "Unsuccessful response: ${response.code}")
-                    requireActivity().runOnUiThread {
-                        swipeRefreshLayout.isRefreshing = false
+                    if (isAdded) {
+                        requireActivity().runOnUiThread {
+                            swipeRefreshLayout.isRefreshing = false
+                        }
                     }
                     return
                 }
 
                 val jsonResponse = response.body?.string()
-                Log.d("FetchForYouPosts", "Response Body: $jsonResponse") // Log response for debugging
-
                 jsonResponse?.let {
                     try {
                         val gson = Gson()
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(it, postType)
-                        Log.d("FetchForYouPosts", "Posts: $posts")
-
-                        // ดึงโฆษณาแบบสุ่มและแทรกเข้าไปในรายการโพสต์
                         fetchRandomAds { ads ->
-                            requireActivity().runOnUiThread {
-                                val randomSize = (10..15).random()
-                                val randomAds = ads.shuffled().take(randomSize)
-                                val mixedList = insertAds(posts, randomAds, randomSize / 2)
-                                postList.clear()
-                                postList.addAll(mixedList)
-                                postAdapter.notifyDataSetChanged()
+                            if (isAdded) {
+                                requireActivity().runOnUiThread {
+                                    val randomSize = (10..15).random()
+                                    val randomAds = ads.shuffled().take(randomSize)
+                                    val mixedList = insertAds(posts, randomAds, randomSize / 2)
+                                    postList.clear()
+                                    postList.addAll(mixedList)
+                                    postAdapter.notifyDataSetChanged()
 
-                                if (posts.isEmpty()) {
-                                    noFollowingPostsTextView.visibility = View.VISIBLE
-                                    recyclerView.visibility = View.GONE
-                                } else {
-                                    noFollowingPostsTextView.visibility = View.GONE
-                                    recyclerView.visibility = View.VISIBLE
+                                    if (posts.isEmpty()) {
+                                        noFollowingPostsTextView.visibility = View.VISIBLE
+                                        recyclerView.visibility = View.GONE
+                                    } else {
+                                        noFollowingPostsTextView.visibility = View.GONE
+                                        recyclerView.visibility = View.VISIBLE
+                                    }
+                                    swipeRefreshLayout.isRefreshing = false
                                 }
-                                swipeRefreshLayout.isRefreshing = false
                             }
                         }
                     } catch (e: Exception) {
-                        Log.e("FetchForYouPosts", "Error parsing JSON: ${e.message}")
-                        requireActivity().runOnUiThread {
-                            swipeRefreshLayout.isRefreshing = false
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                swipeRefreshLayout.isRefreshing = false
+                            }
                         }
                     }
                 } ?: run {
-                    Log.e("FetchForYouPosts", "Empty response body")
-                    requireActivity().runOnUiThread {
-                        swipeRefreshLayout.isRefreshing = false
+                    if (isAdded) {
+                        requireActivity().runOnUiThread {
+                            swipeRefreshLayout.isRefreshing = false
+                        }
                     }
                 }
             }
@@ -230,13 +212,10 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchFollowingPosts() {
-        swipeRefreshLayout.isRefreshing = true // เริ่มการรีเฟรช
-        noFollowingPostsTextView.visibility = View.GONE // ซ่อนข้อความ
-
+        swipeRefreshLayout.isRefreshing = true
+        noFollowingPostsTextView.visibility = View.GONE
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
-
-
         val url = getString(R.string.root_url) + "/api/following/posts"
 
         val request = Request.Builder()
@@ -246,57 +225,60 @@ class HomeFragment : Fragment() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                if (isAdded) {
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        swipeRefreshLayout.isRefreshing = false
+                    }
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    requireActivity().runOnUiThread {
-                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                    if (isAdded) {
+                        requireActivity().runOnUiThread {
+                            swipeRefreshLayout.isRefreshing = false
+                        }
                     }
                     return
                 }
 
                 val responseBody = response.body?.string()
-
-                if (responseBody != null) {
-                    Log.d("FollowPostsResponse", responseBody)  // Log the API response
+                responseBody?.let {
                     try {
                         val gson = Gson()
-                        val jsonObject = gson.fromJson(responseBody, JsonObject::class.java)
+                        val jsonObject = gson.fromJson(it, JsonObject::class.java)
                         val postsJsonArray = jsonObject.getAsJsonArray("posts")
-
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(postsJsonArray, postType)
-                        Log.d("FollowPostsResponse", "Posts: $posts")
 
-                        requireActivity().runOnUiThread {
-                            postList.clear()
-
-                            if (posts.isEmpty()) {
-                                recyclerView.visibility = View.GONE
-                                noFollowingPostsTextView.visibility = View.VISIBLE // Show message
-                            } else {
-                                postList.addAll(posts)
-                                postAdapter.notifyDataSetChanged()
-                                recyclerView.visibility = View.VISIBLE
-                                noFollowingPostsTextView.visibility = View.GONE
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                postList.clear()
+                                if (posts.isEmpty()) {
+                                    recyclerView.visibility = View.GONE
+                                    noFollowingPostsTextView.visibility = View.VISIBLE
+                                } else {
+                                    postList.addAll(posts)
+                                    postAdapter.notifyDataSetChanged()
+                                    recyclerView.visibility = View.VISIBLE
+                                    noFollowingPostsTextView.visibility = View.GONE
+                                }
+                                swipeRefreshLayout.isRefreshing = false
                             }
-                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
                         }
                     } catch (e: Exception) {
-                        requireActivity().runOnUiThread {
-
-                            swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                        if (isAdded) {
+                            requireActivity().runOnUiThread {
+                                swipeRefreshLayout.isRefreshing = false
+                            }
                         }
                     }
-                } else {
-                    requireActivity().runOnUiThread {
-
-                        swipeRefreshLayout.isRefreshing = false // หยุดการรีเฟรช
+                } ?: run {
+                    if (isAdded) {
+                        requireActivity().runOnUiThread {
+                            swipeRefreshLayout.isRefreshing = false
+                        }
                     }
                 }
             }
@@ -305,23 +287,16 @@ class HomeFragment : Fragment() {
 
     private fun fetchRandomAds(callback: (List<PostAdapter.Ad>) -> Unit) {
         val url = getString(R.string.root_url) + "/api/ads/random"
-
-        val request = Request.Builder()
-            .url(url)
-            .build()
+        val request = Request.Builder().url(url).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                requireActivity().runOnUiThread {
-                }
-                callback(emptyList()) // Return empty ads in case of failure
+                if (isAdded) callback(emptyList())
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    requireActivity().runOnUiThread {
-                    }
-                    callback(emptyList()) // Return empty ads in case of failure
+                if (!response.isSuccessful || !isAdded) {
+                    callback(emptyList())
                     return
                 }
 
@@ -330,18 +305,14 @@ class HomeFragment : Fragment() {
                         val gson = Gson()
                         val adType = object : TypeToken<List<PostAdapter.Ad>>() {}.type
                         val ads: List<PostAdapter.Ad> = gson.fromJson(jsonResponse, adType)
-                        callback(ads) // Return fetched ads
+                        callback(ads)
                     } catch (e: Exception) {
-                        requireActivity().runOnUiThread {
-                        }
-                        callback(emptyList()) // Return empty ads in case of parsing error
+                        callback(emptyList())
                     }
-                }
+                } ?: callback(emptyList())
             }
         })
     }
-
-
 
     private fun performLogout() {
         val firebaseAuth = FirebaseAuth.getInstance()
