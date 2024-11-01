@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.airbnb.lottie.LottieAnimationView
@@ -38,6 +39,7 @@ class Forget_Password_Activity : AppCompatActivity() {
         val emailEditText = findViewById<EditText>(R.id.Email)
         val SendOTPbutton = findViewById<Button>(R.id.btnsent)
         progressBar = findViewById(R.id.lottie_loading)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         SendOTPbutton.setOnClickListener {
             val email = emailEditText.text.toString()

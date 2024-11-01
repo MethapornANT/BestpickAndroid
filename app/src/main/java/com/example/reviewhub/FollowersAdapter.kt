@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,7 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
     override fun onBindViewHolder(holder: FollowerViewHolder, position: Int) {
         val follower = followerList[position]
         holder.textUsername.text = follower.username
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // ดึง baseUrl จาก context และเชื่อมต่อกับ profileImageUrl
         val baseUrl = holder.itemView.context.getString(R.string.root_url)

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.VideoView
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
@@ -34,11 +35,13 @@ class ImagePagerAdapter(private val mediaUris: List<Uri>) : RecyclerView.Adapter
         } else {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.video_item_layout, parent, false)
             VideoViewHolder(view)
+
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val uri = mediaUris[position]
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // ตรวจสอบประเภทของ ViewHolder
         if (holder is ImageViewHolder) {

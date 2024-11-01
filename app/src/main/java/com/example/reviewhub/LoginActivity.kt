@@ -42,6 +42,7 @@ import okhttp3.RequestBody
 import org.json.JSONException
 import org.json.JSONObject
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatDelegate
 import com.airbnb.lottie.LottieAnimationView
 import okio.IOException
 
@@ -57,6 +58,8 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
         setContentView(R.layout.activity_login)
         progressBar = findViewById(R.id.lottie_loading)
         // Initialize Facebook SDK

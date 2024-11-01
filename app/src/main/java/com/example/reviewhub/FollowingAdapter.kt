@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import okhttp3.Call
@@ -38,6 +39,7 @@ class FollowingAdapter(private var followingList: MutableList<Following>) :
     override fun onBindViewHolder(holder: FollowingViewHolder, position: Int) {
         val follower = followingList[position]
         holder.textUsername.text = follower.username
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         val baseUrl = holder.itemView.context.getString(R.string.root_url)
         val profileImageUrl = "/api" +follower.profileImageUrl

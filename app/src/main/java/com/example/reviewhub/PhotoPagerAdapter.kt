@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -31,6 +32,7 @@ class PhotoPagerAdapter(private val mediaUrls: List<Pair<String, String>>) :
 
     override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
         val (mediaUrl, mediaType) = mediaUrls[position]
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // รีเซ็ตค่าเริ่มต้นของทุก View ใน MediaViewHolder
         resetView(holder)

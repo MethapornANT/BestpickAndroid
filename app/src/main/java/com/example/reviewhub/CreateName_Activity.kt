@@ -12,6 +12,7 @@ import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class CreateName_Activity : AppCompatActivity() {
         setContentView(R.layout.activity_create_name)
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         val changeUsernameButton = findViewById<Button>(R.id.change)
         val usernameEditText = findViewById<EditText>(R.id.txtusername)

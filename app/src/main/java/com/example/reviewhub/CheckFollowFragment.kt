@@ -13,6 +13,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -46,10 +47,8 @@ class CheckFollowFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)
-
-
-
-
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        
         searchEditText = view.findViewById(R.id.search_checkfollow)
         backButton = view.findViewById(R.id.back_button)
         recyclerViewFollowing = view.findViewById(R.id.recycler_view_following)
