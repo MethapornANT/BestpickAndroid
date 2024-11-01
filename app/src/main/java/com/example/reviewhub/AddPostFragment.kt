@@ -28,8 +28,8 @@ class AddPostFragment : Fragment() {
     private val selectedMedia: MutableList<Uri> = mutableListOf()
     private lateinit var viewPager: ViewPager2
     private var selectedCategoryId: Int? = null
-    private lateinit var contentEditText: EditText //content
-    private lateinit var TitleEditText: EditText //Detail
+    private lateinit var contentEditText: EditText
+    private lateinit var TitleEditText: EditText
     private lateinit var categorySpinner: Spinner
     private lateinit var backButton: ImageView
     private lateinit var selectMediaButton: Button
@@ -45,8 +45,8 @@ class AddPostFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_add_post, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         viewPager = view.findViewById(R.id.viewPager)
-        contentEditText = view.findViewById(R.id.contentEditText) //content
-        TitleEditText = view.findViewById(R.id.TitleEditText) //Title
+        contentEditText = view.findViewById(R.id.contentEditText)
+        TitleEditText = view.findViewById(R.id.TitleEditText)
         categorySpinner = view.findViewById(R.id.categorySpinner)
         selectMediaButton = view.findViewById(R.id.selectPhotoButton)
         val submitButton = view.findViewById<Button>(R.id.submitButton)
@@ -54,7 +54,6 @@ class AddPostFragment : Fragment() {
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
         deleteButton = view.findViewById(R.id.deleteButton)
         ProductNameEditText = view.findViewById(R.id.ProductNameEditText)
-
 
         selectMediaButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
@@ -71,14 +70,10 @@ class AddPostFragment : Fragment() {
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
             val navController = findNavController()
-
-            // Use the correct action ID or destination ID from the navigation graph
             navController.navigate(R.id.action_addPostFragment_to_home)
-
             val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
             bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
         }
-
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -100,7 +95,6 @@ class AddPostFragment : Fragment() {
 
         return view
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -143,37 +137,27 @@ class AddPostFragment : Fragment() {
         val dotCount = dotIndicatorLayout.childCount
         for (i in 0 until dotCount) {
             val imageView = dotIndicatorLayout.getChildAt(i) as ImageView
-            if (i == position) {
-                imageView.setImageResource(R.drawable.baseline_circle_24)
-            } else {
-                imageView.setImageResource(R.drawable.outline_circle_24)
-            }
+            imageView.setImageResource(if (i == position) R.drawable.baseline_circle_24 else R.drawable.outline_circle_24)
         }
     }
 
     private fun uploadPost() {
-        // อ่านค่าจากฟิลด์ต่างๆ
         val content = contentEditText.text.toString().trim()
         val Title = TitleEditText.text.toString().trim()
-        val category = categorySpinner.selectedItem.toString().trim()
         val ProductNumber = ProductNameEditText.text.toString().trim()
 
-        // ตรวจสอบว่าฟิลด์ต่างๆ ไม่ใช่ค่าว่าง
         if (content.isEmpty()) {
             Toast.makeText(requireContext(), "กรุณากรอกชื่อโพสต์.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (Title.isEmpty()) {
             Toast.makeText(requireContext(), "กรุณากรอกรายละเอียด.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (selectedCategoryId == null) {
             Toast.makeText(requireContext(), "กรุณาเลือกหมวดหมู่.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (ProductNumber.isEmpty()) {
             Toast.makeText(requireContext(), "กรุณากรอกชื่อสินค้า.", Toast.LENGTH_SHORT).show()
             return
@@ -189,15 +173,14 @@ class AddPostFragment : Fragment() {
         }
 
         val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
-            .addFormDataPart("user_id", id)
+            .addFormDataPart("user_id", id ?: "")
             .addFormDataPart("content", content)
             .addFormDataPart("Title", Title)
-            .addFormDataPart("category", selectedCategoryId.toString())
+            .addFormDataPart("category", selectedCategoryId?.toString() ?: "")
             .addFormDataPart("ProductName", ProductNumber)
 
-        // แยกประเภทไฟล์สำหรับ video และ photo
-        var videoFileName: String? = null // แยกตัวแปรสำหรับเก็บชื่อไฟล์วิดีโอ
-        val photoFileNames = mutableListOf<String>() // สร้าง List สำหรับเก็บชื่อไฟล์รูปภาพ
+        var videoFileName: String? = null
+        val photoFileNames = mutableListOf<String>()
 
         selectedMedia.forEach { uri ->
             val file = getFileFromUri(uri)
@@ -205,23 +188,23 @@ class AddPostFragment : Fragment() {
                 val mimeType = requireContext().contentResolver.getType(uri)
                 val mediaType = mimeType?.toMediaTypeOrNull()
                 if (mimeType?.startsWith("video") == true) {
-                    videoFileName = file.name // กำหนดชื่อไฟล์วิดีโอให้กับตัวแปร videoFileName
+                    videoFileName = file.name
                     requestBody.addFormDataPart("video", file.name, RequestBody.create(mediaType, file))
                 } else {
-                    photoFileNames.add(file.name) // เพิ่มชื่อไฟล์รูปภาพใน List
+                    photoFileNames.add(file.name)
                     requestBody.addFormDataPart("photo", file.name, RequestBody.create(mediaType, file))
                 }
+            } else {
+                Toast.makeText(requireContext(), "Error processing file", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // เพิ่มฟิลด์ video_url ในกรณีที่มีวิดีโอ
         videoFileName?.let {
             requestBody.addFormDataPart("video_url", it)
         }
 
-        // เพิ่มฟิลด์ photo_url ในกรณีที่มีรูปภาพ
         if (photoFileNames.isNotEmpty()) {
-            requestBody.addFormDataPart("photo_url", photoFileNames.joinToString(",")) // แปลง List เป็น String
+            requestBody.addFormDataPart("photo_url", photoFileNames.joinToString(","))
         }
 
         val url = getString(R.string.root_url) + "/api/posts/create"
@@ -245,7 +228,6 @@ class AddPostFragment : Fragment() {
                         Toast.makeText(requireContext(), "สร้างโพสต์สำเร็จ", Toast.LENGTH_SHORT).show()
                         parentFragmentManager.popBackStack()
                         val navController = findNavController()
-                        // Use the correct action ID or destination ID from the navigation graph
                         navController.navigate(R.id.action_addPostFragment_to_home)
                         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
                         bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
@@ -262,7 +244,7 @@ class AddPostFragment : Fragment() {
         val contentResolver: ContentResolver = requireContext().contentResolver
         return try {
             val inputStream: InputStream? = contentResolver.openInputStream(uri)
-            val fileType = requireContext().contentResolver.getType(uri)
+            val fileType = contentResolver.getType(uri)
             val fileExtension = if (fileType?.startsWith("video") == true) ".mp4" else ".jpg"
             val file = File(requireContext().cacheDir, "temp_file_${System.currentTimeMillis()}$fileExtension")
 
@@ -279,17 +261,15 @@ class AddPostFragment : Fragment() {
         }
     }
 
-    // Function to fetch categories from the backend
     private fun fetchCategories() {
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
 
         if (token == null) {
-
             return
         }
 
-        val url = getString(R.string.root_url) + "/api/type" // Endpoint to fetch categories
+        val url = getString(R.string.root_url) + "/api/type"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
@@ -297,9 +277,7 @@ class AddPostFragment : Fragment() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                activity?.runOnUiThread {
-
-                }
+                activity?.runOnUiThread { /* Handle error */ }
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -308,20 +286,15 @@ class AddPostFragment : Fragment() {
                     val categories = parseCategories(responseData)
 
                     activity?.runOnUiThread {
-                        // Now call setupSpinner with the fetched categories
                         setupSpinner(categories)
-                    }
-                } else {
-                    activity?.runOnUiThread {
-
                     }
                 }
             }
         })
     }
+
     data class Category(val id: Int, val name: String)
 
-    // Function to parse categories from JSON response
     private fun parseCategories(json: String?): List<Category> {
         val categories = mutableListOf<Category>()
         if (json != null) {
@@ -336,39 +309,20 @@ class AddPostFragment : Fragment() {
         return categories
     }
 
-
     private fun setupSpinner(categories: List<Category>) {
-        // Create a mutable list to hold the category names
-        val categoryNames = mutableListOf("Select type") // Add the default option first
-
-        // Add the actual category names to the list
+        val categoryNames = mutableListOf("Select type")
         categoryNames.addAll(categories.map { it.name })
 
-        // Set up the adapter using the category names
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         categorySpinner.adapter = adapter
 
-        // Handle selection event to get the selected category ID
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position == 0) {
-                    // "Select type" is selected, so no valid category is chosen
-                    selectedCategoryId = null
-                } else {
-                    // Adjust position because "Select type" is at position 0
-                    val selectedCategory = categories[position - 1]
-                    selectedCategoryId = selectedCategory.id
-                }
+                selectedCategoryId = if (position == 0) null else categories[position - 1].id
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Handle the case where no category is selected if needed
-
-            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
-
-
-
 }
