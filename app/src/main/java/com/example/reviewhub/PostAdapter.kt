@@ -706,7 +706,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
 
 
-            private fun deletePost(postId: Int, context: Context) {
+        private fun deletePost(postId: Int, context: Context) {
             val client = OkHttpClient()
             val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val token = sharedPreferences.getString("TOKEN", null)

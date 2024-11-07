@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Bestpick</string>
     <string name="server_client_id">741201850844-l69jb0ief835gt14ogbn9041g4b318os.apps.googleusercontent.com</string>
     <string name="facebook_app_id">1021807229429436</string>
@@ -33,53 +33,40 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="policy">
-    Privacy Policy
+    <string name="policy" tools:ignore="StringEscaping">
+    Privacy Policy\n
+    Last updated: October 28, 2024\n\n
 
-    Last updated: October 28, 2024
+    This policy outlines our practices for collecting, using, and sharing your information when you use this app. By using the app, you agree to these practices.\n\n
 
-    This Privacy Policy explains our policies and procedures on the collection, use, and disclosure of your information when you use the Service and informs you about your privacy rights and how the law protects you. We use your personal data to provide and improve the Service. By using this Service, you agree to the collection and use of information in accordance with this Privacy Policy. This Privacy Policy was created with BestPick.
+    For the full privacy policy, visit:\n
+    <a href="https://www.bestpickbp.com/privacy-policy">https://www.bestpickbp.com/privacy-policy</a>\n\n
 
-    Interpretation and Definitions
+    Compliance with Google Play Policies\n
+    We adhere to Google’s policies to ensure data security, content standards, and privacy.\n\n
 
-    Words with an initial capital letter have meanings defined under the following conditions. These definitions will have the same meaning regardless of whether they appear in singular or plural form.
+    Permissions and Data Collected\n
+    We may request permissions for:\n
+    - Camera: For taking photos or videos.\n
+    - Location: For location-based services.\n
+    - Storage: For saving and accessing files.\n\n
+    Data collected includes:\n
+    - Personal Data: Name, email, and contact info.\n
+    - Usage Data: Device and app usage information.\n\n
 
-    Account: a unique account created for you to access our Service.
-    Company (referred to as "the Company", "we", "us", or "our" in this Agreement) refers to BestPick.
-    Country: Thailand.
-    Device: any device that can access the Service.
-    Personal Data: any information relating to an identifiable individual.
-    Service: refers to the application.
-    Service Provider: any natural or legal person processing data on behalf of the Company.
-    Third-party Social Media Service: websites or social networks through which a user can log in or create an account to use the Service.
-    Usage Data: data collected automatically from the Service infrastructure.
-    You: the individual accessing or using the Service.
+    Use and Sharing of Information\n
+    We use data to improve app features, personalize experiences, and send updates. Data may be shared with trusted partners and service providers.\n\n
 
-    Collection and Use of Your Personal Data
+    Security and Retention\n
+    We use reasonable security measures to protect data and retain it only as needed.\n\n
 
-    We collect several types of information from our users to provide and improve the Service experience. Collected data includes Personal Data, Usage Data, Interaction Data, Device Data, and Social Media Service Data.
+    Children’s Privacy\n
+    We do not collect data from children under 13.\n\n
 
-    Use of Your Personal Data
-    The Company may use Personal Data for various purposes, including providing and maintaining the Service, managing your account, fulfilling contractual obligations, contacting you, handling requests, and other business-related activities.
-
-    Sharing Your Personal Data
-    We may share your data in specific situations, including with Service Providers, business transfers, affiliates, business partners, and with your consent.
-
-    Retention of Your Personal Data
-    The Company retains data only as necessary to fulfill purposes outlined in this Privacy Policy.
-
-    Security of Your Personal Data
-    While we aim to protect your Personal Data, no method of transmission is completely secure.
-
-    Children’s Privacy
-    Our Service does not address anyone under 13, and we do not knowingly collect data from children under 13.
-
-    Links to Other Websites
-    Our Service may contain links to third-party websites, and we advise you to review their privacy policies.
-
-    Changes to This Privacy Policy
-    We may update our Privacy Policy periodically.
+    Contact Us\n
+    For questions, contact us at bestpick050@gmail.com.
 </string>
+
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
