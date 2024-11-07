@@ -1,8 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <!-- Base configuration: Allow only secure (HTTPS) traffic globally -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Use system certificates for verification -->
+            <certificates src="system" />
+            <!-- Uncomment the line below if you have custom certificates -->
+            <!-- <certificates src="user" /> -->
+        </trust-anchors>
+    </base-config>
+
+    <!-- Allow cleartext traffic only for localhost (development purposes) -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
     </domain-config>
-    <base-config cleartextTrafficPermitted="true"/>
-</network-security-config>
 
+    <!-- Specific domain configuration for production use (if needed) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">www.bestpickbp.com</domain>
+    </domain-config>
+</network-security-config>
