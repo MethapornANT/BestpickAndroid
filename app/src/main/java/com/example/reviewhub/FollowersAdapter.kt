@@ -11,6 +11,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.FragmentActivity
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
@@ -165,41 +167,35 @@ class FollowersAdapter(private var followerList: MutableList<Follower>) :
     }
 
     private fun openUserProfile(context: Context, userId: Int) {
+        // Check if context is a FragmentActivity to access supportFragmentManager
+        if (context !is FragmentActivity) return
+
         val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val currentUserId = sharedPreferences.getString("USER_ID", null)?.toIntOrNull()
         val token = sharedPreferences.getString("TOKEN", null)
+        val navController = (context as FragmentActivity).findNavController(R.id.nav_host_fragment)
 
-        val fragmentManager = (context as AppCompatActivity).supportFragmentManager
         if (userId == currentUserId) {
-            // Open ProfileFragment for the current user
-            val profileFragment = ProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putBoolean("isSelfProfile", true)
-                }
+            // Navigate to ProfileFragment for the current user
+            val bundle = Bundle().apply {
+                putBoolean("isSelfProfile", true)
             }
-            fragmentManager.beginTransaction()
-                .replace(R.id.nav_host_fragment, profileFragment)
-                .addToBackStack(null)
-                .commit()
+            navController.navigate(R.id.action_checkfollowFragment_to_profileFragment, bundle)
 
         } else {
-            // Open AnotherUserFragment for a different user
-            val anotherUserFragment = AnotherUserFragment().apply {
-                arguments = Bundle().apply {
-                    putInt("USER_ID", userId)
-                }
+            // Navigate to AnotherUserFragment for a different user
+            val bundle = Bundle().apply {
+                putInt("USER_ID", userId)
             }
 
             token?.let {
                 recordInteraction(null, "view_profile", null, it, context)
             }
 
-            fragmentManager.beginTransaction()
-                .replace(R.id.nav_host_fragment, anotherUserFragment)
-                .addToBackStack(null)
-                .commit()
+            navController.navigate(R.id.action_checkfollowFragment_to_userProfileFragment, bundle)
         }
     }
+
 
     private fun recordInteraction(postId: Int? = null, actionType: String, content: String? = null, token: String, context: Context) {
         val client = OkHttpClient()

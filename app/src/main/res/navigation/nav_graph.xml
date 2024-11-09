@@ -108,6 +108,12 @@
     <fragment
         android:id="@+id/checkfollowFragment"
         android:name="com.bestpick.reviewhub.CheckFollowFragment"
-        android:label="Home" />
-
+        android:label="Home" >
+        <action
+            android:id="@+id/action_checkfollowFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_checkfollowFragment_to_userProfileFragment"
+            app:destination="@id/AnotherUserFragment" />
+    </fragment>
 </navigation>
