@@ -13,7 +13,7 @@ android {
         applicationId = "com.bestpick.reviewhub"
         minSdk = 27
         targetSdk = 34
-        versionCode = 9
+        versionCode = 11
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
