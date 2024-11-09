@@ -3,5 +3,5 @@
     <!-- สีเมื่อคลิกหรือเลือก (selected) -->
     <item android:color="@color/blue" android:state_checked="true"/>
 
-    <item android:color="#D9D9D9"/>
+    <item android:color="#CFD3D7"/>
 </selector>

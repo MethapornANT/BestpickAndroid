@@ -7,6 +7,9 @@ import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +23,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import okhttp3.*
 import android.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.json.JSONException
@@ -111,9 +115,9 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
             // Construct full URLs for media and profile image
             val profileImageUrl = post.userProfileUrl?.let { baseUrl + it }
-            val photoUrls = post.photoUrl?.map { Pair(baseUrl + it,"photo") } ?: emptyList()
+            val photoUrls = post.photoUrl?.map { Pair(baseUrl + it, "photo") } ?: emptyList()
             Log.d("PhotoUrls", "Photo URLs: $profileImageUrl")
-            val videoUrls = post.videoUrl?.map { Pair(baseUrl + it,"video") } ?: emptyList()
+            val videoUrls = post.videoUrl?.map { Pair(baseUrl + it, "video") } ?: emptyList()
             Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
@@ -121,13 +125,27 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             postTime.text = formatTime(displayTime)
             userName.text = post.userName
             title.text = post.title
-            postContent.text = if (post.content.length > 40) {
-                post.content.substring(0, 40) + " See more detail.."
+
+            // แก้ไขส่วน postContent
+            if (post.content.length > 40) {
+                val displayText = post.content.substring(0, 40) + "\nSee more detail.."
+                val spannable = SpannableString(displayText)
+
+                // กำหนดสีให้กับ "See more detail.." และทำให้ขึ้นบรรทัดใหม่
+                val blueColor = ContextCompat.getColor(context, R.color.bluetext) // ต้องมีสี blue ใน colors.xml
+                spannable.setSpan(
+                    ForegroundColorSpan(blueColor),
+                    displayText.indexOf("See more detail.."),
+                    displayText.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+                postContent.text = spannable
             } else {
-                post.content
+                postContent.text = post.content
             }
 
-            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val token = sharedPreferences.getString("TOKEN", null)
             val userId = sharedPreferences.getString("USER_ID", null)
             val isUserPost = userId?.toInt() == post.userId

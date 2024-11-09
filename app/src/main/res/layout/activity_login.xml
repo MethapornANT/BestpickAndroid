@@ -19,98 +19,121 @@
         app:cardElevation="20dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal"
-            android:padding="40dp"
             android:id="@+id/viewpage"
-            android:background="@drawable/custom_edittext">
+            android:layout_width="match_parent"
+            android:layout_height="700dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/custom_edittext"
+            android:orientation="vertical"
+            android:padding="28dp"
+            android:contentDescription="This show Login interface and google login" >
 
             <TextView
+                android:id="@+id/nameapp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="BESTPICK"
-                android:id="@+id/nameapp"
-                android:textSize="36sp"
-                android:textStyle="bold"
-                android:textColor="@color/blue"
-                android:textAlignment="center"
+                android:elevation="4dp"
+                android:letterSpacing="0.05"
                 android:shadowColor="#55000000"
                 android:shadowDx="2"
                 android:shadowDy="2"
                 android:shadowRadius="5"
-                android:letterSpacing="0.05"
-                android:elevation="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Login your Account"
-                android:id="@+id/logintext"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
+                android:text="BESTPICK"
                 android:textAlignment="center"
-                android:layout_marginTop="10dp"/>
+                android:textColor="@color/blue"
+                android:textSize="40sp"
+                android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/logintext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Email"
+                android:layout_marginTop="10dp"
+                android:text="Login your Account"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/loginemail"
-                android:layout_marginTop="25dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:paddingLeft="5dp"
+                android:text="Email"
+                android:textColor="@color/black"
                 android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/Email"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:textSize="13sp"
-                android:id="@+id/Email"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/custom_edittext"
+                android:hint="Enter your email"
                 android:padding="8dp"
-                android:hint="Enter your email"/>
+                android:textSize="13sp" />
 
             <TextView
+                android:id="@+id/loginpassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Password"
-                android:id="@+id/loginpassword"
                 android:layout_marginTop="20dp"
+                android:text="Password"
+                android:paddingLeft="5dp"
+                android:textColor="@color/black"
                 android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:textStyle="bold" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/custom_edittext"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <EditText
                     android:id="@+id/password"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:background="@null"
+
                     android:hint="Enter your Password"
                     android:inputType="textPassword"
                     android:padding="8dp"
                     android:textColor="@color/black"
-                    android:textSize="13sp"
-                    android:background="@null"/>
+                    android:textSize="13sp" />
 
                 <ImageView
                     android:id="@+id/togglePasswordConfirm"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_gravity="center"
+                    android:contentDescription="Toggle Password Visibility"
                     android:padding="5dp"
-                    android:src="@drawable/eye_hide"
-                    android:contentDescription="Toggle Password Visibility" />
+                    android:src="@drawable/eye_hide" />
+
+
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/forgetpass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="15dp"
+                android:onClick="onclickForgetpass"
+                android:text="ForgetPassword?"
+                android:textColor="#FF0000"
+                android:paddingLeft="5dp"
+                android:textSize="15dp"
+                android:textStyle="italic" />
+
 
             <Button
                 android:id="@+id/loginButton"
@@ -123,43 +146,30 @@
                 android:textColor="@color/white"
                 android:textSize="18sp" />
 
-            <TextView
-                android:id="@+id/forgetpass"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginTop="5dp"
-                android:text="ForgetPassword?"
-                android:textColor="#FF0000"
-                android:textSize="12sp"
-                android:textStyle="italic"
-                android:onClick="onclickForgetpass"
-                />
+
 
             <TextView
+                android:id="@+id/orlogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="------ or login with ------"
-                android:id="@+id/orlogin"
-                android:layout_marginTop="10dp"
-                android:textSize="15sp"
+                android:layout_marginTop="20dp"
+                android:text="— — — — Or login with — — —  —"
                 android:textAlignment="center"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
-
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
 
             <LinearLayout
                 android:id="@+id/logingoogle"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/custom_edittext"
                 android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:padding="5dp"
                 android:onClick="onGoogleLoginClick"
-                >
+                android:orientation="horizontal"
+                android:padding="5dp">
 
                 <ImageView
                     android:layout_width="30dp"
@@ -172,47 +182,47 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:paddingStart="10dp"
-                    android:textStyle="bold"
                     android:text="Google"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="20dp"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Don't have an account? "
-                    android:textSize="15sp"/>
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/register"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:onClick="onclickRegister"
+                    android:paddingLeft="10dp"
                     android:text="register"
                     android:textColor="#FF0000"
                     android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:onClick="onclickRegister"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/policy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="9sp"
-                android:textAlignment="center"
                 android:layout_marginTop="20dp"
-                android:textColor="@color/red"
-                android:text="By proceeding, you agree to the terms of use of the Bestpick app and confirm that you have read and understood the privacy policy."
+                android:ellipsize="end"
                 android:maxLines="3"
-                android:ellipsize="end"/>
-
+                android:text="By proceeding, you agree to the terms of use of the Bestpick app and confirm that you have read and understood the privacy policy."
+                android:textAlignment="center"
+                android:textColor="@color/red"
+                android:textSize="9sp" />
 
 
         </LinearLayout>

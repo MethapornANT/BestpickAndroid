@@ -25,11 +25,12 @@
 
                 <ImageView
                     android:id="@+id/ic_baseline_arrow_back_24"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
                     android:src="@drawable/ic_baseline_arrow_back_24"
                     android:textColor="@color/black"
-                    android:layout_gravity="left"/>
+                    android:layout_gravity="left"
+                    android:contentDescription="This show back button" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -62,42 +63,46 @@
             android:textStyle="bold"
             android:paddingStart="30dp"
             android:imeOptions="actionDone"
-            android:background="@color/white"/>
+            android:background="@color/white"
+            android:layout_marginTop="10dp" />
 
         <LinearLayout
             android:id="@+id/postdetail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginTop="10dp">
 
             <EditText
                 android:id="@+id/contentEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="15dp"
+                android:padding="20dp"
                 android:hint="Detail"
                 android:paddingStart="30dp"
                 android:imeOptions="actionDone"
-                android:background="@color/white"/>
+                android:background="@color/white"
+                android:layout_marginTop="8dp" />
 
             <Spinner
                 android:id="@+id/categorySpinner"
-                android:layout_width="match_parent"
+                android:layout_width="211dp"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:paddingStart="30dp"
-                android:background="@color/white" />
+                android:layout_marginTop="8dp"
+                android:padding="20dp"
+                android:paddingStart="25dp"
+                android:popupBackground="@drawable/spinner_background"
+                android:textColor="@color/black" />
 
-            <!-- เปลี่ยนชื่อจาก ProductNumberEditText เป็น ProductNameEditText -->
             <EditText
                 android:id="@+id/ProductNameEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:paddingStart="30dp"
+                android:padding="20dp"
+                android:paddingStart="25dp"
                 android:layout_margin="10dp"
-                android:hint="Enter Product Name" />
-
+                android:hint="Enter Product Name"
+                android:background="@color/white" />
         </LinearLayout>
 
         <Button
@@ -106,9 +111,10 @@
             android:layout_height="wrap_content"
             android:text="Select Photo"
             android:textColor="@color/black"
-            android:layout_gravity="end"
+            android:backgroundTint="@color/white"
+            android:padding="12dp"
             android:layout_margin="20dp"
-            android:backgroundTint="@color/white" />
+            android:elevation="2dp" />
 
         <FrameLayout
             android:layout_width="match_parent"

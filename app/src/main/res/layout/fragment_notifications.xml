@@ -34,6 +34,7 @@
             android:id="@+id/recycler_view_posts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:listitem="@layout/item_follow_you" />
+            tools:listitem="@layout/item_follow_you"
+            android:contentDescription="This area show all notification" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

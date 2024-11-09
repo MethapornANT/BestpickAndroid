@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
@@ -35,17 +34,12 @@ class MainActivity : AppCompatActivity() {
         handleDeepLink(intent)
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        enableEdgeToEdge()
+
+        // ปิดโหมดกลางคืน
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
 
         // หา NavHostFragment จาก layout และตั้งค่า NavController
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -57,17 +51,22 @@ class MainActivity : AppCompatActivity() {
         // เชื่อมต่อ BottomNavigationView กับ NavController
         bottomNavigationView.setupWithNavController(navController)
 
+        // ใช้ WindowInsets เพื่อตรวจจับแถบนำทางและปรับตำแหน่งของ BottomNavigationView
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { view, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(0, 0, 0, systemBarsInsets.bottom)
+            insets
+        }
+
         fetchAndShowBadge()
 
         // ฟังการเปลี่ยนแปลงเส้นทางการนำทางเพื่อแสดงหรือซ่อน BottomNavigationView
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.notificationsFragment-> {
-                    // แสดง BottomNavigationView ในหน้า Home, Search, Profile, Notifications
+                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.notificationsFragment -> {
                     bottomNavigationView.visibility = View.VISIBLE
                 }
                 else -> {
-                    // ซ่อน BottomNavigationView ใน Fragment อื่นๆ เช่น DetailFragment
                     bottomNavigationView.visibility = View.GONE
                 }
             }
@@ -81,7 +80,6 @@ class MainActivity : AppCompatActivity() {
                 // ตรวจสอบว่าคลิกเมนู Home ซ้ำภายใน 500 มิลลิวินาที ให้ทำการ refresh HomeFragment
                 refreshHomeFragment()
             } else {
-                // ใช้ NavController เพื่อเปลี่ยนเส้นทางไปยัง Fragment อื่น
                 when (item.itemId) {
                     R.id.home -> navController.navigate(R.id.homeFragment)
                     R.id.search -> navController.navigate(R.id.searchFragment)
@@ -95,12 +93,8 @@ class MainActivity : AppCompatActivity() {
             lastClickedTime = currentTime
 
             true
-
         }
-
     }
-
-
 
     private fun handleDeepLink(intent: Intent) {
         val data = intent.data
@@ -118,7 +112,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun refreshHomeFragment() {
         val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
@@ -172,7 +165,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-
         })
     }
 

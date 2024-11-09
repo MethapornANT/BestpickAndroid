@@ -15,14 +15,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="เนื้อหาไม่เหมาะสม"
-                    android:textSize="20dp"
+                    android:textSize="20sp"
                     android:padding="20dp"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="สื่อล่อแหลม"
-                    android:textSize="20dp"
+                    android:textSize="20sp"
                     android:padding="20dp"/>
         </LinearLayout>
 

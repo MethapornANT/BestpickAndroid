@@ -73,7 +73,7 @@
             <LinearLayout
                 android:id="@+id/checkfollow"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginStart="16dp"
                 android:orientation="horizontal"
                 android:gravity="center">
@@ -180,7 +180,7 @@
             <Button
                 android:id="@+id/edit_profile_button"
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
+                android:layout_height="48dp"
                 android:layout_margin="10dp"
                 android:backgroundTint="@color/blue"
                 android:text="Edit Profile"
@@ -234,7 +234,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            tools:listitem="" />
+            tools:listitem=""
+            android:contentDescription="This area show post item etc. title detail type productname image." />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

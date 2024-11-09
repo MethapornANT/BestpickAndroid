@@ -28,7 +28,8 @@
             android:background="@drawable/rounded_image"
             android:scaleType="centerCrop"
             android:src="@drawable/user"
-            android:clipToOutline="true" />
+            android:clipToOutline="true"
+            android:contentDescription="This show user image who's post" />
 
         <!-- Username and Post Time -->
         <LinearLayout
@@ -65,14 +66,16 @@
             android:layout_marginEnd="5dp"
             android:textColor="@color/nightblue"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:contentDescription="This show status follow" />
 
         <ImageView
             android:id="@+id/report"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/report"
-            android:layout_marginEnd="5dp" />
+            android:layout_marginEnd="5dp"
+            android:contentDescription="This is icon to click edit or delete post" />/>
     </LinearLayout>
 
     <TextView
@@ -97,7 +100,8 @@
         android:id="@+id/media_view_pager"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginTop="5dp" />
+        android:layout_marginTop="5dp"
+        android:contentDescription="This show image of the prouct" />
 
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"

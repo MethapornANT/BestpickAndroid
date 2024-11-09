@@ -26,7 +26,7 @@
             <TextView
                 android:id="@+id/profile_text_home"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="BESTPICK"
                 android:textColor="@color/blue"
@@ -42,9 +42,9 @@
             <ImageView
                 android:id="@+id/menuImageView"
                 android:layout_width="30dp"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="15dp"
                 android:theme="@style/NoClickSound"
                 android:contentDescription="Menu"
                 android:src="@drawable/baseline_menu" />
@@ -52,20 +52,23 @@
             <ImageView
                 android:id="@+id/searchEditText"
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_height="35dp"
                 android:layout_gravity="end"
-                android:layout_marginRight="5dp"
+                android:layout_marginRight="15dp"
                 android:background="@drawable/custom_edittext"
                 android:src="@drawable/baseline_search_home"
                 android:paddingRight="10dp"
-                android:paddingLeft="10dp" />
+                android:paddingLeft="10dp"
+                android:contentDescription="This show search icon" />
 
         </androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
-            android:layout_width="300dp"
-            android:layout_height="30dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="300dp"
+            android:minHeight="48dp"
             android:layout_gravity="center"
             android:background="@color/white"
             app:layout_scrollFlags="scroll|enterAlways"
@@ -88,6 +91,7 @@
                 android:layout_height="wrap_content"
                 android:text="FOLLOW" />
         </com.google.android.material.tabs.TabLayout>
+
 
     </com.google.android.material.appbar.AppBarLayout>
 
