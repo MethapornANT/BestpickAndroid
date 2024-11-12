@@ -10,19 +10,20 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="742dp">
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:navGraph="@navigation/nav_graph"
+            android:contentDescription="Loading to show all user post in this area"
             app:defaultNavHost="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
             app:layout_constraintEnd_toEndOf="parent"
-            android:contentDescription="Loading to show all user post in this area" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:navGraph="@navigation/nav_graph" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -40,7 +41,6 @@
         app:itemIconTint="@color/color_navigate_whenclick"
         app:itemTextColor="@color/color_navigate_whenclick"
         app:itemRippleColor="@android:color/transparent"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
         android:layout_gravity="bottom"
         android:paddingTop="8dp"
         android:contentDescription="The 5 menu buttons that will navigate to 5 different pages." />
