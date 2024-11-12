@@ -12,6 +12,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_loading"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/loading" />
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"

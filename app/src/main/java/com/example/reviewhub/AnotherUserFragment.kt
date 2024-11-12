@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.*
@@ -35,6 +37,7 @@ class AnotherUserFragment : Fragment() {
     private lateinit var recyclerViewPosts: RecyclerView
     private var isFollowing = false
     private val client = OkHttpClient()
+    private lateinit var loadingIndicator: LottieAnimationView
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -46,7 +49,7 @@ class AnotherUserFragment : Fragment() {
 
         val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav?.visibility = View.GONE
-
+        loadingIndicator = view.findViewById(R.id.lottie_loading)
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             bottomNav?.visibility = View.VISIBLE
             parentFragmentManager.popBackStack()
@@ -103,25 +106,49 @@ class AnotherUserFragment : Fragment() {
             .addHeader("Authorization", "Bearer $token")
             .build()
 
+        // แสดงโหลดเมื่อเริ่มดึงข้อมูล
+        showLoadingIndicator(true)
+
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to load profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                // ซ่อนโหลดเมื่อเกิดข้อผิดพลาด
+                showLoadingIndicator(false)
+
+                if (isAdded) { // ตรวจสอบว่า Fragment ยังคงเชื่อมต่อกับ Activity
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "Failed to load profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
+                // ซ่อนโหลดเมื่อได้รับข้อมูล
+                showLoadingIndicator(false)
+
                 val jsonResponse = response.body?.string()
                 if (jsonResponse != null) {
                     val userProfile = JSONObject(jsonResponse)
-                    requireActivity().runOnUiThread {
-                        displayUserProfile(userProfile)
-                        checkFollowStatus(userId)
+
+                    if (isAdded) { // ตรวจสอบว่า Fragment ยังคงเชื่อมต่อกับ Activity ก่อนอัปเดต UI
+                        requireActivity().runOnUiThread {
+                            displayUserProfile(userProfile)
+                            checkFollowStatus(userId)
+                        }
                     }
                 }
             }
         })
     }
+
+    // ฟังก์ชันแสดงหรือซ่อนโหลด
+    fun showLoadingIndicator(show: Boolean) {
+        if (isAdded) {
+            requireActivity().runOnUiThread {
+                loadingIndicator.visibility = if (show) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
 
     private fun displayUserProfile(userProfile: JSONObject) {
         val profileImageUrl = userProfile.optString("profileImageUrl", "")
