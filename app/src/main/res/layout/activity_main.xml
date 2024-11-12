@@ -10,8 +10,9 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="742dp">
+        android:layout_height="match_parent">
 
+        <!-- FragmentContainerView สำหรับเนื้อหาหลัก -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
@@ -19,30 +20,33 @@
             android:layout_height="0dp"
             android:contentDescription="Loading to show all user post in this area"
             app:defaultNavHost="true"
-            app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:navGraph="@navigation/nav_graph" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- BottomNavigationView สำหรับเมนูด้านล่าง -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp"
+            android:theme="@style/NoClickSound"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            app:menu="@menu/bottom_nav_menu"
+            app:itemIconSize="40dp"
+            app:itemIconTint="@color/color_navigate_whenclick"
+            app:itemTextColor="@color/color_navigate_whenclick"
+            app:itemRippleColor="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:contentDescription="The 5 menu buttons that will navigate to 5 different pages." />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="60dp"
-        android:paddingBottom="0dp"
-        android:theme="@style/NoClickSound"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconSize="40dp"
-        app:itemIconTint="@color/color_navigate_whenclick"
-        app:itemTextColor="@color/color_navigate_whenclick"
-        app:itemRippleColor="@android:color/transparent"
-        android:layout_gravity="bottom"
-        android:paddingTop="8dp"
-        android:contentDescription="The 5 menu buttons that will navigate to 5 different pages." />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
