@@ -5,8 +5,8 @@
         android:icon="@drawable/home"
         tools:ignore="MenuTitle" />
     <item
-        android:id="@+id/search"
-        android:icon="@drawable/search"
+        android:id="@+id/messages"
+        android:icon="@drawable/ic_message"
         tools:ignore="MenuTitle" />
     <item
         android:id="@+id/add"

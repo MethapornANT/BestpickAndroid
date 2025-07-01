@@ -64,8 +64,8 @@ class HomeFragment : Fragment() {
         searchEditText.setOnClickListener {
             val navController = findNavController()
             val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-            navController.navigate(R.id.searchFragment)
-            bottomNavigationView?.menu?.findItem(R.id.search)?.isChecked = true
+            navController.navigate(R.id.messageFragment)
+            bottomNavigationView?.menu?.findItem(R.id.messages)?.isChecked = true
         }
 
         // Setup TabLayout with a listener for tab selection
@@ -139,7 +139,7 @@ class HomeFragment : Fragment() {
         val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val token = sharedPreferences?.getString("TOKEN", null)
 
-        val url = getString(R.string.root_url) + "/ai" + "/recommend"
+        val url = getString(R.string.root_url2) + "/ai" + "/recommend"
         val requestBody = FormBody.Builder().build()
         val request = Request.Builder()
             .url(url)

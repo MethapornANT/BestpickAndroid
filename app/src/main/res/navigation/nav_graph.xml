@@ -17,7 +17,6 @@
             app:destination="@id/AnotherUserFragment" />
     </fragment>
 
-
     <fragment
         android:id="@+id/addPostFragment"
         android:name="com.bestpick.reviewhub.AddPostFragment"
@@ -39,6 +38,17 @@
             app:destination="@id/postDetailFragment" />
     </fragment>
 
+    <!-- เปลี่ยน searchFragment เป็น messageFragment -->
+    <fragment
+        android:id="@+id/messageFragment"
+        android:name="com.bestpick.reviewhub.MessageFragment"
+        android:label="Messages">
+        <action
+            android:id="@+id/action_messageFragment_to_anotherUserFragment"
+            app:destination="@id/AnotherUserFragment" />
+    </fragment>
+
+    <!-- เก็บ searchFragment ไว้แต่ไม่ใช้ใน bottom navigation -->
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.bestpick.reviewhub.SearchFragment"
@@ -87,17 +97,16 @@
             app:destination="@id/AnotherUserFragment" />
     </fragment>
 
-
     <fragment
         android:id="@+id/postDetailFragment"
         android:name="com.bestpick.reviewhub.PostDetailFragment"
         android:label="Post Detail" >
-    <action
-        android:id="@+id/action_postDetailFragment_to_userProfileFragment"
-        app:destination="@id/AnotherUserFragment" />
-    <action
-        android:id="@+id/action_postDetailFragment_to_myProfileFragment"
-        app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_postDetailFragment_to_userProfileFragment"
+            app:destination="@id/AnotherUserFragment" />
+        <action
+            android:id="@+id/action_postDetailFragment_to_myProfileFragment"
+            app:destination="@id/profileFragment" />
     </fragment>
 
     <fragment

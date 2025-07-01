@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 when (item.itemId) {
                     R.id.home -> navController.navigate(R.id.homeFragment)
-                    R.id.search -> navController.navigate(R.id.searchFragment)
+                    R.id.messages -> navController.navigate(R.id.messageFragment)
                     R.id.profile -> navController.navigate(R.id.profileFragment)
                     R.id.add -> navController.navigate(R.id.addPostFragment)
                     R.id.notification -> navController.navigate(R.id.notificationsFragment)
