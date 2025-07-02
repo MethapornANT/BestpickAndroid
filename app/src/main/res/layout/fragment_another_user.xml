@@ -178,15 +178,34 @@
                 android:textColor="@color/black"
                 android:textSize="14sp" />
 
-
-            <Button
-                android:id="@+id/follower"
+            <!-- Button Container -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_margin="10dp"
-                android:backgroundTint="@color/blue"
-                android:text="Follow"
-                android:textColor="@color/white" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_margin="10dp">
+
+                <Button
+                    android:id="@+id/follower"
+                    android:layout_width="0dp"
+                    android:layout_height="45dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/blue"
+                    android:text="Follow"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/send_message"
+                    android:layout_width="0dp"
+                    android:layout_height="45dp"
+                    android:layout_weight="0.43"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/blue"
+                    android:text="Message"
+                    android:textColor="@color/white"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -218,4 +237,4 @@
             android:layout_gravity="center" />
 
     </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+</androidx.core.widget.NestedScrollView>

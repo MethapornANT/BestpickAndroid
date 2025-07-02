@@ -1,20 +1,24 @@
 package com.bestpick.reviewhub
 
+import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,10 +38,13 @@ class AnotherUserFragment : Fragment() {
     private lateinit var postCountTextView: TextView
     private lateinit var bioTextView: TextView
     private lateinit var followButton: Button
+    private lateinit var sendMessageButton: Button
     private lateinit var recyclerViewPosts: RecyclerView
     private var isFollowing = false
     private val client = OkHttpClient()
     private lateinit var loadingIndicator: LottieAnimationView
+    private var targetUserId: Int = -1
+    private var currentMatchId: Int = -1
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -62,7 +69,13 @@ class AnotherUserFragment : Fragment() {
         postCountTextView = view.findViewById(R.id.post_count)
         bioTextView = view.findViewById(R.id.bio)
         followButton = view.findViewById(R.id.follower)
+        sendMessageButton = view.findViewById(R.id.send_message)
         recyclerViewPosts = view.findViewById(R.id.recycler_view_posts)
+
+        // Enable layout transitions for smooth animation
+        val buttonContainer = followButton.parent as LinearLayout
+        buttonContainer.layoutTransition = LayoutTransition()
+        buttonContainer.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 
         val back = view.findViewById<TextView>(R.id.back)
         back.setOnClickListener {
@@ -71,9 +84,8 @@ class AnotherUserFragment : Fragment() {
 
         recyclerViewPosts.layoutManager = LinearLayoutManager(requireContext())
 
-
-
         val userId = arguments?.getInt("USER_ID") ?: -1
+        targetUserId = userId
         if (userId != -1) {
             fetchUserProfile(userId)
         }
@@ -82,7 +94,89 @@ class AnotherUserFragment : Fragment() {
             handleFollowButton(userId)
         }
 
+        sendMessageButton.setOnClickListener {
+            navigateToChat()
+        }
+
         return view
+    }
+
+    private fun navigateToChat() {
+        if (currentMatchId != -1) {
+            // ถ้ามี matchID แล้ว ใช้เลย
+            val intent = Intent(requireContext(), ChatActivity::class.java).apply {
+                putExtra("matchID", currentMatchId)
+                putExtra("senderID", getCurrentUserId())
+                putExtra("nickname", usernameTextView.text.toString())
+            }
+            startActivity(intent)
+        } else {
+            // ถ้ายังไม่มี matchID ให้ดึงจาก API
+            findOrCreateMatch()
+        }
+    }
+
+    private fun findOrCreateMatch() {
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val token = sharedPreferences?.getString("TOKEN", null)
+        val currentUserId = getCurrentUserId()
+
+        // เรียก API create-match-on-follow
+        val url = getString(R.string.root_url) + "/api/create-match-on-follow"
+
+        val requestBody = FormBody.Builder()
+            .add("followerID", currentUserId.toString())
+            .add("followingID", targetUserId.toString())
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(requireContext(), "Failed to open chat: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val jsonResponse = response.body?.string()
+                if (response.isSuccessful && !jsonResponse.isNullOrEmpty()) {
+                    try {
+                        val jsonObject = JSONObject(jsonResponse)
+                        val matchId = jsonObject.getInt("matchID")
+                        currentMatchId = matchId
+
+                        requireActivity().runOnUiThread {
+                            val intent = Intent(requireContext(), ChatActivity::class.java).apply {
+                                putExtra("matchID", matchId)
+                                putExtra("senderID", currentUserId)
+                                putExtra("nickname", usernameTextView.text.toString())
+                            }
+                            startActivity(intent)
+                        }
+                    } catch (e: Exception) {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else if (response.code == 403) {
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "You must follow this user first", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+
+    // Add this import at the top of the file
+    private fun getCurrentUserId(): Int {
+        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        val userIdString = sharedPreferences?.getString("USER_ID", null)
+        return userIdString?.toIntOrNull() ?: -1
     }
 
     private fun handleFollowButton(userId: Int) {
@@ -92,6 +186,26 @@ class AnotherUserFragment : Fragment() {
         if (token != null) {
             followButton.isEnabled = false // Disable button to prevent multiple clicks
             followUnfollowUser(userId, token)
+        }
+    }
+
+    private fun updateButtonsUI() {
+        if (isFollowing) {
+            // User is following - adjust button weights and show message button
+            val followParams = followButton.layoutParams as LinearLayout.LayoutParams
+            followParams.weight = 0.57f
+            followButton.layoutParams = followParams
+            followButton.text = "Following"
+
+            sendMessageButton.visibility = View.VISIBLE
+        } else {
+            // User is not following - hide message button and restore follow button
+            val followParams = followButton.layoutParams as LinearLayout.LayoutParams
+            followParams.weight = 1f
+            followButton.layoutParams = followParams
+            followButton.text = "Follow"
+
+            sendMessageButton.visibility = View.GONE
         }
     }
 
@@ -224,10 +338,16 @@ class AnotherUserFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 val jsonResponse = response.body?.string()
                 if (!jsonResponse.isNullOrEmpty()) {
-                    val message = JSONObject(jsonResponse).getString("message")
+                    val jsonObject = JSONObject(jsonResponse)
+                    val message = jsonObject.getString("message")
+                    // เก็บ matchID ถ้ามี
+                    if (jsonObject.has("matchID") && !jsonObject.isNull("matchID")) {
+                        currentMatchId = jsonObject.getInt("matchID")
+                    }
+
                     requireActivity().runOnUiThread {
                         isFollowing = !isFollowing
-                        followButton.text = if (isFollowing) "Following" else "Follow"
+                        updateButtonsUI()
                         followButton.isEnabled = true  // Re-enable the button
 
                         if (isFollowing) {
@@ -275,7 +395,7 @@ class AnotherUserFragment : Fragment() {
                         val isUserFollowing = JSONObject(jsonResponse).getBoolean("isFollowing")
                         requireActivity().runOnUiThread {
                             isFollowing = isUserFollowing
-                            followButton.text = if (isFollowing) "Following" else "Follow"
+                            updateButtonsUI()
                         }
                     } catch (e: JSONException) {
                         requireActivity().runOnUiThread {
