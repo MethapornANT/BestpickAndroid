@@ -11,7 +11,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 
-class ChatAdapter(private val currentUserID: Int) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+// เพิ่ม callback สำหรับการคลิกที่โปรไฟล์
+class ChatAdapter(
+    private val currentUserID: Int,
+    private val onProfileClick: (Int) -> Unit // เพิ่ม parameter นี้
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var messages: List<ChatMessage> = listOf()
 
@@ -70,27 +74,22 @@ class ChatAdapter(private val currentUserID: Int) : RecyclerView.Adapter<Recycle
             messageText.text = chatMessage.message
             Log.d("ChatAdapter", "Loading profile picture for senderID: ${chatMessage.senderID}, URL: '${chatMessage.profilePicture}'")
 
-            // เพิ่มการจัดการสำหรับ profilePicture ที่อาจเป็น "null" หรือว่างเปล่า
             if (chatMessage.profilePicture.isNotEmpty() && chatMessage.profilePicture != "null") {
                 Glide.with(itemView.context)
                     .load(chatMessage.profilePicture)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache รูปภาพ
-                    .placeholder(R.drawable.default_profile_picture) // รูปภาพ Placeholder
-                    .error(R.drawable.error_loading_image) // รูปภาพเมื่อเกิดข้อผิดพลาดในการโหลด
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.default_profile_picture)
+                    .error(R.drawable.error_loading_image)
                     .into(profileImage)
             } else {
                 Log.w("ChatAdapter", "profilePicture is empty or 'null' for senderID: ${chatMessage.senderID}. Using default image.")
-                profileImage.setImageResource(R.drawable.default_profile_picture) // ใช้รูปภาพ default
+                profileImage.setImageResource(R.drawable.default_profile_picture)
             }
 
-            // กดที่รูปเพื่อไปหน้าโปรไฟล์
             profileImage.setOnClickListener {
                 Log.d("ChatAdapter", "Clicked on profile image of user: ${chatMessage.senderID} (Nickname: ${chatMessage.nickname})")
-                // ตรวจสอบว่า AnotherUserFragment สามารถรับ Intent ได้หรือไม่ หรือควรใช้ Navigation Component
-                // สมมติว่า AnotherUserFragment เป็น Activity หรือเป็น Fragment ที่เปิดผ่าน Activity
-                val intent = Intent(itemView.context, AnotherUserFragment::class.java) // เปลี่ยน AnotherUserFragment เป็น Activity ที่คุณต้องการ
-                intent.putExtra("userID", chatMessage.senderID)  // ส่ง userID ของผู้ส่งไป
-                itemView.context.startActivity(intent)
+                // เรียก callback เพื่อให้ ChatActivity จัดการการนำทาง
+                onProfileClick(chatMessage.senderID)
             }
         }
     }

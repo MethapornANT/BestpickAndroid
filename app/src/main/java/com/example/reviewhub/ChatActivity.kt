@@ -1,5 +1,6 @@
 package com.bestpick.reviewhub
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -100,7 +101,27 @@ class ChatActivity : AppCompatActivity() {
         }
 
         // ตั้งค่า RecyclerView
-        val chatAdapter = ChatAdapter(senderID)
+        val chatAdapter = ChatAdapter(senderID) { clickedUserID ->
+            // นี่คือสิ่งที่จะเกิดขึ้นเมื่อรูปโปรไฟล์ถูกคลิกใน ChatAdapter
+            Log.d("ChatActivity", "onProfileClick received for userID: $clickedUserID. Navigating to AnotherUserFragment.")
+
+            // วิธีที่ 1: กลับไปที่ Activity หลัก (เช่น MainActivity) แล้วให้ Activity หลักจัดการ navigate ด้วย Navigation Component
+            // วิธีนี้จะคล้ายกับการทำงานของ MessageFragment
+            val intent = Intent(this, MainActivity::class.java).apply { // เปลี่ยน MainActivity::class.java เป็น Activity หลักของคุณที่มี NavHostFragment
+                putExtra("NAVIGATE_TO_USER_PROFILE_ID", clickedUserID)
+                // เพิ่มแฟล็กเพื่อเคลียร์ stack ของ activity ถ้าจำเป็น
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            startActivity(intent)
+            finish() // ปิด ChatActivity เพื่อกลับไปที่ Activity หลัก
+
+            // วิธีที่ 2: ถ้า AnotherUserFragment ถูกโฮสต์อยู่ใน ChatActivity เอง (ซึ่งโค้ดปัจจุบันไม่ได้เป็นแบบนั้น)
+            // val bundle = Bundle().apply { putInt("USER_ID", clickedUserID) }
+            // supportFragmentManager.beginTransaction()
+            //     .replace(R.id.fragment_container, AnotherUserFragment::class.java, bundle) // fragment_container คือ ID ของ FrameLayout/FragmentContainerView ใน activity_chat.xml
+            //     .addToBackStack(null)
+            //     .commit()
+        }
         recyclerViewChat.layoutManager = LinearLayoutManager(this)
         recyclerViewChat.adapter = chatAdapter
 

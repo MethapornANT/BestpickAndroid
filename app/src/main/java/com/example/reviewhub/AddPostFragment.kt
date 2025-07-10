@@ -207,7 +207,7 @@ class AddPostFragment : Fragment() {
             requestBody.addFormDataPart("photo_url", photoFileNames.joinToString(","))
         }
 
-        val url = getString(R.string.root_url) + "/api/posts/create"
+        val url = getString(R.string.root_url2) + "/ai/posts/create"
         val request = Request.Builder()
             .url(url)
             .post(requestBody.build())
@@ -232,8 +232,22 @@ class AddPostFragment : Fragment() {
                         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
                         bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
                     } else {
-                        val errorBody = response.body?.string() ?: "เกิดข้อผิดพลาดที่ไม่ทราบ"
-                        Toast.makeText(requireContext(), "ไม่สามารถสร้างโพสต์ได้: ${response.message}, Body: $errorBody", Toast.LENGTH_SHORT).show()
+                        val errorBody = response.body?.string()
+                        val errorMessage: String
+                        if (errorBody != null) {
+                            errorMessage = try {
+                                // พยายามแยกวิเคราะห์ errorBody เป็น JSON
+                                val jsonObject = org.json.JSONObject(errorBody)
+                                // ดึงค่าจากฟิลด์ "message" หากไม่พบ ให้ใช้ข้อความเริ่มต้น
+                                jsonObject.optString("message", "ไม่สามารถสร้างโพสต์ได้: เกิดข้อผิดพลาด")
+                            } catch (e: Exception) {
+                                // หากการแยกวิเคราะห์ล้มเหลว ให้ใช้ข้อความข้อผิดพลาดทั่วไปหรือ errorBody ดิบ
+                                "ไม่สามารถสร้างโพสต์ได้: เกิดข้อผิดพลาดในการประมวลผล (โปรดติดต่อผู้ดูแลระบบ)" // หรือจะใช้ "ไม่สามารถสร้างโพสต์ได้: $errorBody" ก็ได้ แต่จะยาว
+                            }
+                        } else {
+                            errorMessage = "ไม่สามารถสร้างโพสต์ได้: เกิดข้อผิดพลาดที่ไม่ทราบ"
+                        }
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show() // ใช้ LENGTH_LONG เพื่อให้ผู้ใช้มีเวลาอ่านนานขึ้น
                     }
                 }
             }
