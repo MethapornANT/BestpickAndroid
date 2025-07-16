@@ -64,7 +64,7 @@ class HomeFragment : Fragment() {
         searchEditText.setOnClickListener {
             val navController = findNavController()
             val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-            navController.navigate(R.id.messageFragment)
+            navController.navigate(R.id.searchFragment)
             bottomNavigationView?.menu?.findItem(R.id.messages)?.isChecked = true
         }
 
