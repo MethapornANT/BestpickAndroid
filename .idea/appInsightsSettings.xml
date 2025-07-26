@@ -10,9 +10,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.bestpick.reviewhub" />
-                  <option name="mobileSdkAppId" value="1:741201850844:android:8e4be569b4519cacb29f19" />
-                  <option name="projectId" value="apilogin-6efd6" />
-                  <option name="projectNumber" value="741201850844" />
+                  <option name="mobileSdkAppId" value="1:895979874008:android:5546567531c7c5708799ad" />
+                  <option name="projectId" value="bestpick-ffc17" />
+                  <option name="projectNumber" value="895979874008" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

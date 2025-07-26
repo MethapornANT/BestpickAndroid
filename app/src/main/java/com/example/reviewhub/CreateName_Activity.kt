@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
+import android.view.View
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
@@ -29,6 +31,12 @@ class CreateName_Activity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private var selectedImageUri: Uri? = null
 
+    // อ้างอิง UI elements
+    private lateinit var usernameEditText: EditText
+    private lateinit var birthdayEditText: EditText
+    private lateinit var spinnerGender: Spinner // เพิ่ม Spinner
+    private lateinit var txterror: TextView
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,11 +45,19 @@ class CreateName_Activity : AppCompatActivity() {
         sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+        // Initializing UI elements
         val changeUsernameButton = findViewById<Button>(R.id.change)
-        val usernameEditText = findViewById<EditText>(R.id.txtusername)
+        usernameEditText = findViewById(R.id.txtusername)
         val pictureButton = findViewById<Button>(R.id.editimage)
-        val birthdayEditText = findViewById<EditText>(R.id.txtbirthday)
-        val txterror = findViewById<TextView>(R.id.txterror)
+        birthdayEditText = findViewById(R.id.txtbirthday)
+        txterror = findViewById(R.id.txterror)
+        spinnerGender = findViewById(R.id.spinner_gender) // อ้างอิง Spinner
+
+        // Setup Spinner
+        val genders = arrayOf("Select Gender", "Male", "Female", "Other") // ตัวเลือกสำหรับ Spinner
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, genders)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerGender.adapter = adapter
 
         pictureButton.setOnClickListener {
             pickImageFromGallery()
@@ -54,29 +70,43 @@ class CreateName_Activity : AppCompatActivity() {
         changeUsernameButton.setOnClickListener {
             val newUsername = usernameEditText.text.toString()
             val birthday = birthdayEditText.text.toString()
+            val selectedGender = spinnerGender.selectedItem.toString() // ดึงค่าที่เลือกจาก Spinner
 
-            if (newUsername.isEmpty() || selectedImageUri == null || birthday.isEmpty()) {
-                txterror.text = "Please enter username, select a picture, and birthday"
+            // ตรวจสอบความถูกต้องของข้อมูลทั้งหมด (รวมถึง gender)
+            if (newUsername.isEmpty() || selectedImageUri == null || birthday.isEmpty() || selectedGender == "Select Gender") {
+                txterror.text = "Please enter username, select a picture, birthday, and gender."
+                return@setOnClickListener // หยุดการทำงานถ้าข้อมูลไม่ครบ
+            }
+
+            // Check if the user is older than 13
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val birthDate: Date? = try {
+                dateFormat.parse(birthday)
+            } catch (e: Exception) {
+                txterror.text = "Invalid birthday format. Please use DD/MM/YYYY."
+                return@setOnClickListener
+            }
+
+            if (birthDate == null) {
+                txterror.text = "Invalid birthday date."
+                return@setOnClickListener
+            }
+
+            val currentDate = Calendar.getInstance().time
+
+            var age = currentDate.year - birthDate.year
+
+            // Adjust if birthdate hasn't occurred this year
+            if (currentDate.month < birthDate.month ||
+                (currentDate.month == birthDate.month && currentDate.date < birthDate.date)) {
+                age--
+            }
+
+            if (age < 13) {
+                txterror.text = "You must be at least 13 years old to change the username."
             } else {
-                // Check if the user is older than 13
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val birthDate = dateFormat.parse(birthday)
-                val currentDate = Calendar.getInstance().time
-
-                var age = currentDate.year - birthDate.year
-
-                // Adjust if birthdate hasn't occurred this year
-                if (currentDate.month < birthDate.month ||
-                    (currentDate.month == birthDate.month && currentDate.date < birthDate.date)) {
-                    age--
-                }
-
-                if (age < 13) {
-                    txterror.text = "You must be at least 13 years old to change the username."
-                } else {
-                    // Pass selectedImageUri to handle image upload
-                    setProfile(newUsername, selectedImageUri, birthday, txterror)
-                }
+                // Pass selectedImageUri and selectedGender to handle image upload and profile update
+                setProfile(newUsername, selectedImageUri, birthday, selectedGender, txterror) // ส่ง selectedGender ไปด้วย
             }
         }
     }
@@ -95,7 +125,8 @@ class CreateName_Activity : AppCompatActivity() {
         pickImageLauncher.launch("image/*")
     }
 
-    private fun setProfile(newUsername: String, imageUri: Uri?, birthday: String, txterror: TextView) {
+    // เพิ่ม parameter สำหรับ gender
+    private fun setProfile(newUsername: String, imageUri: Uri?, birthday: String, gender: String, txterror: TextView) {
         val token = sharedPreferences.getString("TOKEN", null)
         if (token == null) {
             txterror.text = "Authentication token not found"
@@ -114,16 +145,26 @@ class CreateName_Activity : AppCompatActivity() {
                 // Create a RequestBody for the image file
                 val imageRequestBody = inputStream?.let { inputStream ->
                     val fileBytes = inputStream.readBytes()
-                    fileBytes.toRequestBody(MultipartBody.FORM)
+                    // ใช้ MediaType.parse("image/*") หรือระบุ type ที่แน่นอนถ้าทราบ
+                    fileBytes.toRequestBody((contentResolver.getType(imageUri) ?: "image/*").toMediaTypeOrNull())
                 }
 
                 // Build multipart request body
-                val requestBody = MultipartBody.Builder()
+                val requestBodyBuilder = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("newUsername", newUsername)
                     .addFormDataPart("birthday", birthday)
-                    .addFormDataPart("picture", fileName ?: "image.jpg", imageRequestBody!!)
-                    .build()
+                    .addFormDataPart("gender", gender) // <<-- เพิ่ม gender เข้าไป
+
+                // เพิ่มรูปภาพถ้ามี
+                if (imageRequestBody != null && fileName != null) {
+                    requestBodyBuilder.addFormDataPart("picture", fileName, imageRequestBody)
+                } else {
+                    // หากไม่มีรูปภาพ ให้ log หรือจัดการตามต้องการ
+                    Log.w("CreateName_Activity", "Image URI or RequestBody is null. Skipping picture upload.")
+                }
+
+                val requestBody = requestBodyBuilder.build()
 
                 val url = getString(R.string.root_url) + getString(R.string.setprofile)
                 val request = Request.Builder()
@@ -131,7 +172,7 @@ class CreateName_Activity : AppCompatActivity() {
                     .addHeader("Authorization", "Bearer $token")
                     .post(requestBody)
                     .build()
-                Log.d("CreateName_Activity", "Sending newUsername: $newUsername, birthday: $birthday, picture: $fileName")
+                Log.d("CreateName_Activity", "Sending newUsername: $newUsername, birthday: $birthday, gender: $gender, picture: ${fileName ?: "none"}") // Log gender ด้วย
 
                 val response = client.newCall(request).execute()
                 val responseBody = response.body?.string()
@@ -145,21 +186,35 @@ class CreateName_Activity : AppCompatActivity() {
                         val editor = sharedPreferences.edit()
                         editor.putString("username", newUsername)
                         editor.putString("birthday", birthday)
+                        editor.putString("gender", gender) // <<-- บันทึก gender ลง SharedPreferences
                         editor.apply()
 
                         // Navigate to MainActivity
                         val intent = Intent(this@CreateName_Activity, MainActivity::class.java)
                         startActivity(intent)
+                        finish() // ปิด Activity นี้หลังจากไปหน้าอื่นแล้ว
                     } else {
                         // If there's an error (500) from the server, display the error message
-                        val errorMessage = responseBody?.let { JSONObject(it).optString("message", "Error updating profile") }
-                        txterror.text = "Failed: $errorMessage"
+                        val errorMessage = responseBody?.let {
+                            try {
+                                JSONObject(it).optString("message", "Error updating profile")
+                            } catch (e: Exception) {
+                                "Server response error: $it" // กรณี response ไม่ใช่ JSON
+                            }
+                        }
+                        txterror.text = "Failed: $errorMessage (Code: ${response.code})" // แสดงโค้ด HTTP ด้วย
+                        Log.e("CreateName_Activity", "Server Error: ${response.code}, Message: $errorMessage, Body: $responseBody")
                     }
                 }
             } catch (e: IOException) {
                 withContext(Dispatchers.Main) {
-                    txterror.text = "Error: ${e.message}"
-                    Log.e("CreateName_Activity", "Error: ${e.message}", e)
+                    txterror.text = "Network Error: ${e.message}"
+                    Log.e("CreateName_Activity", "Network Error: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    txterror.text = "An unexpected error occurred: ${e.message}"
+                    Log.e("CreateName_Activity", "Unexpected Error: ${e.message}", e)
                 }
             }
         }
@@ -167,11 +222,12 @@ class CreateName_Activity : AppCompatActivity() {
 
     private fun getFileNameFromUri(uri: Uri): String {
         var fileName = "image.jpg"
-        val cursor = contentResolver.query(uri, null, null, null, null)
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                fileName = it.getString(nameIndex)
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1) {
+                    fileName = cursor.getString(nameIndex)
+                }
             }
         }
         return fileName
@@ -185,14 +241,15 @@ class CreateName_Activity : AppCompatActivity() {
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         val datePickerDialog = DatePickerDialog(
-            this,  // Changed from requireContext() to this
+            this,
             { _, selectedYear, selectedMonth, selectedDay ->
-                val formattedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                val formattedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear" // DD/MM/YYYY
                 editText.setText(formattedDate)
             },
             year, month, day
         )
-
+        // ตั้งค่าให้เลือกวันที่ในอดีตเท่านั้น และไม่เกินปัจจุบัน
+        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
 }

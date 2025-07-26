@@ -19,8 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.facebook.CallbackManager
-import com.facebook.FacebookSdk
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -50,7 +48,6 @@ import okio.IOException
 class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
-    private lateinit var callbackManager: CallbackManager
     private lateinit var progressBar: LottieAnimationView
 
 
@@ -62,10 +59,6 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
         progressBar = findViewById(R.id.lottie_loading)
-        // Initialize Facebook SDK
-        FacebookSdk.setClientToken("1021807229429436")
-        FacebookSdk.sdkInitialize(applicationContext)
-        callbackManager = CallbackManager.Factory.create()
 
         // Check if user is already signed in via SharedPreferences
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
@@ -414,9 +407,4 @@ class LoginActivity : AppCompatActivity() {
         startActivity(Intent(this, Forget_Password_Activity::class.java))
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data)
-    }
 }
