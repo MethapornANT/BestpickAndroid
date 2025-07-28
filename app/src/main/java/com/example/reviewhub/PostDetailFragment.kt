@@ -50,7 +50,6 @@ class PostDetailFragment : Fragment() {
     private lateinit var follower: TextView
     private var bottomNav: BottomNavigationView? = null
     private lateinit var recyclerViewComments: RecyclerView
-    private lateinit var recyclerViewProducts: RecyclerView
     private lateinit var comments: MutableList<Comment>
 
     private var isBookmark: Boolean = false
@@ -71,20 +70,11 @@ class PostDetailFragment : Fragment() {
         // กำหนดค่า View ให้กับตัวแปรต่างๆ
         follower = view.findViewById(R.id.follower)
         recyclerViewComments = view.findViewById(R.id.recycler_view_comments)
-        recyclerViewProducts = view.findViewById(R.id.recycler_view_products)
+
         val postId = arguments?.getInt("POST_ID", -1) ?: -1
-
-
-
         // กำหนดค่า LayoutManager และ Adapter ให้กับ RecyclerView
         recyclerViewComments.layoutManager = LinearLayoutManager(requireContext())
         recyclerViewComments.adapter = CommentAdapter(emptyList(), postId)
-
-
-        recyclerViewProducts.layoutManager = LinearLayoutManager(requireContext())
-        recyclerViewProducts.adapter = ProductAdapter(emptyList())
-
-
         dotIndicatorLayout = view.findViewById(R.id.dot_indicator_layout)
         bottomNav = (activity as? MainActivity)?.findViewById(R.id.bottom_navigation)
         // ตั้งค่า Visibility ของ Bottom Navigation Bar เป็น GONE เมื่ออยู่ใน Fragment นี้
@@ -269,84 +259,6 @@ class PostDetailFragment : Fragment() {
                     }
                 }
             }
-        })
-    }
-    private fun fetchProductData(productName: String, callback: (List<Product>) -> Unit) {
-        val client = OkHttpClient()
-        val rooturl = getString(R.string.root_url)
-        val url = "$rooturl/ai/search?productname=$productName"
-
-        Log.d("fetchProductData", "Requesting URL: $url")
-
-        // Show the ProgressBar
-        activity?.runOnUiThread {
-            view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.VISIBLE
-        }
-
-        val request = Request.Builder().url(url).build()
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                activity?.runOnUiThread {
-                    Log.e("fetchProductData", "Failed to fetch data: ${e.message}")
-                    // Hide the ProgressBar
-                    view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    val responseBody = it.body?.string()
-                    activity?.runOnUiThread {
-                        view?.findViewById<ProgressBar>(R.id.progressBar)?.visibility = View.GONE
-                    }
-
-                    if (responseBody != null && responseBody.startsWith("{")) { // ตรวจสอบว่าเป็น JSON Object
-                        try {
-                            val jsonObject = JSONObject(responseBody)
-                            val products = mutableListOf<Product>()
-
-                            // ดึงข้อมูลจากแต่ละร้านใน JSON
-                            jsonObject.keys().forEach { key ->
-                                val shopDetails = jsonObject.getJSONObject(key)
-                                listOf("Advice", "Banana", "JIB").forEach { shopName ->
-                                    shopDetails.optJSONArray(shopName)?.let { shopArray ->
-                                        if (shopArray.length() > 0) {
-                                            val product = shopArray.getJSONObject(0)
-                                            val productName = product.getString("name")
-                                            if (productName != "Not found") { // ตรวจสอบว่าไม่ใช่ 'Not found'
-                                                products.add(
-                                                    Product(
-                                                        productName,
-                                                        product.getString("price"),
-                                                        product.getString("url")
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            activity?.runOnUiThread {
-                                if (products.isNotEmpty()) {
-                                    Log.d("fetchProductData", "Products fetched: $products")
-                                    callback(products)
-                                } else {
-                                    Log.d("fetchProductData", "No products found")
-                                    callback(emptyList())
-                                }
-                            }
-                        } catch (e: JSONException) {
-                            Log.e("fetchProductData", "JSON parsing error: ${e.message}")
-                            activity?.runOnUiThread { callback(emptyList()) }
-                        }
-                    } else {
-                        Log.e("fetchProductData", "Invalid JSON or non-JSON response")
-                        activity?.runOnUiThread { callback(emptyList()) }
-                    }
-                }
-            }
-
         })
     }
 
@@ -703,12 +615,6 @@ class PostDetailFragment : Fragment() {
 
                         Log.d("PostDetailFragment", "Product Name: $productname")
                         Log.d("PostDetailFragment", "Url: $url")
-
-
-                        fetchProductData(productname) { products ->
-                            // Update UI with the list of products from all shops
-                            updateProductDetailsUI(products)
-                        }
 
                         // Initialize comments list
                         comments = mutableListOf()
@@ -1128,11 +1034,6 @@ class PostDetailFragment : Fragment() {
                 }
             }
         })
-    }
-
-    private fun updateProductDetailsUI(products: List<Product>) {
-        recyclerViewProducts.adapter = ProductAdapter(products)
-        recyclerViewProducts.adapter?.notifyDataSetChanged()
     }
 
     data class Product(val productName: String, val price: String, val url: String)

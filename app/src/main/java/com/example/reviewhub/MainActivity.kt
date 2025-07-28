@@ -1,3 +1,5 @@
+// MainActivity.kt
+
 package com.bestpick.reviewhub
 
 import android.content.Context
@@ -13,6 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.Call
@@ -29,11 +32,12 @@ class MainActivity : AppCompatActivity() {
     private var lastClickedItemId = -1
     private var lastClickedTime: Long = 0
 
+    // เพิ่มตัวแปรเพื่อเก็บตำแหน่งแท็บปัจจุบันของ HomeFragment (0 = For You, 1 = Following)
+    private var currentHomeTabPosition: Int = 0
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // จัดการ Intent ใหม่ที่เข้ามา, รวมถึงจาก ChatActivity
         handleNavigationIntent(intent)
-        // สามารถคง handleDeepLink ไว้ถ้าคุณมี deep link อื่นๆ
         handleDeepLink(intent)
     }
 
@@ -41,53 +45,56 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // ปิดโหมดกลางคืน (Night Mode)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        // หา NavHostFragment จาก layout และตั้งค่า NavController
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // กำหนดค่าให้กับตัวแปร bottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_navigation)
-
-        // เชื่อมต่อ BottomNavigationView กับ NavController
         bottomNavigationView.setupWithNavController(navController)
 
-        // ใช้ WindowInsets เพื่อตรวจจับแถบนำทางและปรับตำแหน่งของ BottomNavigationView
         ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { view, insets ->
             val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(0, 0, 0, systemBarsInsets.bottom)
             insets
         }
 
-        // ดึงข้อมูลและแสดง badge การแจ้งเตือน
         fetchAndShowBadge()
 
-        // ฟังการเปลี่ยนแปลงเส้นทางการนำทางเพื่อแสดงหรือซ่อน BottomNavigationView
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.homeFragment, R.id.messageFragment, R.id.profileFragment, R.id.notificationsFragment, R.id.addPostFragment -> {
-                    // แสดง BottomNavigationView สำหรับ Fragment เหล่านี้
                     bottomNavigationView.visibility = View.VISIBLE
                 }
                 else -> {
-                    // ซ่อน BottomNavigationView สำหรับ Fragment อื่นๆ
                     bottomNavigationView.visibility = View.GONE
                 }
             }
         }
 
-        // ตั้งค่า listener ให้กับ BottomNavigationView เพื่อเช็คการคลิกซ้ำสองครั้งที่เมนู Home
         bottomNavigationView.setOnItemSelectedListener { item ->
             val currentTime = System.currentTimeMillis()
 
+            // ตรวจสอบว่ากำลังอยู่บน HomeFragment หรือไม่
+            val isCurrentlyOnHomeFragment = navController.currentDestination?.id == R.id.homeFragment
+
+            // กรณี Double-tap Home (ปุ่มล่าง)
             if (item.itemId == R.id.home && lastClickedItemId == item.itemId && (currentTime - lastClickedTime) < 500) {
-                // ถ้าคลิกเมนู Home ซ้ำภายใน 500 มิลลิวินาที ให้ทำการ refresh HomeFragment
-                refreshHomeFragment()
+                if (isCurrentlyOnHomeFragment) {
+                    Log.d("MainActivity", "Double-tap Home detected. Forcing refresh on current HomeFragment tab.")
+                    // เมื่อ Double-tap Home ให้บังคับ refresh เฉพาะแท็บปัจจุบันใน HomeFragment
+                    refreshHomeFragment(forceRefreshFromBottomNavDoubleTap = true)
+                }
             } else {
+                // กรณีเลือกเมนูที่ไม่ใช่ Home หรือเลือก Home ครั้งแรก
                 when (item.itemId) {
-                    R.id.home -> navController.navigate(R.id.homeFragment)
+                    R.id.home -> {
+                        // ถ้ากำลังจะ navigate ไป HomeFragment และไม่ได้เป็นการ Double-tap
+                        // ให้ NavController จัดการ ถ้า HomeFragment อยู่ใน Back Stack แล้ว
+                        // จะไม่สร้าง instance ใหม่ (ซึ่งทำให้ isForYouDataLoaded/isFollowingDataLoaded ยังคงค่าเดิม)
+                        // HomeFragment จะตรวจสอบว่าต้องโหลดข้อมูลใหม่หรือไม่เอง
+                        navController.navigate(R.id.homeFragment)
+                    }
                     R.id.messages -> navController.navigate(R.id.messageFragment)
                     R.id.profile -> navController.navigate(R.id.profileFragment)
                     R.id.add -> navController.navigate(R.id.addPostFragment)
@@ -101,11 +108,9 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // จัดการ Intent ที่เข้ามาเมื่อ Activity ถูกสร้างขึ้น (รวมถึงจาก ChatActivity)
         handleNavigationIntent(intent)
     }
 
-    // ฟังก์ชันสำหรับจัดการ Deep Link (ถ้ามี)
     private fun handleDeepLink(intent: Intent) {
         val data = intent.data
         Log.d("DeepLink", "Received deep link data: $data")
@@ -123,7 +128,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ฟังก์ชันใหม่สำหรับจัดการการนำทางจาก Intent ที่ส่งมาจาก ChatActivity
     private fun handleNavigationIntent(intent: Intent?) {
         intent?.let {
             if (it.hasExtra("NAVIGATE_TO_USER_PROFILE_ID")) {
@@ -133,28 +137,27 @@ class MainActivity : AppCompatActivity() {
                     val bundle = Bundle().apply {
                         putInt("USER_ID", userIDToNavigate)
                     }
-                    // นำทางไปยัง AnotherUserFragment
-                    // ตรวจสอบให้แน่ใจว่า ID R.id.anotherUserFragment มีอยู่ใน nav_graph.xml ของคุณ
                     navController.navigate(R.id.AnotherUserFragment, bundle)
-
-                    // ลบ extra ออกเพื่อไม่ให้เกิดการ navigate ซ้ำเมื่อหมุนหน้าจอหรือเปลี่ยน config
                     it.removeExtra("NAVIGATE_TO_USER_PROFILE_ID")
                 }
             }
         }
     }
 
-    // ฟังก์ชันสำหรับ refresh HomeFragment
-    private fun refreshHomeFragment() {
-        val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
-        fragment?.childFragmentManager?.fragments?.forEach {
-            if (it is HomeFragment) {
-                it.refreshPosts()
+    private fun refreshHomeFragment(forceRefreshFromBottomNavDoubleTap: Boolean) {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+        navHostFragment?.childFragmentManager?.fragments?.forEach { fragment ->
+            if (fragment is HomeFragment) {
+                Log.d("MainActivity", "Attempting to refresh HomeFragment. forceRefreshFromBottomNavDoubleTap: $forceRefreshFromBottomNavDoubleTap")
+
+                // เรียก refreshPosts ของ HomeFragment โดยตรง
+                // HomeFragment จะมี Logic ตัดสินใจเองว่าจะเรียก API แบบ ?refresh=true หรือไม่
+                // โดยอิงจาก forceRefreshFromBottomNavDoubleTap และสถานะ isLoaded ของตัวเอง
+                fragment.refreshPosts(forceRefreshFromBottomNavDoubleTap)
             }
         }
     }
 
-    // ฟังก์ชันสำหรับดึงข้อมูลและแสดง badge การแจ้งเตือน
     private fun fetchAndShowBadge() {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
@@ -201,7 +204,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // ฟังก์ชันสำหรับอัปเดต badge บน BottomNavigationView
     private fun updateBadge(unreadCount: Int) {
         val badge = bottomNavigationView.getOrCreateBadge(R.id.notification)
         if (unreadCount > 0) {
