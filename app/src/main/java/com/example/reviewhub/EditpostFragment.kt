@@ -65,6 +65,7 @@ class EditPostFragment : Fragment() {
 
         println("Post ID: $postId")
 
+        // Initial fetch of post details when fragment view is created
         postId?.let { fetchPostDetails(it) }
 
         // Register activity result launcher for selecting media
@@ -83,6 +84,8 @@ class EditPostFragment : Fragment() {
                 }
                 viewPager.adapter?.notifyDataSetChanged()
                 setupDotIndicator()
+                // Show delete button if media is added
+                deleteButton.visibility = if (selectedMedia.isNotEmpty()) View.VISIBLE else View.GONE
             }
         }
 
@@ -119,6 +122,7 @@ class EditPostFragment : Fragment() {
                 selectedMedia.removeAt(currentPosition)
                 viewPager.adapter?.notifyDataSetChanged()
                 setupDotIndicator()
+                // Hide delete button if no media left
                 deleteButton.visibility = if (selectedMedia.isEmpty()) View.GONE else View.VISIBLE
             }
         }
@@ -131,7 +135,9 @@ class EditPostFragment : Fragment() {
         val token = sharedPreferences?.getString("TOKEN", null)
 
         if (token == null) {
-            Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+            activity?.runOnUiThread { // Added runOnUiThread here as well for safety
+                Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+            }
             return
         }
 
@@ -149,16 +155,15 @@ class EditPostFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val responseData = response.body?.string()
-                    val categories = parseCategories(responseData)
+                // Read responseBodyString outside runOnUiThread
+                val responseData = response.body?.string()
 
-                    activity?.runOnUiThread {
+                activity?.runOnUiThread {
+                    if (response.isSuccessful) {
+                        val categories = parseCategories(responseData)
                         callback(categories)
-                    }
-                } else {
-                    activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch categories", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to fetch categories: ${response.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -168,12 +173,19 @@ class EditPostFragment : Fragment() {
     private fun parseCategories(json: String?): List<Category> {
         val categories = mutableListOf<Category>()
         if (json != null) {
-            val jsonArray = JSONArray(json)
-            for (i in 0 until jsonArray.length()) {
-                val category = jsonArray.getJSONObject(i)
-                val id = category.getInt("CategoryID")
-                val name = category.getString("CategoryName")
-                categories.add(Category(id, name))
+            try {
+                val jsonArray = JSONArray(json)
+                for (i in 0 until jsonArray.length()) {
+                    val category = jsonArray.getJSONObject(i)
+                    val id = category.optInt("CategoryID") // Using optInt for safety
+                    val name = category.optString("CategoryName") // Using optString for safety
+                    categories.add(Category(id, name))
+                }
+            } catch (e: Exception) {
+                Log.e("EditPostFragment", "Error parsing categories JSON: ${e.message}", e)
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Error parsing category data.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
         return categories
@@ -212,7 +224,9 @@ class EditPostFragment : Fragment() {
         val token = sharedPreferences?.getString("TOKEN", null)
 
         if (token == null) {
-            Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+            activity?.runOnUiThread { // Added runOnUiThread here as well for safety
+                Toast.makeText(requireContext(), "Token not available", Toast.LENGTH_SHORT).show()
+            }
             return
         }
 
@@ -226,64 +240,97 @@ class EditPostFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Failed to fetch post details", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Failed to fetch post details: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val responseData = response.body?.string()
-                    responseData?.let {
-                        val postJson = JSONObject(it)
-                        activity?.runOnUiThread {
-                            TitleEditText.setText(postJson.getString("Title"))
-                            contentEditText.setText(postJson.getString("content"))
-                            ProductNameEditText.setText(postJson.getString("ProductName"))
+                val responseData = response.body?.string() // Read response data on background thread
 
-                            val categoryId = if (!postJson.isNull("CategoryID")) {
-                                postJson.getInt("CategoryID")
-                            } else {
-                                -1
-                            }
+                activity?.runOnUiThread {
+                    if (response.isSuccessful) {
+                        responseData?.let {
+                            try {
+                                val postJson = JSONObject(it)
+                                TitleEditText.setText(postJson.optString("Title", "")) // Use optString
+                                contentEditText.setText(postJson.optString("content", "")) // Use optString
+                                ProductNameEditText.setText(postJson.optString("ProductName", "")) // Use optString
 
-                            fetchCategories { categories ->
-                                setupCategorySpinner(categories, categoryId)
-                            }
+                                val categoryId = postJson.optInt("CategoryID", -1) // Use optInt and provide default
 
-                            val url1 = getString(R.string.root_url) + "/api"
-                            val photoUrlsArray = postJson.getJSONArray("photo_url")
-                            val videoUrlsArray = postJson.getJSONArray("video_url")
-
-                            // เพิ่ม Uri ของรูปภาพที่มีอยู่เดิม
-                            for (i in 0 until photoUrlsArray.length()) {
-                                val innerArray = photoUrlsArray.getJSONArray(i)
-                                for (j in 0 until innerArray.length()) {
-                                    val photoUrl = innerArray.getString(j)
-                                    val fullUrl = Uri.parse(url1 + photoUrl)
-                                    Log.d("PhotoUrls", "Photo URL: $fullUrl")
-                                    selectedMedia.add(fullUrl)
+                                fetchCategories { categories ->
+                                    setupCategorySpinner(categories, categoryId)
                                 }
-                            }
 
-                            // เพิ่ม Uri ของวิดีโอที่มีอยู่เดิม
-                            for (i in 0 until videoUrlsArray.length()) {
-                                val innerArray = videoUrlsArray.getJSONArray(i)
-                                for (j in 0 until innerArray.length()) {
-                                    val videoUrl = innerArray.getString(j)
-                                    val fullUrl = Uri.parse(url1 + videoUrl)
-                                    Log.d("VideoUrls", "Video URL: $fullUrl")
-                                    selectedMedia.add(fullUrl)
+                                val baseUrl = getString(R.string.root_url) + "/api" // Changed to baseUrl for clarity
+                                selectedMedia.clear() // Clear existing media before adding new ones
+
+                                val photoUrlsArray = postJson.optJSONArray("photo_url")
+                                photoUrlsArray?.let { array ->
+                                    for (i in 0 until array.length()) {
+                                        val item = array.opt(i) // Use opt to get object safely
+                                        if (item is JSONArray) {
+                                            // Handle case: [[url1], [url2]]
+                                            for (j in 0 until item.length()) {
+                                                val photoUrl = item.optString(j, "")
+                                                if (photoUrl.isNotEmpty()) {
+                                                    val fullUrl = Uri.parse(baseUrl + photoUrl)
+                                                    Log.d("PhotoUrls", "Photo URL (JSONArray in JSONArray): $fullUrl")
+                                                    selectedMedia.add(fullUrl)
+                                                }
+                                            }
+                                        } else if (item is String) {
+                                            // Handle case: [url1, url2]
+                                            val photoUrl = item
+                                            if (photoUrl.isNotEmpty()) {
+                                                val fullUrl = Uri.parse(baseUrl + photoUrl)
+                                                Log.d("PhotoUrls", "Photo URL (String directly): $fullUrl")
+                                                selectedMedia.add(fullUrl)
+                                            }
+                                        }
+                                    }
                                 }
-                            }
 
-                            // อัปเดต ViewPager และ Dot Indicator
-                            viewPager.adapter?.notifyDataSetChanged()
-                            setupDotIndicator()
+                                val videoUrlsArray = postJson.optJSONArray("video_url")
+                                videoUrlsArray?.let { array ->
+                                    for (i in 0 until array.length()) {
+                                        val item = array.opt(i) // Use opt to get object safely
+                                        if (item is JSONArray) {
+                                            // Handle case: [[url1], [url2]]
+                                            for (j in 0 until item.length()) {
+                                                val videoUrl = item.optString(j, "")
+                                                if (videoUrl.isNotEmpty()) {
+                                                    val fullUrl = Uri.parse(baseUrl + videoUrl)
+                                                    Log.d("VideoUrls", "Video URL (JSONArray in JSONArray): $fullUrl")
+                                                    selectedMedia.add(fullUrl)
+                                                }
+                                            }
+                                        } else if (item is String) {
+                                            // Handle case: [url1, url2]
+                                            val videoUrl = item
+                                            if (videoUrl.isNotEmpty()) {
+                                                val fullUrl = Uri.parse(baseUrl + videoUrl)
+                                                Log.d("VideoUrls", "Video URL (String directly): $fullUrl")
+                                                selectedMedia.add(fullUrl)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // อัปเดต ViewPager และ Dot Indicator
+                                viewPager.adapter?.notifyDataSetChanged()
+                                setupDotIndicator()
+                                deleteButton.visibility = if (selectedMedia.isNotEmpty()) View.VISIBLE else View.GONE
+
+                            } catch (e: Exception) {
+                                Log.e("fetchPostDetails", "Error parsing post details JSON: ${e.message}", e)
+                                Toast.makeText(requireContext(), "Error parsing post details.", Toast.LENGTH_SHORT).show()
+                            }
+                        } ?: run {
+                            Toast.makeText(requireContext(), "Response data is empty.", Toast.LENGTH_SHORT).show()
                         }
-                    }
-                } else {
-                    activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to fetch post details", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to fetch post details: ${response.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -294,8 +341,8 @@ class EditPostFragment : Fragment() {
     private fun uploadPost() {
         val Title = TitleEditText.text.toString().trim()
         val content = contentEditText.text.toString().trim()
-        val productName = ProductNameEditText.text.toString().trim() // เก็บค่า ProductName ที่ได้รับจาก EditText
-        val categoryID = selectedCategoryId?.toString() ?: "NULL"  // ส่ง CategoryID เป็น NULL ถ้าไม่ถูกเลือก
+        val productName = ProductNameEditText.text.toString().trim()
+        val categoryID = selectedCategoryId?.toString() ?: "NULL"
 
         if (content.isEmpty() || Title.isEmpty() || productName.isEmpty()) {
             Toast.makeText(requireContext(), "กรุณากรอกข้อมูลให้ครบถ้วน", Toast.LENGTH_SHORT).show()
@@ -313,42 +360,66 @@ class EditPostFragment : Fragment() {
             return
         }
 
-// สร้าง request body สำหรับอัปเดตโพสต์
-        val requestBody = MultipartBody.Builder().setType(MultipartBody.FORM)
+        val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("content", content)
             .addFormDataPart("Title", Title)
-            .addFormDataPart("ProductName", productName)  // ส่ง ProductName ไปพร้อมกับ request body
-            .addFormDataPart("CategoryID", categoryID)  // ส่ง CategoryID
+            .addFormDataPart("ProductName", productName)
+            .addFormDataPart("CategoryID", categoryID)
             .addFormDataPart("user_id", userId)
 
+        val existingPhotoPaths = mutableListOf<String>()
+        val existingVideoPaths = mutableListOf<String>()
+
         selectedMedia.forEach { uri ->
-            if (uri.toString().startsWith("content://")) {
+            if (uri.toString().startsWith("content://")) { // New media from gallery
                 val file = getFileFromUri(uri)
                 if (file != null) {
                     val mimeType = requireContext().contentResolver.getType(uri)
                     val mediaType = mimeType?.toMediaTypeOrNull()
                     if (mimeType?.startsWith("video") == true) {
-                        requestBody.addFormDataPart("video", file.name, RequestBody.create(mediaType, file))
+                        requestBodyBuilder.addFormDataPart("video", file.name, RequestBody.create(mediaType, file))
                     } else {
-                        requestBody.addFormDataPart("photo", file.name, RequestBody.create(mediaType, file))
+                        requestBodyBuilder.addFormDataPart("photo", file.name, RequestBody.create(mediaType, file))
                     }
                 }
-            } else {
-                // แยกเฉพาะ path ส่วนที่เป็น /uploads/...
+            } else { // Existing media from API
                 val fullPath = uri.path
-                val relativePath = fullPath?.substringAfter("/uploads/")
-                Log.d("UPLOAD", "Relative Path: /uploads/$relativePath")
-                relativePath?.let {
-                    requestBody.addFormDataPart("existing_photos[]", "/uploads/$relativePath")
+                if (fullPath != null) {
+                    // Extract relative path like /uploads/filename.jpg or /uploads/filename.mp4
+                    val relativePath = if (fullPath.startsWith("/api/uploads/")) {
+                        fullPath.substringAfter("/api")
+                    } else if (fullPath.startsWith("/uploads/")) {
+                        fullPath
+                    } else {
+                        null // Should not happen if paths are consistent
+                    }
+
+                    relativePath?.let {
+                        // Determine if it's a video based on extension
+                        if (it.endsWith(".mp4", true) || it.endsWith(".mov", true) || it.endsWith(".avi", true)) {
+                            existingVideoPaths.add(it)
+                        } else {
+                            existingPhotoPaths.add(it)
+                        }
+                    }
                 }
             }
         }
 
+        // Add existing media paths as JSON Arrays
+        if (existingPhotoPaths.isNotEmpty()) {
+            requestBodyBuilder.addFormDataPart("existing_photos", JSONArray(existingPhotoPaths).toString())
+            Log.d("UPLOAD", "Existing Photos JSON: ${JSONArray(existingPhotoPaths).toString()}")
+        }
+        if (existingVideoPaths.isNotEmpty()) {
+            requestBodyBuilder.addFormDataPart("existing_videos", JSONArray(existingVideoPaths).toString())
+            Log.d("UPLOAD", "Existing Videos JSON: ${JSONArray(existingVideoPaths).toString()}")
+        }
 
-        val url = getString(R.string.root_url) + "/api/posts/$postId"
+        val url = getString(R.string.root_url2) + "/ai/posts/$postId"
         val request = Request.Builder()
             .url(url)
-            .put(requestBody.build())
+            .put(requestBodyBuilder.build())
             .addHeader("Authorization", "Bearer $token")
             .build()
 
@@ -361,16 +432,40 @@ class EditPostFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
+                val responseBodyString = response.body?.string() // <--- Read response body on background thread!
+
                 activity?.runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(requireContext(), "แก้ไขโพสต์สำเร็จ", Toast.LENGTH_SHORT).show()
                         parentFragmentManager.popBackStack()
                         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-                        bottomNavigationView?.visibility = View.VISIBLE // ทำให้แน่ใจว่าแสดงผล
+                        bottomNavigationView?.visibility = View.VISIBLE
                         bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
                     } else {
-                        val errorBody = response.body?.string() ?: "เกิดข้อผิดพลาดที่ไม่ทราบ"
-                        Toast.makeText(requireContext(), "ไม่สามารถแก้ไขโพสต์ได้: ${response.message}, Body: $errorBody", Toast.LENGTH_SHORT).show()
+                        try {
+                            if (!responseBodyString.isNullOrEmpty()) {
+                                val errorJson = JSONObject(responseBodyString)
+                                val status = errorJson.optString("status")
+                                val message = errorJson.optString("message", "ไม่สามารถแก้ไขโพสต์ได้: เกิดข้อผิดพลาด")
+                                val suggestion = errorJson.optString("suggestion", "")
+
+                                var displayMessage = message
+                                if (suggestion.isNotEmpty()) {
+                                    displayMessage += "\n$suggestion"
+                                }
+                                Toast.makeText(requireContext(), displayMessage, Toast.LENGTH_LONG).show()
+
+                                if (status != "warning") {
+                                    // If not a warning from NSFW detection, might consider popping back
+                                    // parentFragmentManager.popBackStack()
+                                }
+                            } else {
+                                Toast.makeText(requireContext(), "ไม่สามารถแก้ไขโพสต์ได้: ${response.message}. Response body is empty.", Toast.LENGTH_LONG).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(requireContext(), "ไม่สามารถแก้ไขโพสต์ได้: ${response.message}. Error parsing response.", Toast.LENGTH_LONG).show()
+                            e.printStackTrace()
+                        }
                     }
                 }
             }
@@ -383,7 +478,12 @@ class EditPostFragment : Fragment() {
         return try {
             val inputStream: InputStream? = contentResolver.openInputStream(uri)
             val fileType = requireContext().contentResolver.getType(uri)
-            val fileExtension = if (fileType?.startsWith("video") == true) ".mp4" else ".jpg"
+            // Determine file extension based on MIME type, default to .jpg
+            val fileExtension = when {
+                fileType?.startsWith("video") == true -> ".mp4"
+                fileType?.startsWith("image") == true -> ".jpg"
+                else -> ".tmp" // Fallback for unknown types
+            }
             val file = File(requireContext().cacheDir, "temp_file_${System.currentTimeMillis()}$fileExtension")
 
             FileOutputStream(file).use { outputStream ->
@@ -414,7 +514,10 @@ class EditPostFragment : Fragment() {
             }
             dotIndicatorLayout.addView(dots[i])
         }
-        updateDotIndicator(0)
+        // Ensure dot indicator is updated for the initial state if media exists
+        if (selectedMedia.isNotEmpty()) {
+            updateDotIndicator(viewPager.currentItem)
+        }
     }
 
     private fun updateDotIndicator(position: Int) {
