@@ -12,12 +12,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.PopupMenu
+// import android.widget.PopupMenu // ไม่จำเป็นต้องใช้แล้วถ้าเปลี่ยนไป navigate แทน
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.findNavController // สำคัญมาก: สำหรับการนำทาง
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -83,20 +83,23 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.checkfollowFragment)
         }
 
-        backButton.visibility = View.GONE
-
-        // ตั้งค่าการทำงานเมื่อกด backButton
-        backButton.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
-            bottomNavigationView?.menu?.findItem(R.id.home)?.isChecked = true
-        }
-
+        // isSelfProfile logic:
+        // ปกติแล้ว: ถ้าเป็นโปรไฟล์ของตัวเอง จะเห็นปุ่มแก้ไข (Edit) และไม่ต้องมีปุ่มย้อนกลับ (ถ้าอยู่หน้าหลัก)
+        //           ถ้าเป็นโปรไฟล์คนอื่น จะไม่เห็นปุ่มแก้ไข แต่ควรมีปุ่มย้อนกลับ
+        // ผมปรับ logic ตามความคาดหวังทั่วไป หากคุณต้องการแบบเดิม ก็สามารถคืนค่าได้
         if (!isSelfProfile) {
-            editProfileButton.visibility = View.VISIBLE
+            // ถ้าไม่ใช่โปรไฟล์ของตัวเอง (คือโปรไฟล์คนอื่น)
+            editProfileButton.visibility = View.GONE // ซ่อนปุ่มแก้ไข
+            backButton.visibility = View.VISIBLE // แสดงปุ่มย้อนกลับ
+            // ตั้งค่าการทำงานเมื่อกด backButton (สำหรับโปรไฟล์คนอื่น)
+            backButton.setOnClickListener {
+                findNavController().popBackStack() // ย้อนกลับไปยัง Fragment ก่อนหน้า
+                // หรือ activity?.onBackPressedDispatcher?.onBackPressed()
+            }
         } else {
-            editProfileButton.visibility = View.GONE
-            backButton.visibility = View.VISIBLE
-
+            // ถ้าเป็นโปรไฟล์ของตัวเอง
+            editProfileButton.visibility = View.VISIBLE // แสดงปุ่มแก้ไข
+            backButton.visibility = View.GONE // ซ่อนปุ่มย้อนกลับ
         }
 
 
@@ -109,27 +112,10 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.editprofileFragment)
         }
 
-        // Set up PopupMenu for additional options
+        // *** นี่คือส่วนที่แก้ไข: เปลี่ยนจาก PopupMenu เป็นการนำทางไป MoreMenuFragment ***
         menuImageView.setOnClickListener {
-            val popupMenu = PopupMenu(requireContext(), menuImageView)
-            popupMenu.menuInflater.inflate(R.menu.navbar_home, popupMenu.menu)
-            popupMenu.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-
-                    R.id.deleteAccount -> {
-                        showDeleteAccountDialog()
-                        true
-                    }
-
-                    R.id.logout -> {
-                        performLogout()
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-            popupMenu.show()
+            // ใช้ action ID ที่กำหนดใน nav_graph.xml
+            findNavController().navigate(R.id.action_profileFragment_to_moreMenuFragment)
         }
 
         // Tab to switch between user posts and bookmarks

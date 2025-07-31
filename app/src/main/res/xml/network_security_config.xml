@@ -9,7 +9,7 @@
 
     <!-- ✅ Allow cleartext traffic for local development IP -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.43</domain>
+        <domain includeSubdomains="true">10.13.2.85</domain>
     </domain-config>
 
     <!-- Allow cleartext traffic for localhost -->

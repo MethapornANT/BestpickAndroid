@@ -1,8 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Bestpick</string>
     <string name="server_client_id">741201850844-l69jb0ief835gt14ogbn9041g4b318os.apps.googleusercontent.com</string>
-    <string name="root_url">http://192.168.1.43:4005</string>
-    <string name="root_url2">http://192.168.1.43:5005</string>
+    <string name="root_url">http://10.13.2.85:4006</string>
+    <string name="root_url2">http://10.13.2.85:5005</string>
     <string name="googlesignin">/api/google-signin</string>
     <string name="Login">/api/login</string>
     <string name="register">/api/register/email</string>
