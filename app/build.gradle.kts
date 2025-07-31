@@ -58,6 +58,8 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
 
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
     // Google Play Services
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 

@@ -13,13 +13,14 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ProgressBar // เพิ่ม import สำหรับ ProgressBar
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.airbnb.lottie.LottieAnimationView
+// import com.airbnb.lottie.LottieAnimationView // ไม่ต้องใช้ LottieAnimationView แล้ว สามารถลบได้เลย
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,7 @@ class MessageFragment : Fragment() {
 
     private lateinit var recyclerViewUserList: RecyclerView
     private lateinit var buttonRestoreAllChats: Button
-    private lateinit var progressBar: LottieAnimationView
+    private lateinit var progressBar: ProgressBar // เปลี่ยนจาก LottieAnimationView เป็น ProgressBar
 
     private var userID: Int = -1
     private val client = OkHttpClient()
@@ -69,6 +70,8 @@ class MessageFragment : Fragment() {
         // Initialize views
         recyclerViewUserList = view.findViewById(R.id.recyclerViewUserList)
         buttonRestoreAllChats = view.findViewById(R.id.buttonRestoreAllChats)
+        // *** สำคัญ: เพิ่มบรรทัดนี้เข้ามาเพื่อ Initialize progressBar ***
+        progressBar = view.findViewById(R.id.progress_bar) // เปลี่ยน ID ตรงนี้ให้เป็น ID ของ ProgressBar ใน XML
 
         // Get userID from SharedPreferences
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
@@ -134,6 +137,7 @@ class MessageFragment : Fragment() {
     }
 
     private fun deleteChat(matchID: Int) {
+        // ทำให้ progressBar แสดง
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch(Dispatchers.IO) {
             val url = getString(R.string.root_url) + "/api/delete-chat"
@@ -165,6 +169,7 @@ class MessageFragment : Fragment() {
     }
 
     private fun restoreAllChats(userID: Int) {
+        // ทำให้ progressBar แสดง
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch(Dispatchers.IO) {
             val url = getString(R.string.root_url) + "/api/restore-all-chats"
