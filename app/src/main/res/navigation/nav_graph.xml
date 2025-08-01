@@ -151,7 +151,7 @@
 
     <fragment
         android:id="@+id/createAdFragment"
-        android:name="com.bestpick.reviewhub.CreateAdFragment"
+        android:name="com.example.reviewhub.CreateAdFragment"
         android:label="Create an Ad"
         tools:layout="@layout/activity_create_ad" >
     </fragment>

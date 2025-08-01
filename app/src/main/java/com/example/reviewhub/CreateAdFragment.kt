@@ -1,4 +1,4 @@
-package com.bestpick.reviewhub
+package com.example.reviewhub
 
 import android.app.Activity
 import android.app.DatePickerDialog
@@ -21,8 +21,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts // สำหรับ Activity Result API
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.bestpick.reviewhub.R
 import com.bestpick.reviewhub.data.AdPackage // ต้องมี Data Class นี้ (อยู่ในแพ็กเกจ data)
-import com.bumptech.glide.Glide // สำหรับโหลดรูปภาพ
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -39,7 +39,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 class CreateAdFragment : Fragment() {

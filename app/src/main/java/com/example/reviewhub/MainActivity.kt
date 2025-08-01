@@ -109,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         handleNavigationIntent(intent)
+        handleDeepLink(intent) // เพิ่มโค้ดส่วนนี้เข้ามาเพื่อจัดการ Deep Link ตอนที่แอปเปิดครั้งแรก
     }
 
     private fun handleDeepLink(intent: Intent) {

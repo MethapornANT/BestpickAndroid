@@ -104,6 +104,8 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
         private val reportButton: ImageView = itemView.findViewById(R.id.report)
         private val bookmarkButton: ImageView = itemView.findViewById(R.id.bookmark_button)
 
+        private val shareButton: ImageView = itemView.findViewById(R.id.share_button) // ประกาศปุ่มแชร์
+
         var isLiked = false
         var isFollowing = false
         var isBookmark = false
@@ -121,6 +123,10 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
+
+            shareButton.setOnClickListener {
+                sharePost(context, post)
+            }
 
             postTime.text = formatTime(displayTime)
             userName.text = post.userName
@@ -298,23 +304,18 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
         }
 
         private fun sharePost(context: Context, post: Post) {
-            // สร้างลิงก์ภายในแอปพลิเคชันโดยใช้ Custom URI Scheme
-            val postDetailUrl = "reviewhub://post/${post.id}"
+            // URL ที่เป็น http:// สามารถกดได้ และ Android รู้จัก
+            val postUrl = "http://192.168.1.43:4005/posts/${post.id}"
 
-            // สร้างข้อความที่จะแชร์ รวมทั้งลิงก์ไปยังรายละเอียดโพสต์
-            val shareText = "Check out this post from ${post.userName}: \n\n$postDetailUrl"
+            val shareText = "ลองดูโพสต์นี้จาก ${post.userName} สิ!\n${post.title}\n\n$postUrl"
 
-            // ใช้ Intent เพื่อแชร์ข้อความ
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, shareText)
             }
 
-            // เปิดหน้าต่างแชร์
-            context.startActivity(Intent.createChooser(intent, "Share Post via"))
+            context.startActivity(Intent.createChooser(intent, "แชร์โพสต์นี้ผ่าน..."))
         }
-
-
 
         // ฟังก์ชันเรียก API เพื่อตรวจสอบสถานะการกดไลค์
         private fun checkLikeStatus(postId: Int, userId: Int, token: String, context: Context) {
