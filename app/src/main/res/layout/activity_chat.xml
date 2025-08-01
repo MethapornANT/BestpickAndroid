@@ -8,9 +8,10 @@
     <!-- Toolbar with nickname, back button, and Block/Unblock buttons aligned to the right -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/blue"
+        android:background="@color/gray"
         android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back_arrow"
@@ -43,7 +44,8 @@
                 android:textColor="@android:color/white"
                 android:background="@drawable/button" />
         </LinearLayout>
-    </androidx.appcompat.widget.Toolbar>
+    </androidx.appcompat.widget.Toolbar
+       >
 
     <!-- Empty chat message positioned near the top with a slight margin from the toolbar -->
     <TextView

@@ -7,21 +7,35 @@
     android:layout_height="match_parent"
     tools:context=".MessageFragment">
 
-    <!-- RecyclerView สำหรับแสดงรายชื่อผู้ใช้ที่จับคู่ -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewUserList"
-        android:layout_width="409dp"
-        android:layout_height="553dp"
-        android:padding="16dp"
-        app:layout_constraintBottom_toTopOf="@id/buttonRestoreAllChats"
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Chat"
+        android:textColor="@android:color/black"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.157"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- ปุ่มเรียกคืนแชททั้งหมด -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="10dp"
+        android:id="@+id/recyclerViewUserList"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle"
+        app:layout_constraintBottom_toTopOf="@+id/buttonRestoreAllChats"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <Button
         android:id="@+id/buttonRestoreAllChats"
-        android:layout_width="150dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="เรียกคืนแชททั้งหมด"
@@ -29,7 +43,17 @@
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerViewUserList" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

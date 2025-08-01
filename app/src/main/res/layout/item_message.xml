@@ -1,75 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="12dp"
     android:layout_marginTop="3dp"
-    android:background="@drawable/chat_bg"
-    android:layout_marginBottom="8dp">
+    android:background="?android:attr/colorBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_marginBottom="8dp"
+    android:gravity="center_vertical">
+
+    <ImageView
+        android:id="@+id/imageProfile"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_square_shape"
+        android:padding="2dp"
+        android:scaleType="centerCrop"
+        android:clipToOutline="true"
+        android:src="@drawable/ic_user" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/imageProfile"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/rounded_square_shape"
-            android:padding="2dp"
-            android:scaleType="centerCrop"
-            android:clipToOutline="true"
-            android:src="@drawable/ic_user" />
-
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textNickname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nickname"
-                android:textColor="@android:color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/lastMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Last message preview"
-                android:textColor="#666363"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/textLastInteraction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="12:34"
-                android:textColor="#666363"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- ปรับขนาดและสไตล์ปุ่มลบ -->
-        <Button
-            android:id="@+id/buttonDeleteChat"
+        <TextView
+            android:id="@+id/textNickname"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:background="@drawable/button"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp" />
+            android:text="Nickname"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lastMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Last message preview"
+            android:textColor="#666363"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/textLastInteraction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:34"
+            android:textColor="#666363"
+            android:textSize="12sp" />
     </LinearLayout>
 </LinearLayout>

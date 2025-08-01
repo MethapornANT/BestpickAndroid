@@ -3,6 +3,7 @@ package com.bestpick.reviewhub
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -11,18 +12,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.ProgressBar // เพิ่ม import สำหรับ ProgressBar
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-// import com.airbnb.lottie.LottieAnimationView // ไม่ต้องใช้ LottieAnimationView แล้ว สามารถลบได้เลย
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,23 +39,18 @@ class MessageFragment : Fragment() {
 
     private lateinit var recyclerViewUserList: RecyclerView
     private lateinit var buttonRestoreAllChats: Button
-    private lateinit var progressBar: ProgressBar // เปลี่ยนจาก LottieAnimationView เป็น ProgressBar
-
+    private lateinit var progressBar: ProgressBar
     private var userID: Int = -1
     private val client = OkHttpClient()
-    private var matchedUsers = listOf<MatchedUser>()
+    private var matchedUsers = mutableListOf<MatchedUser>()
     private val handler = Handler()
-    private val refreshInterval = 2000L // Refresh every 2 seconds
-
+    private val refreshInterval = 2000L
     private lateinit var adapter: MatchedUserAdapter
 
     private val refreshRunnable = object : Runnable {
         override fun run() {
             fetchMatchedUsers { fetchedUsers ->
-                if (fetchedUsers.isNotEmpty()) {
-                    matchedUsers = fetchedUsers
-                    adapter.updateUsers(fetchedUsers)
-                }
+                adapter.updateUsers(fetchedUsers)
             }
             handler.postDelayed(this, refreshInterval)
         }
@@ -67,42 +63,80 @@ class MessageFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_message, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        // Initialize views
         recyclerViewUserList = view.findViewById(R.id.recyclerViewUserList)
         buttonRestoreAllChats = view.findViewById(R.id.buttonRestoreAllChats)
-        // *** สำคัญ: เพิ่มบรรทัดนี้เข้ามาเพื่อ Initialize progressBar ***
-        progressBar = view.findViewById(R.id.progress_bar) // เปลี่ยน ID ตรงนี้ให้เป็น ID ของ ProgressBar ใน XML
+        progressBar = view.findViewById(R.id.progress_bar)
 
-        // Get userID from SharedPreferences
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val userIdString = sharedPreferences.getString("USER_ID", null)
         userID = userIdString?.toIntOrNull() ?: -1
 
+        setupRecyclerView()
+
         if (userID != -1) {
             fetchMatchedUsers { fetchedUsers ->
-                if (fetchedUsers.isNotEmpty()) {
-                    matchedUsers = fetchedUsers
-                    setupRecyclerView()
-                } else {
-                    Toast.makeText(requireContext(), "No matched users found", Toast.LENGTH_SHORT).show()
-                }
+                adapter.updateUsers(fetchedUsers)
             }
         } else {
             Toast.makeText(requireContext(), "UserID not found", Toast.LENGTH_SHORT).show()
         }
 
-        // Setup restore all chats button
         buttonRestoreAllChats.setOnClickListener {
             restoreAllChats(userID)
         }
 
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val userToDelete = adapter.getUserAt(position)
+                    showDeleteConfirmationDialog(userToDelete, position)
+                }
+            }
+
+            override fun onChildDraw(c: android.graphics.Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+                RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addSwipeLeftBackgroundColor(Color.RED)
+                    .addSwipeLeftActionIcon(R.drawable.ic_delete)
+                    .addSwipeLeftLabel("Delete")
+                    .setSwipeLeftLabelColor(Color.WHITE)
+                    .create()
+                    .decorate()
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(recyclerViewUserList)
+
         return view
+    }
+
+    private fun showDeleteConfirmationDialog(user: MatchedUser, position: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Chat")
+            .setMessage("Are you sure you want to delete the chat with ${user.nickname}?")
+            .setPositiveButton("Delete") { dialog, _ ->
+                deleteChat(user.matchID)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                adapter.notifyItemChanged(position)
+                dialog.dismiss()
+            }
+            .setOnCancelListener {
+                adapter.notifyItemChanged(position)
+            }
+            .show()
     }
 
     private fun setupRecyclerView() {
         adapter = MatchedUserAdapter(
             matchedUsers,
-            userID,
             onChatClick = { user ->
                 val intent = Intent(requireContext(), ChatActivity::class.java).apply {
                     putExtra("matchID", user.matchID)
@@ -112,14 +146,8 @@ class MessageFragment : Fragment() {
                 startActivity(intent)
             },
             onProfileClick = { user ->
-                // Navigate to AnotherUserFragment
-                val bundle = Bundle().apply {
-                    putInt("USER_ID", user.userID)
-                }
+                val bundle = Bundle().apply { putInt("USER_ID", user.userID) }
                 findNavController().navigate(R.id.action_messageFragment_to_anotherUserFragment, bundle)
-            },
-            onDeleteChatClick = { user ->
-                deleteChat(user.matchID)
             }
         )
         recyclerViewUserList.layoutManager = LinearLayoutManager(requireContext())
@@ -137,7 +165,6 @@ class MessageFragment : Fragment() {
     }
 
     private fun deleteChat(matchID: Int) {
-        // ทำให้ progressBar แสดง
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch(Dispatchers.IO) {
             val url = getString(R.string.root_url) + "/api/delete-chat"
@@ -145,16 +172,14 @@ class MessageFragment : Fragment() {
                 .add("userID", userID.toString())
                 .add("matchID", matchID.toString())
                 .build()
-
             val request = Request.Builder().url(url).post(requestBody).build()
-
             try {
                 val response = client.newCall(request).execute()
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     if (response.isSuccessful) {
                         Toast.makeText(requireContext(), "Chat deleted successfully", Toast.LENGTH_SHORT).show()
-                        fetchMatchedUsers { adapter.updateUsers(it) }
+                        fetchMatchedUsers { updatedUsers -> adapter.updateUsers(updatedUsers) }
                     } else {
                         Toast.makeText(requireContext(), "Failed to delete chat", Toast.LENGTH_SHORT).show()
                     }
@@ -169,23 +194,20 @@ class MessageFragment : Fragment() {
     }
 
     private fun restoreAllChats(userID: Int) {
-        // ทำให้ progressBar แสดง
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch(Dispatchers.IO) {
             val url = getString(R.string.root_url) + "/api/restore-all-chats"
             val requestBody = FormBody.Builder()
                 .add("userID", userID.toString())
                 .build()
-
             val request = Request.Builder().url(url).post(requestBody).build()
-
             try {
                 val response = client.newCall(request).execute()
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     if (response.isSuccessful) {
                         Toast.makeText(requireContext(), "All chats restored successfully", Toast.LENGTH_SHORT).show()
-                        fetchMatchedUsers { adapter.updateUsers(it) }
+                        fetchMatchedUsers { updatedUsers -> adapter.updateUsers(updatedUsers) }
                     } else {
                         Toast.makeText(requireContext(), "Failed to restore chats", Toast.LENGTH_SHORT).show()
                     }
@@ -201,29 +223,20 @@ class MessageFragment : Fragment() {
 
     private fun fetchMatchedUsers(callback: (List<MatchedUser>) -> Unit) {
         lifecycleScope.launch(Dispatchers.IO) {
+            if (userID == -1) return@launch
             val url = getString(R.string.root_url) + "/api/matches/$userID"
-            Log.d("API Request", "Fetching matched users from URL: $url")
             val request = Request.Builder().url(url).build()
-
             try {
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
                     val responseBody = response.body?.string()
-                    Log.d("API Response", responseBody ?: "No response")
                     val matchedUsersList = parseUsers(responseBody)
-
                     withContext(Dispatchers.Main) {
                         callback(matchedUsersList)
                     }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Log.e("API Error", "Response not successful: ${response.message}")
-                    }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e("API Error", "Exception occurred: ${e.message}")
-                }
+                Log.e("MessageFragment", "Failed to fetch users: ${e.message}")
             }
         }
     }
@@ -231,22 +244,24 @@ class MessageFragment : Fragment() {
     private fun parseUsers(responseBody: String?): List<MatchedUser> {
         val users = mutableListOf<MatchedUser>()
         responseBody?.let {
-            val jsonArray = JSONArray(it)
-            for (i in 0 until jsonArray.length()) {
-                val jsonObject = jsonArray.getJSONObject(i)
-
-                val imageUrl = jsonObject.optString("imageFile", "")
-
-                val user = MatchedUser(
-                    userID = jsonObject.getInt("userID"),
-                    nickname = jsonObject.getString("nickname"),
-                    profilePicture = imageUrl,
-                    lastMessage = jsonObject.optString("lastMessage"),
-                    matchID = jsonObject.getInt("matchID"),
-                    lastInteraction = jsonObject.optString("lastInteraction"),
-                    isBlocked = jsonObject.optBoolean("isBlocked")
-                )
-                users.add(user)
+            try {
+                val jsonArray = JSONArray(it)
+                for (i in 0 until jsonArray.length()) {
+                    val jsonObject = jsonArray.getJSONObject(i)
+                    val imageUrl = jsonObject.optString("imageFile", "")
+                    val user = MatchedUser(
+                        userID = jsonObject.getInt("userID"),
+                        nickname = jsonObject.getString("nickname"),
+                        profilePicture = imageUrl,
+                        lastMessage = jsonObject.optString("lastMessage"),
+                        matchID = jsonObject.getInt("matchID"),
+                        lastInteraction = jsonObject.optString("lastInteraction"),
+                        isBlocked = jsonObject.optBoolean("isBlocked")
+                    )
+                    users.add(user)
+                }
+            } catch (e: Exception) {
+                Log.e("MessageFragment", "Error parsing users JSON: ${e.message}")
             }
         }
         return users
@@ -254,11 +269,9 @@ class MessageFragment : Fragment() {
 }
 
 class MatchedUserAdapter(
-    private var users: List<MatchedUser>,
-    private val userID: Int,
+    private var users: MutableList<MatchedUser>,
     private val onChatClick: (MatchedUser) -> Unit,
-    private val onProfileClick: (MatchedUser) -> Unit,
-    private val onDeleteChatClick: (MatchedUser) -> Unit
+    private val onProfileClick: (MatchedUser) -> Unit
 ) : RecyclerView.Adapter<MatchedUserAdapter.ViewHolder>() {
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -266,7 +279,6 @@ class MatchedUserAdapter(
         val profileImage: ImageView = view.findViewById(R.id.imageProfile)
         val lastMessage: TextView = view.findViewById(R.id.lastMessage)
         val lastInteraction: TextView = view.findViewById(R.id.textLastInteraction)
-        val buttonDeleteChat: Button = view.findViewById(R.id.buttonDeleteChat)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -279,42 +291,31 @@ class MatchedUserAdapter(
         holder.nickname.text = user.nickname
         holder.lastMessage.text = user.lastMessage ?: "No messages yet"
         holder.lastInteraction.text = formatTime(user.lastInteraction)
-
         Glide.with(holder.profileImage.context)
             .load(user.profilePicture)
             .placeholder(R.drawable.user)
             .error(R.drawable.user)
             .into(holder.profileImage)
-
         holder.itemView.setOnClickListener { onChatClick(user) }
         holder.profileImage.setOnClickListener { onProfileClick(user) }
-
-        holder.buttonDeleteChat.setOnClickListener {
-            AlertDialog.Builder(holder.itemView.context)
-                .setTitle("Delete Chat")
-                .setMessage("Are you sure you want to delete this chat? This will hide the chat from your list.")
-                .setPositiveButton("Delete") { dialog, _ ->
-                    onDeleteChatClick(user)
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
-        }
     }
 
     override fun getItemCount() = users.size
 
+    fun getUserAt(position: Int): MatchedUser { return users[position] }
+
+    fun updateUsers(newUsers: List<MatchedUser>) {
+        users.clear()
+        users.addAll(newUsers)
+        notifyDataSetChanged()
+    }
+
     private fun formatTime(timestamp: String?): String {
         return if (timestamp != null && timestamp != "null") {
             try {
-                // Handle both HH:mm format and full timestamp
                 if (timestamp.contains(":") && timestamp.length == 5) {
-                    // Already in HH:mm format
                     timestamp
                 } else {
-                    // Convert from full timestamp
                     val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                     val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
                     val date = inputFormat.parse(timestamp)
@@ -326,11 +327,6 @@ class MatchedUserAdapter(
         } else {
             ""
         }
-    }
-
-    fun updateUsers(newUsers: List<MatchedUser>) {
-        users = newUsers
-        notifyDataSetChanged()
     }
 }
 

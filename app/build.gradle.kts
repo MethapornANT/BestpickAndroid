@@ -96,6 +96,9 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.6.0")
     implementation("androidx.navigation:navigation-ui-ktx:2.6.0")
 
+    implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
+    implementation ("com.github.zerobranch:SwipeLayout:1.3.1")
+
 
     // Test Dependencies
     testImplementation(libs.junit)

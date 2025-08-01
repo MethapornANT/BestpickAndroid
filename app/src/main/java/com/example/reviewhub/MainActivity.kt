@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                         // HomeFragment จะตรวจสอบว่าต้องโหลดข้อมูลใหม่หรือไม่เอง
                         navController.navigate(R.id.homeFragment)
                     }
-                    R.id.messages -> navController.navigate(R.id.messageFragment)
+                    R.id.search -> navController.navigate(R.id.searchFragment)
                     R.id.profile -> navController.navigate(R.id.profileFragment)
                     R.id.add -> navController.navigate(R.id.addPostFragment)
                     R.id.notification -> navController.navigate(R.id.notificationsFragment)
