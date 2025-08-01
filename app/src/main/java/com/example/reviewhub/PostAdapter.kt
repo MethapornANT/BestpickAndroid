@@ -104,7 +104,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
         private val reportButton: ImageView = itemView.findViewById(R.id.report)
         private val bookmarkButton: ImageView = itemView.findViewById(R.id.bookmark_button)
 
-        private val shareButton: ImageView = itemView.findViewById(R.id.share_button) // ประกาศปุ่มแชร์
+        private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
 
         var isLiked = false
         var isFollowing = false
@@ -125,6 +125,12 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             val displayTime = post.updated ?: post.time
 
             shareButton.setOnClickListener {
+                // เพิ่มโค้ดส่วนนี้เข้ามา
+                val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+                val token = sharedPreferences.getString("TOKEN", null)
+                if (token != null) {
+                    recordInteraction(post.id, "share", null, token, context)
+                }
                 sharePost(context, post)
             }
 
