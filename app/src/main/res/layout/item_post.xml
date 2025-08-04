@@ -9,7 +9,6 @@
     android:background="@color/white">
 
 
-    <!-- User Info Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +17,6 @@
         android:layout_marginTop="10dp"
         android:paddingTop="5dp">
 
-        <!-- Profile Image -->
         <ImageView
             android:id="@+id/user_profile_image"
             android:layout_width="40dp"
@@ -31,7 +29,6 @@
             android:clipToOutline="true"
             android:contentDescription="This show user image who's post" />
 
-        <!-- Username and Post Time -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -56,7 +53,6 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <!-- Follower Text -->
         <TextView
             android:id="@+id/follower"
             android:layout_width="wrap_content"
@@ -75,7 +71,7 @@
             android:layout_height="20dp"
             android:src="@drawable/report"
             android:layout_marginEnd="5dp"
-            android:contentDescription="This is icon to click edit or delete post" />/>
+            android:contentDescription="This is icon to click edit or delete post" />
     </LinearLayout>
 
     <TextView
@@ -119,9 +115,17 @@
             android:id="@+id/bookmark_button"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="10dp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="15dp"
             android:src="@drawable/bookmark" />
+
+        <ImageView
+            android:id="@+id/share_button"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="end"
+            android:src="@drawable/share"
+            android:contentDescription="Share post button" />
     </androidx.appcompat.widget.Toolbar>
 
 </LinearLayout>
