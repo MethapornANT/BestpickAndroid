@@ -1,5 +1,3 @@
-// MainActivity.kt
-
 package com.bestpick.reviewhub
 
 import android.content.Context
@@ -32,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     private var lastClickedItemId = -1
     private var lastClickedTime: Long = 0
 
-    // เพิ่มตัวแปรเพื่อเก็บตำแหน่งแท็บปัจจุบันของ HomeFragment (0 = For You, 1 = Following)
     private var currentHomeTabPosition: Int = 0
 
     override fun onNewIntent(intent: Intent) {
@@ -42,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("APP_LIFECYCLE", "MainActivity: onCreate - START") // <-- เพิ่ม Log
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -63,7 +61,7 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.homeFragment, R.id.messageFragment, R.id.profileFragment, R.id.notificationsFragment, R.id.addPostFragment -> {
+                R.id.homeFragment, R.id.searchFragment, R.id.profileFragment, R.id.notificationsFragment, R.id.addPostFragment -> {
                     bottomNavigationView.visibility = View.VISIBLE
                 }
                 else -> {
@@ -75,26 +73,16 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { item ->
             val currentTime = System.currentTimeMillis()
 
-            // ตรวจสอบว่ากำลังอยู่บน HomeFragment หรือไม่
             val isCurrentlyOnHomeFragment = navController.currentDestination?.id == R.id.homeFragment
 
-            // กรณี Double-tap Home (ปุ่มล่าง)
             if (item.itemId == R.id.home && lastClickedItemId == item.itemId && (currentTime - lastClickedTime) < 500) {
                 if (isCurrentlyOnHomeFragment) {
                     Log.d("MainActivity", "Double-tap Home detected. Forcing refresh on current HomeFragment tab.")
-                    // เมื่อ Double-tap Home ให้บังคับ refresh เฉพาะแท็บปัจจุบันใน HomeFragment
                     refreshHomeFragment(forceRefreshFromBottomNavDoubleTap = true)
                 }
             } else {
-                // กรณีเลือกเมนูที่ไม่ใช่ Home หรือเลือก Home ครั้งแรก
                 when (item.itemId) {
-                    R.id.home -> {
-                        // ถ้ากำลังจะ navigate ไป HomeFragment และไม่ได้เป็นการ Double-tap
-                        // ให้ NavController จัดการ ถ้า HomeFragment อยู่ใน Back Stack แล้ว
-                        // จะไม่สร้าง instance ใหม่ (ซึ่งทำให้ isForYouDataLoaded/isFollowingDataLoaded ยังคงค่าเดิม)
-                        // HomeFragment จะตรวจสอบว่าต้องโหลดข้อมูลใหม่หรือไม่เอง
-                        navController.navigate(R.id.homeFragment)
-                    }
+                    R.id.home -> navController.navigate(R.id.homeFragment)
                     R.id.search -> navController.navigate(R.id.searchFragment)
                     R.id.profile -> navController.navigate(R.id.profileFragment)
                     R.id.add -> navController.navigate(R.id.addPostFragment)
@@ -109,6 +97,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         handleNavigationIntent(intent)
+        Log.d("APP_LIFECYCLE", "MainActivity: onCreate - END") // <-- เพิ่ม Log
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("APP_LIFECYCLE", "MainActivity: onStart") // <-- เพิ่ม Log
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("APP_LIFECYCLE", "MainActivity: onResume") // <-- เพิ่ม Log
     }
 
     private fun handleDeepLink(intent: Intent) {
@@ -149,10 +148,6 @@ class MainActivity : AppCompatActivity() {
         navHostFragment?.childFragmentManager?.fragments?.forEach { fragment ->
             if (fragment is HomeFragment) {
                 Log.d("MainActivity", "Attempting to refresh HomeFragment. forceRefreshFromBottomNavDoubleTap: $forceRefreshFromBottomNavDoubleTap")
-
-                // เรียก refreshPosts ของ HomeFragment โดยตรง
-                // HomeFragment จะมี Logic ตัดสินใจเองว่าจะเรียก API แบบ ?refresh=true หรือไม่
-                // โดยอิงจาก forceRefreshFromBottomNavDoubleTap และสถานะ isLoaded ของตัวเอง
                 fragment.refreshPosts(forceRefreshFromBottomNavDoubleTap)
             }
         }

@@ -5,13 +5,18 @@ import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
@@ -39,39 +44,77 @@ class MoreMenuFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+        val editAccountLayout: LinearLayout = view.findViewById(R.id.edit_account)
         val createAdLayout: LinearLayout = view.findViewById(R.id.createAdLayout)
+        val yourAdsLayout: LinearLayout = view.findViewById(R.id.yourAdsLayout)
+        val deleteAccountLayout: LinearLayout = view.findViewById(R.id.deleteAccountLayout)
+        val logoutLayout: LinearLayout = view.findViewById(R.id.logoutLayout)
+
+        editAccountLayout.setOnClickListener {
+            findNavController().navigate(R.id.action_moreMenuFragment_to_editprofileFragment)
+        }
+
         createAdLayout.setOnClickListener {
             Toast.makeText(context, "Create an ad clicked! Navigating...", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.action_moreMenuFragment_to_createAdFragment)
         }
 
-        val yourAdsLayout: LinearLayout = view.findViewById(R.id.yourAdsLayout)
         yourAdsLayout.setOnClickListener {
             Toast.makeText(context, "Your ads clicked!", Toast.LENGTH_SHORT).show()
-            // findNavController().navigate(R.id.action_moreMenuFragment_to_yourAdsFragment)
+            findNavController().navigate(R.id.action_moreMenuFragment_to_yourAdsFragment)
         }
 
-        val deleteAccountLayout: LinearLayout = view.findViewById(R.id.deleteAccountLayout)
         deleteAccountLayout.setOnClickListener {
             showDeleteAccountDialog()
         }
 
-        // --- ส่วนที่แก้ไข ---
-        val logoutLayout: LinearLayout = view.findViewById(R.id.logoutLayout)
         logoutLayout.setOnClickListener {
-            // เรียกใช้ Dialog ยืนยันที่เราสร้างขึ้นมาใหม่
             showLogoutConfirmationDialog()
         }
-        // --- จบส่วนที่แก้ไข ---
+
+        val searchEditText: AppCompatEditText = view.findViewById(R.id.search_edit_text)
+        val allMenuItems = listOf(
+            editAccountLayout,
+            createAdLayout,
+            yourAdsLayout,
+            deleteAccountLayout,
+            logoutLayout
+        )
+
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().lowercase().trim()
+                filterMenuItems(query, allMenuItems)
+            }
+        })
     }
 
-    // --- เมธอดใหม่ที่เพิ่มเข้ามา ---
+    private fun filterMenuItems(query: String, menuItems: List<LinearLayout>) {
+        menuItems.forEach { menuItem ->
+            // --- ส่วนที่แก้ไข ---
+            // ViewGroup (เช่น LinearLayout) สามารถใช้ extension `children` ของ Kotlin ได้โดยตรง
+            // เพื่อหา View ที่เป็น TextView ที่อยู่ข้างใน
+            val textView = menuItem.children.find { it is TextView } as? TextView
+
+            if (textView != null) {
+                val menuText = textView.text.toString().lowercase()
+                if (menuText.contains(query)) {
+                    menuItem.visibility = View.VISIBLE
+                } else {
+                    menuItem.visibility = View.GONE
+                }
+            }
+        }
+    }
+
     private fun showLogoutConfirmationDialog() {
         val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
             .setTitle("Logout")
             .setMessage("Are you sure you want to log out?")
             .setPositiveButton("Confirm") { dialog, _ ->
-                performLogout() // เรียกใช้ฟังก์ชัน performLogout() เมื่อผู้ใช้กดยืนยัน
+                performLogout()
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel") { dialog, _ ->
@@ -81,7 +124,6 @@ class MoreMenuFragment : Fragment() {
         val alertDialog = dialogBuilder.create()
         alertDialog.show()
     }
-    // --- จบเมธอดใหม่ ---
 
     private fun showDeleteAccountDialog() {
         val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
@@ -112,8 +154,7 @@ class MoreMenuFragment : Fragment() {
 
     private fun clearLocalData() {
         if (isAdded) {
-            val sharedPreferences: SharedPreferences =
-                requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val sharedPreferences = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             sharedPreferences.edit().clear().apply()
         }
     }

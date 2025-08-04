@@ -147,6 +147,12 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_moreMenuFragment_to_editprofileFragment"
+            app:destination="@id/editprofileFragment" />
+        <action
+            android:id="@+id/action_moreMenuFragment_to_yourAdsFragment"
+            app:destination="@id/yourAdsFragment" />
     </fragment>
 
     <fragment
@@ -155,5 +161,11 @@
         android:label="Create an Ad"
         tools:layout="@layout/activity_create_ad" >
     </fragment>
+
+    <fragment
+        android:id="@+id/yourAdsFragment"
+        android:name="com.bestpick.reviewhub.YourAdsFragment"
+        android:label="Your Ads"
+        tools:layout="@layout/fragment_your_ads" />
 
 </navigation>

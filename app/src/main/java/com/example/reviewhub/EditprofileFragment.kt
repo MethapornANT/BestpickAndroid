@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
@@ -24,7 +25,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
-import java.text.ParseException // Import ParseException
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -42,8 +43,7 @@ class EditprofileFragment : Fragment() {
 
     companion object {
         const val PICK_IMAGE_REQUEST = 1
-        // Define a consistent date format for sending to the server AND displaying in UI
-        private const val DATE_FORMAT = "yyyy-MM-dd" // Use one consistent format for both UI display and server
+        private const val DATE_FORMAT = "yyyy-MM-dd"
     }
 
     override fun onCreateView(
@@ -68,7 +68,7 @@ class EditprofileFragment : Fragment() {
         profileImageView = view.findViewById(R.id.Imgview)
         email = view.findViewById(R.id.email_edit)
         birthdayEditText = view.findViewById(R.id.editTextBirthday)
-        val editImg = view.findViewById<TextView>(R.id.editImg)
+        val editImg = view.findViewById<Button>(R.id.editImg)
         val saveButton = view.findViewById<TextView>(R.id.save_button)
         val backButton = view.findViewById<TextView>(R.id.back)
 
@@ -89,7 +89,6 @@ class EditprofileFragment : Fragment() {
             pickImageFromGallery()
         }
 
-        // Show DatePickerDialog when birthday EditText is clicked
         birthdayEditText.setOnClickListener {
             showDatePickerDialog(birthdayEditText)
         }
@@ -123,34 +122,35 @@ class EditprofileFragment : Fragment() {
     }
 
     private fun updateUserProfile(userId: String, token: String?) {
+        Log.d("SAVE_DEBUG", "1. Save button clicked, starting process.")
+
         val username = usernameEditText.text.toString().trim()
         val bio = bioEditText.text.toString().trim()
         val gender = genderSpinner.selectedItem.toString().trim()
         val birthdayStr = birthdayEditText.text.toString().trim()
+        Log.d("SAVE_DEBUG", "2. Data collected: name='$username', bio='$bio', gender='$gender', birthday='$birthdayStr'")
 
         if (username.isEmpty() || bio.isEmpty() || gender.isEmpty() || birthdayStr.isEmpty()) {
+            Log.e("SAVE_DEBUG", "ERROR: Validation failed. A field is empty.")
             if (isAdded) {
                 Toast.makeText(requireContext(), "กรุณากรอกข้อมูลให้ครบทุกช่องงับ", Toast.LENGTH_SHORT).show()
             }
             return
         }
 
-        // We now directly use birthdayStr as it should already be in YYYY-MM-DD from DatePicker or fetch
-        // No need for formatDateForServer function anymore if UI_DATE_FORMAT is YYYY-MM-DD
-        // However, we should validate it here to ensure it's in the correct format before sending.
         if (!isValidDateFormat(birthdayStr, DATE_FORMAT)) {
+            Log.e("SAVE_DEBUG", "ERROR: Date validation failed. Format is not $DATE_FORMAT.")
             if (isAdded) {
                 Toast.makeText(requireContext(), "รูปแบบวันเกิดไม่ถูกต้อง กรุณาเลือกใหม่เป็น YYYY-MM-DD", Toast.LENGTH_SHORT).show()
             }
             return
         }
 
-
         val requestBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("username", username)
             .addFormDataPart("bio", bio)
             .addFormDataPart("gender", gender)
-            .addFormDataPart("birthday", birthdayStr) // Send as YYYY-MM-DD directly
+            .addFormDataPart("birthday", birthdayStr)
 
         if (imageUri != null) {
             try {
@@ -160,9 +160,9 @@ class EditprofileFragment : Fragment() {
 
                 val mediaType = "image/jpeg".toMediaTypeOrNull()
                 requestBodyBuilder.addFormDataPart("profileImage", tempFile.name, RequestBody.create(mediaType, tempFile))
-                Log.d("EditprofileFragment", "Adding profileImage: ${tempFile.name}")
+                Log.d("SAVE_DEBUG", "Image added to request: ${tempFile.name}")
             } catch (e: Exception) {
-                Log.e("EditprofileFragment", "Error creating temp file for image: ${e.message}", e)
+                Log.e("SAVE_DEBUG", "ERROR: Could not prepare image file: ${e.message}")
                 if (isAdded) {
                     Toast.makeText(requireContext(), "เกิดข้อผิดพลาดในการเตรียมรูปภาพ", Toast.LENGTH_SHORT).show()
                 }
@@ -172,6 +172,7 @@ class EditprofileFragment : Fragment() {
 
         val requestBody = requestBodyBuilder.build()
         val url = getString(R.string.root_url2) + getString(R.string.userprofileupdate) + userId + "/profile"
+        Log.d("SAVE_DEBUG", "3. Data is valid. Sending to API at URL: $url")
 
         val request = Request.Builder()
             .url(url)
@@ -182,6 +183,7 @@ class EditprofileFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
+                Log.e("SAVE_DEBUG", "4. API call failed! Error: ${e.message}")
                 if (isAdded && activity != null) {
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), "ไม่สามารถอัปเดตโปรไฟล์ได้: ${e.message}", Toast.LENGTH_LONG).show()
@@ -192,7 +194,7 @@ class EditprofileFragment : Fragment() {
 
             override fun onResponse(call: Call, response: Response) {
                 val responseData = response.body?.string()
-                Log.d("EditprofileFragment", "Response Data: $responseData")
+                Log.d("SAVE_DEBUG", "5. API call got a response. Successful: ${response.isSuccessful}. Body: $responseData")
 
                 if (isAdded && activity != null) {
                     requireActivity().runOnUiThread {
@@ -209,13 +211,11 @@ class EditprofileFragment : Fragment() {
 
                                 var displayMessage = message
 
-                                // Override message for image warning
-                                if (status == "warning") { // If status is warning, it's likely about the image
+                                if (status == "warning") {
                                     displayMessage = "กรุณาเปลี่ยนภาพ"
                                 } else if (errorDetail.isNotEmpty() && displayMessage == "เกิดข้อผิดพลาดที่ไม่ทราบงับ") {
-                                    displayMessage = errorDetail // Prioritize specific error message if available
+                                    displayMessage = errorDetail
                                 } else if (suggestion.isNotEmpty() && displayMessage == "เกิดข้อผิดพลาดที่ไม่ทราบงับ") {
-                                    // If there's no specific error, but a suggestion, use that
                                     displayMessage = suggestion
                                 }
 
@@ -238,11 +238,10 @@ class EditprofileFragment : Fragment() {
         })
     }
 
-    // New helper function to validate date format (optional but good practice)
     private fun isValidDateFormat(dateString: String, format: String): Boolean {
         return try {
-            val sdf = SimpleDateFormat(format, Locale.US) // Use Locale.US for strict parsing
-            sdf.isLenient = false // Disable lenient parsing to ensure exact format match
+            val sdf = SimpleDateFormat(format, Locale.US)
+            sdf.isLenient = false
             sdf.parse(dateString)
             true
         } catch (e: ParseException) {
@@ -293,8 +292,7 @@ class EditprofileFragment : Fragment() {
                                     email.setText(emailuser)
                                     bioEditText.setText(bio)
 
-                                    // Format birthday string from server for display in YYYY-MM-DD
-                                    val formattedBirthdayForUI = formatTimeForUIDisplay(birthdayJson) // Call new helper
+                                    val formattedBirthdayForUI = formatTimeForUIDisplay(birthdayJson)
                                     birthdayEditText.setText(formattedBirthdayForUI)
 
 
@@ -310,8 +308,8 @@ class EditprofileFragment : Fragment() {
                                         Glide.with(this@EditprofileFragment)
                                             .load(imgProfileUrl)
                                             .centerCrop()
-                                            .placeholder(R.drawable.default_profile_picture) // Example placeholder
-                                            .error(R.drawable.error_loading_image) // Example error image
+                                            .placeholder(R.drawable.default_profile_picture)
+                                            .error(R.drawable.error_loading_image)
                                             .into(profileImageView)
                                     } else {
                                         profileImageView.setImageResource(R.drawable.default_profile_picture)
@@ -338,7 +336,6 @@ class EditprofileFragment : Fragment() {
 
     private fun showDatePickerDialog(editText: EditText) {
         val calendar = Calendar.getInstance()
-        // Try to parse existing text to set initial date, if not valid, use current date
         try {
             val existingDate = SimpleDateFormat(DATE_FORMAT, Locale.US).parse(editText.text.toString())
             existingDate?.let {
@@ -359,11 +356,11 @@ class EditprofileFragment : Fragment() {
                 selectedCalendar.set(selectedYear, selectedMonth, selectedDay)
 
                 if (isOlderThan13(selectedCalendar)) {
-                    val formattedDate = SimpleDateFormat(DATE_FORMAT, Locale.US).format(selectedCalendar.time) // Ensure YYYY-MM-DD
+                    val formattedDate = SimpleDateFormat(DATE_FORMAT, Locale.US).format(selectedCalendar.time)
                     editText.setText(formattedDate)
                 } else {
                     Toast.makeText(requireContext(), "ต้องมีอายุอย่างน้อย 13 ปีขึ้นไปงับ", Toast.LENGTH_SHORT).show()
-                    editText.setText("") // Clear the text if invalid
+                    editText.setText("")
                 }
             },
             year, month, day
@@ -382,8 +379,6 @@ class EditprofileFragment : Fragment() {
         return age >= 13
     }
 
-    // Helper function to format timestamp string from server for UI display in YYYY-MM-DD
-    // This replaces the old formatTime function
     private fun formatTimeForUIDisplay(timeString: String): String {
         if (timeString.isEmpty()) return "N/A"
 
@@ -391,12 +386,12 @@ class EditprofileFragment : Fragment() {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
                 timeZone = TimeZone.getTimeZone("UTC")
             }
-            val outputFormat = SimpleDateFormat(DATE_FORMAT, Locale.US) // Ensure YYYY-MM-DD for UI
+            val outputFormat = SimpleDateFormat(DATE_FORMAT, Locale.US)
             val date = inputFormat.parse(timeString)
             date?.let { outputFormat.format(it) } ?: "N/A"
         } catch (e: Exception) {
             Log.e("EditprofileFragment", "Error formatting time string '$timeString' for UI: ${e.message}")
-            timeString // Return original string if parsing fails
+            timeString
         }
     }
 }

@@ -5,7 +5,7 @@ data class YourAd(
     val imageUrl: String,
     val caption: String,
     val url: String,
-    val status: String, // <-- ตัวแปรที่สำคัญที่สุดสำหรับหน้านี้!
+    val status: String, // สถานะ: "pending_approval", "pending_payment", "active", "expired"
     val packageType: String?,
     val duration: Int?,
     val startDate: String?,

@@ -1,5 +1,3 @@
-// HomeFragment.kt
-
 package com.bestpick.reviewhub
 
 import android.content.Context.MODE_PRIVATE
@@ -56,6 +54,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("APP_LIFECYCLE", "HomeFragment: onCreateView") // <-- เพิ่ม Log
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
         recyclerView = view.findViewById(R.id.recycler_view_posts)
@@ -72,6 +71,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("APP_LIFECYCLE", "HomeFragment: onViewCreated - START") // <-- เพิ่ม Log
 
         val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
         searchEditText.setOnClickListener {
@@ -130,13 +130,10 @@ class HomeFragment : Fragment() {
             fetchForYouPosts(false)
         }
 
-        // --- CODE ที่แก้ไขแล้ว ---
-        // Set up messenger icon listener to navigate to MessageFragment
-        val messengerIcon = view.findViewById<ImageView>(R.id.menuImageView) // ใช้ ID เดิมคือ menuImageView
+        val messengerIcon = view.findViewById<ImageView>(R.id.messengerImageView) // แก้ ID ตามที่คุณใช้
         messengerIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_messageFragment)
         }
-        // --- จบส่วนที่แก้ไข ---
 
         swipeRefreshLayout.setOnRefreshListener {
             val selectedTab = tabLayout.selectedTabPosition
@@ -146,6 +143,7 @@ class HomeFragment : Fragment() {
                 refreshPosts(forceRefreshFollowing = true)
             }
         }
+        Log.d("APP_LIFECYCLE", "HomeFragment: onViewCreated - END") // <-- เพิ่ม Log
     }
 
     private fun insertAds(posts: List<Post>, ads: List<PostAdapter.Ad>, interval: Int = 5): List<Any> {

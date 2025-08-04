@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="8dp"
+    android:padding="16dp"
+    android:background="?android:attr/colorBackground">
+
+    <ImageView
+        android:id="@+id/adImageView"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_gallery" />
+
+    <TextView
+        android:id="@+id/captionTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Ad Caption"
+        android:textAppearance="?attr/textAppearanceListItem"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/urlTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="https://example.com"
+        android:autoLink="web"
+        android:layout_marginTop="4dp"/>
+
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: Pending Approval"
+        android:layout_marginTop="8dp"
+        android:textStyle="italic"/>
+
+    <Button
+        android:id="@+id/deleteButton"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Delete"
+        android:textColor="@android:color/holo_red_dark"/>
+
+    <LinearLayout
+        android:id="@+id/paymentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/payButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pay"/>
+        <TextView
+            android:id="@+id/paymentDeadlineText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="*Pay within 24 hours"
+            android:textColor="@android:color/holo_red_light"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/packageInfoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Popular packages, 15 Day"/>
+        <TextView
+            android:id="@+id/dateInfoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start: 28/7/25 - End: 12/8/25"/>
+        <Button
+            android:id="@+id/renewButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Renew advertising"/>
+    </LinearLayout>
+
+</LinearLayout>
