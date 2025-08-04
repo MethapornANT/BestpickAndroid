@@ -1,4 +1,4 @@
-package com.example.reviewhub
+package com.bestpick.reviewhub
 
 data class YourAd(
     val id: Int,
