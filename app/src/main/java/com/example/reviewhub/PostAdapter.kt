@@ -877,11 +877,12 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
         }
     }
     data class Ad(
-        val id: Int,
+        val id: String, // Ensure id is String to match the Backend
         val title: String,
         val content: String,
+        val link: String,
         val image: String,
-        val link: String
+        var isCounted: Boolean = false // This is the new variable
     )
 
 }

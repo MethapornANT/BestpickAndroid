@@ -5,12 +5,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -19,7 +17,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
@@ -44,6 +41,7 @@ class HomeFragment : Fragment() {
     private val forYouData = mutableListOf<Any>()
     private val followingData = mutableListOf<Any>()
 
+    private val AD_INTERVAL = 15
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +52,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d("APP_LIFECYCLE", "HomeFragment: onCreateView") // <-- เพิ่ม Log
+        Log.d("APP_LIFECYCLE", "HomeFragment: onCreateView")
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
         recyclerView = view.findViewById(R.id.recycler_view_posts)
@@ -71,7 +69,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("APP_LIFECYCLE", "HomeFragment: onViewCreated - START") // <-- เพิ่ม Log
+        Log.d("APP_LIFECYCLE", "HomeFragment: onViewCreated - START")
 
         val searchEditText = view.findViewById<ImageView>(R.id.searchEditText)
         searchEditText.setOnClickListener {
@@ -130,7 +128,7 @@ class HomeFragment : Fragment() {
             fetchForYouPosts(false)
         }
 
-        val messengerIcon = view.findViewById<ImageView>(R.id.messengerImageView) // แก้ ID ตามที่คุณใช้
+        val messengerIcon = view.findViewById<ImageView>(R.id.messengerImageView)
         messengerIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_messageFragment)
         }
@@ -143,7 +141,26 @@ class HomeFragment : Fragment() {
                 refreshPosts(forceRefreshFollowing = true)
             }
         }
-        Log.d("APP_LIFECYCLE", "HomeFragment: onViewCreated - END") // <-- เพิ่ม Log
+
+        // Add OnScrollListener to RecyclerView to track ad impressions
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+
+                for (i in firstVisibleItemPosition..lastVisibleItemPosition) {
+                    val item = postList.getOrNull(i)
+                    if (item is PostAdapter.Ad && !item.isCounted) {
+                        item.isCounted = true
+                        trackAdImpression(item.id)
+                    }
+                }
+            }
+        })
+
+        Log.d("APP_LIFECYCLE", "HomeFragment: onViewCreated - END")
     }
 
     private fun insertAds(posts: List<Post>, ads: List<PostAdapter.Ad>, interval: Int = 5): List<Any> {
@@ -218,13 +235,10 @@ class HomeFragment : Fragment() {
                         val postType = object : TypeToken<List<Post>>() {}.type
                         val posts: List<Post> = gson.fromJson(it, postType)
 
-                        fetchRandomAds { ads ->
+                        // Start the process of fetching and inserting ads
+                        fetchAndInsertAdsSequentially(posts) { mixedList ->
                             if (isAdded) {
                                 requireActivity().runOnUiThread {
-                                    val randomSize = (10..15).random()
-                                    val randomAds = ads.shuffled().take(randomSize)
-                                    val mixedList = insertAds(posts, randomAds, randomSize / 2)
-
                                     forYouData.clear()
                                     forYouData.addAll(mixedList)
 
@@ -341,18 +355,56 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun fetchRandomAds(callback: (List<PostAdapter.Ad>) -> Unit) {
+    // New function to fetch and insert ads sequentially
+    private fun fetchAndInsertAdsSequentially(posts: List<Post>, callback: (List<Any>) -> Unit) {
+        val mixedList = mutableListOf<Any>()
+        val adIndices = mutableListOf<Int>()
+        var postCounter = 0
+
+        for (post in posts) {
+            mixedList.add(post)
+            postCounter++
+            if (postCounter == AD_INTERVAL) {
+                adIndices.add(mixedList.size)
+                postCounter = 0
+            }
+        }
+
+        var adsToFetch = adIndices.size
+        if (adsToFetch == 0) {
+            callback(mixedList)
+            return
+        }
+
+        var adIndex = 0
+        fun fetchNextAd() {
+            if (adIndex < adsToFetch) {
+                fetchRandomAd { ad ->
+                    if (ad != null) {
+                        mixedList.add(adIndices[adIndex], ad)
+                    }
+                    adIndex++
+                    fetchNextAd()
+                }
+            } else {
+                callback(mixedList)
+            }
+        }
+        fetchNextAd()
+    }
+
+    private fun fetchRandomAd(callback: (PostAdapter.Ad?) -> Unit) {
         val url = getString(R.string.root_url) + "/api/ads/random"
         val request = Request.Builder().url(url).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                if (isAdded) callback(emptyList())
+                if (isAdded) callback(null)
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful || !isAdded) {
-                    callback(emptyList())
+                    callback(null)
                     return
                 }
 
@@ -361,11 +413,38 @@ class HomeFragment : Fragment() {
                         val gson = Gson()
                         val adType = object : TypeToken<List<PostAdapter.Ad>>() {}.type
                         val ads: List<PostAdapter.Ad> = gson.fromJson(jsonResponse, adType)
-                        callback(ads)
+                        val singleAd = ads.firstOrNull()
+                        callback(singleAd)
                     } catch (e: Exception) {
-                        callback(emptyList())
+                        callback(null)
                     }
-                } ?: callback(emptyList())
+                } ?: callback(null)
+            }
+        })
+    }
+
+    private fun trackAdImpression(adId: String) {
+        val url = getString(R.string.root_url) + "/api/ads/track"
+        val requestBody = FormBody.Builder()
+            .add("id", adId)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("AdTracker", "Failed to track ad impression: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    Log.e("AdTracker", "Failed to track ad impression. Response code: ${response.code}")
+                } else {
+                    Log.d("AdTracker", "Ad impression tracked successfully for ad ID: $adId")
+                }
             }
         })
     }
