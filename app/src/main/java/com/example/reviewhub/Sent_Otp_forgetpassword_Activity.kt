@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton // import ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -39,6 +40,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
     private lateinit var otp4: EditText
     private lateinit var sentOTPButton: Button
     private lateinit var resendButton: TextView
+    private lateinit var backButton: ImageButton // เพิ่มการประกาศ backButton
     private var countdownTimer: CountDownTimer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,15 +54,16 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
         }
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-         progressBar = findViewById(R.id.lottie_loading)
-         emailTextView = findViewById(R.id.email)
-         countdownTextView = findViewById(R.id.countdown)
-         otp1 = findViewById(R.id.otp1)
-         otp2 = findViewById(R.id.otp2)
-         otp3 = findViewById(R.id.otp3)
-         otp4 = findViewById(R.id.otp4)
+        progressBar = findViewById(R.id.lottie_loading)
+        emailTextView = findViewById(R.id.email)
+        countdownTextView = findViewById(R.id.countdown)
+        otp1 = findViewById(R.id.otp1)
+        otp2 = findViewById(R.id.otp2)
+        otp3 = findViewById(R.id.otp3)
+        otp4 = findViewById(R.id.otp4)
         sentOTPButton = findViewById(R.id.btnregister)
-        resendButton = findViewById(R.id.resendforget)
+        resendButton = findViewById(R.id.resend) // แก้ ID ให้ตรงกับ XML
+        backButton = findViewById(R.id.backButton) // อ้างอิง backButton
 
         val email = intent.getStringExtra("email") ?: return
         emailTextView.text = email
@@ -80,7 +83,6 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
                     } else if (s?.length == 0 && index > 0) {
                         otpFields[index - 1].requestFocus()
                     }
-                    // Update button state based on all fields
                     updateButtonState(sentOTPButton, otpFields)
                 }
             })
@@ -99,20 +101,22 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
             val email = intent.getStringExtra("email") ?: return@setOnClickListener
             onclickResend(email)
         }
+
+        // เพิ่ม OnClickListener สำหรับปุ่มย้อนกลับ
+        backButton.setOnClickListener {
+            finish() // กลับไปหน้าก่อนหน้า (Forget_Password_Activity)
+        }
     }
 
 
     fun onclickResend(email: String) {
-        // Disable the resend button to prevent multiple clicks
-        val resendButton = findViewById<TextView>(R.id.resendforget)
+        val resendButton = findViewById<TextView>(R.id.resend) // แก้ ID ให้ตรงกับ XML
         resendButton.isEnabled = false
 
-        // Start countdown timer
         startCountdown()
 
-        // Make network request to resend OTP
         CoroutineScope(Dispatchers.IO).launch {
-            val url = getString(R.string.root_url) + getString(R.string.resendotpreset) // Update with your endpoint
+            val url = getString(R.string.root_url) + getString(R.string.resendotpreset)
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
@@ -144,13 +148,11 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
     }
 
 
-
     private fun startCountdown() {
         val countdownText = findViewById<TextView>(R.id.countdown)
-        val resendButton = findViewById<TextView>(R.id.resent)
+        val resendButton = findViewById<TextView>(R.id.resend) // แก้ ID ให้ตรงกับ XML
         resendButton.isEnabled = false
 
-        // Set countdown timer for 1 minute
         countdownTimer = object : CountDownTimer(60 * 1000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val seconds = (millisUntilFinished / 1000) % 60
@@ -159,7 +161,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
 
             override fun onFinish() {
                 countdownText.text = "You can resend now"
-                resendButton.isEnabled = true // Re-enable resend button when countdown finishes
+                resendButton.isEnabled = true
             }
         }.start()
     }
@@ -187,7 +189,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
                 val response = okHttpClient.newCall(request).execute()
                 val responseBody = response.body?.string() ?: ""
 
-                Log.d("ResponseBody", responseBody) // Debugging line
+                Log.d("ResponseBody", responseBody)
 
                 withContext(Dispatchers.Main) {
                     handleCreateResponse(response, responseBody, email)
@@ -211,7 +213,7 @@ class Sent_Otp_forgetpassword_Activity : AppCompatActivity() {
                         progressBar.visibility = View.GONE
                         Log.d("CreateResponse", "OTP sent to $email")
 
-                        val intent = Intent(this, Change_PasswordActivity::class.java) // Change to the appropriate activity
+                        val intent = Intent(this, Change_PasswordActivity::class.java)
                         intent.putExtra("email", email)
                         startActivity(intent)
                         finish()

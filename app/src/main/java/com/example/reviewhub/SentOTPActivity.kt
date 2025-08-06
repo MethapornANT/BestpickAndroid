@@ -4,8 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.text.Editable
+import android.widget.ImageButton
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -15,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +40,7 @@ class SentOTPActivity : AppCompatActivity() {
     private lateinit var sentOTPButton: Button
     private lateinit var resendButton: TextView
     private var countdownTimer: CountDownTimer? = null
+    private lateinit var progressBar: LottieAnimationView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,10 +63,18 @@ class SentOTPActivity : AppCompatActivity() {
         sentOTPButton = findViewById(R.id.btnsentotp)
         resendButton = findViewById(R.id.resent)
 
+
         val email = intent.getStringExtra("email") ?: return
         emailTextView.text = email
 
+        // Start initial countdown
         startCountdown()
+
+        val backButton = findViewById<ImageButton>(R.id.backButton)
+        // เพิ่ม OnClickListener สำหรับปุ่ม backButton
+        backButton.setOnClickListener {
+            finish() // ใช้ finish() เพื่อปิด Activity ปัจจุบันและกลับไปหน้าก่อนหน้า
+        }
 
         val otpFields = listOf(otp1, otp2, otp3, otp4)
         otpFields.forEachIndexed { index, editText ->
@@ -77,7 +89,6 @@ class SentOTPActivity : AppCompatActivity() {
                     } else if (s?.length == 0 && index > 0) {
                         otpFields[index - 1].requestFocus()
                     }
-                    // Update button state based on all fields
                     updateButtonState(sentOTPButton, otpFields)
                 }
             })
@@ -87,28 +98,34 @@ class SentOTPActivity : AppCompatActivity() {
 
         sentOTPButton.setOnClickListener {
             val otp = otp1.text.toString() + otp2.text.toString() + otp3.text.toString() + otp4.text.toString()
+            progressBar.visibility = View.VISIBLE
             performRegister(email, otp)
         }
 
         resendButton.setOnClickListener {
             val email = intent.getStringExtra("email") ?: return@setOnClickListener
-            onclickResend(email)
+            // เรียกใช้ resend otp
+            resendOtp(email)
         }
-
     }
 
+    private fun resendOtp(email: String) {
+        // ยกเลิก timer เก่าก่อนเริ่มใหม่
+        countdownTimer?.cancel()
 
-    fun onclickResend(email: String) {
-        // Disable the resend button to prevent multiple clicks
-        val resendButton = findViewById<TextView>(R.id.resent)
+        // ปิดการใช้งานปุ่ม Resend และเริ่มนับถอยหลังใหม่
         resendButton.isEnabled = false
+        resendButton.visibility = View.GONE
+        countdownTextView.visibility = View.VISIBLE
 
-        // Start countdown timer
+        progressBar.visibility = View.VISIBLE
+
+        // Start countdown
         startCountdown()
 
         // Make network request to resend OTP
         CoroutineScope(Dispatchers.IO).launch {
-            val url = getString(R.string.root_url) + getString(R.string.resentotpregis) // Update with your endpoint
+            val url = getString(R.string.root_url) + getString(R.string.resentotpregis)
             val okHttpClient = OkHttpClient()
             val formBody: RequestBody = FormBody.Builder()
                 .add("email", email)
@@ -120,39 +137,37 @@ class SentOTPActivity : AppCompatActivity() {
 
             try {
                 val response = okHttpClient.newCall(request).execute()
-                val responseBody = response.body?.string() ?: ""
-
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                     if (response.isSuccessful) {
-                        Toast.makeText(applicationContext, "New OTP sent", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "ส่ง OTP ใหม่แล้ว", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(applicationContext, "Failed to resend OTP", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "ไม่สามารถส่ง OTP ใหม่ได้", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(applicationContext, "เกิดข้อผิดพลาดในการเชื่อมต่อ", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
 
-
     private fun startCountdown() {
-        val countdownText = findViewById<TextView>(R.id.countdown)
-        val resendButton = findViewById<TextView>(R.id.resent)
-        resendButton.isEnabled = false
-
         // Set countdown timer for 1 minute
         countdownTimer = object : CountDownTimer(60 * 1000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                val seconds = (millisUntilFinished / 1000) % 60
-                countdownText.text = "Can resend again in ${seconds}s"
+                val seconds = (millisUntilFinished / 1000)
+                countdownTextView.text = "ส่งใหม่ใน ${seconds}s"
             }
 
             override fun onFinish() {
-                countdownText.text = "You can resend now"
-                resendButton.isEnabled = true // Re-enable resend button when countdown finishes
+                countdownTextView.text = "คุณสามารถส่งใหม่ได้แล้ว"
+                countdownTextView.visibility = View.VISIBLE
+                resendButton.isEnabled = true
+                resendButton.visibility = View.VISIBLE
             }
         }.start()
     }
@@ -180,19 +195,21 @@ class SentOTPActivity : AppCompatActivity() {
                 val response = okHttpClient.newCall(request).execute()
                 val responseBody = response.body?.string() ?: ""
 
-                Log.d("ResponseBody", responseBody) // Debugging line
+                Log.d("ResponseBody", responseBody)
 
                 withContext(Dispatchers.Main) {
                     handleCreateResponse(response, responseBody, email)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
                 }
             }
         }
     }
 
     private fun handleCreateResponse(response: okhttp3.Response, responseBody: String, email: String) {
+        progressBar.visibility = View.GONE
         try {
             if (response.isSuccessful) {
                 val obj = JSONObject(responseBody)
@@ -200,12 +217,13 @@ class SentOTPActivity : AppCompatActivity() {
 
                 when {
                     message.contains("OTP verified, you can set your password now") -> {
-                        Log.d("CreateResponse", "OTP sent to $email")
-
-                        val intent = Intent(this, Register_Create_PasswordActivity::class.java) // Change to the appropriate activity
+                        val intent = Intent(this, Register_Create_PasswordActivity::class.java)
                         intent.putExtra("email", email)
                         startActivity(intent)
                         finish()
+                    }
+                    else -> {
+                        Toast.makeText(this, "OTP ไม่ถูกต้อง", Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
@@ -215,8 +233,10 @@ class SentOTPActivity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
             }
         } catch (e: JSONException) {
+            Toast.makeText(this, "เกิดข้อผิดพลาดในการประมวลผล", Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -8,6 +8,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton // import ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -29,6 +31,8 @@ import org.json.JSONObject
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var progressBar: LottieAnimationView
+    private lateinit var backButton: ImageButton // ประกาศ backButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -40,10 +44,17 @@ class RegisterActivity : AppCompatActivity() {
         }
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+        // อ้างอิง View
         val emailEditText = findViewById<EditText>(R.id.registerusername)
         val create = findViewById<Button>(R.id.btnregister)
+        backButton = findViewById(R.id.backButton) // อ้างอิง backButton
         val cooldownTime = 5000L
         progressBar = findViewById(R.id.lottie_loading)
+
+        // ตั้งค่า OnClickListener สำหรับปุ่มย้อนกลับ
+        backButton.setOnClickListener {
+            finish()
+        }
 
         create.setOnClickListener {
             val email = emailEditText.text.toString()
@@ -63,9 +74,8 @@ class RegisterActivity : AppCompatActivity() {
                 }, cooldownTime)
             }
         }
-
-
     }
+
     private fun performRegister(email: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val url = getString(R.string.root_url) + getString(R.string.register)
@@ -82,7 +92,7 @@ class RegisterActivity : AppCompatActivity() {
                 val response = okHttpClient.newCall(request).execute()
                 val responseBody = response.body?.string() ?: ""
 
-                Log.d("ResponseBody", responseBody) // Debugging line
+                Log.d("ResponseBody", responseBody)
 
                 withContext(Dispatchers.Main) {
                     handleCreateResponse(response, responseBody, email)
@@ -111,15 +121,13 @@ class RegisterActivity : AppCompatActivity() {
                     }
                     message.contains("Account reactivated successfully. You can now log in.") -> {
                         Log.d("CreateResponse", "Account reactivated successfully")
-                        // Use a coroutine to add a delay before redirecting to the login screen
                         CoroutineScope(Dispatchers.Main).launch {
-                            delay(3000) // Delay for 5 seconds
+                            delay(3000)
                             val intent = Intent(this@RegisterActivity, LoginActivity::class.java)
                             startActivity(intent)
-                            finish() // Finish the current activity
+                            finish()
                         }
                     }
-
                     else -> {
                         progressBar.visibility = View.GONE
                     }
@@ -132,14 +140,23 @@ class RegisterActivity : AppCompatActivity() {
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
+
+                // เพิ่มโค้ดส่วนนี้เพื่อแจ้งเตือนผู้ใช้
+                if (errorMessage == "Email already registered") {
+                    Toast.makeText(this, "อีเมลนี้ถูกใช้ไปแล้ว", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "เกิดข้อผิดพลาด: $errorMessage", Toast.LENGTH_LONG).show()
+                }
+
                 progressBar.visibility = View.GONE
             }
         } catch (e: JSONException) {
+            Toast.makeText(this, "เกิดข้อผิดพลาดในการประมวลผลข้อมูล", Toast.LENGTH_LONG).show()
             progressBar.visibility = View.GONE
         }
     }
+
     fun onclickHaveaccount(view: View) {
-        // Intent to navigate to the new page
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
     }

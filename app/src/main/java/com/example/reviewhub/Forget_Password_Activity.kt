@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton // import ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -36,10 +38,17 @@ class Forget_Password_Activity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
         val emailEditText = findViewById<EditText>(R.id.Email)
         val SendOTPbutton = findViewById<Button>(R.id.btnsent)
+        val backButton = findViewById<ImageButton>(R.id.backButton) // เพิ่มการประกาศปุ่ม backButton
         progressBar = findViewById(R.id.lottie_loading)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        // เพิ่ม OnClickListener สำหรับปุ่ม backButton
+        backButton.setOnClickListener {
+            finish() // ใช้ finish() เพื่อปิด Activity ปัจจุบันและกลับไปหน้าก่อนหน้า
+        }
 
         SendOTPbutton.setOnClickListener {
             val email = emailEditText.text.toString()
@@ -67,7 +76,7 @@ class Forget_Password_Activity : AppCompatActivity() {
                 val response = okHttpClient.newCall(request).execute()
                 val responseBody = response.body?.string() ?: ""
 
-                Log.d("ResponseBody", responseBody) // Debugging line
+                Log.d("ResponseBody", responseBody)
 
                 withContext(Dispatchers.Main) {
                     handleCreateResponse(response, responseBody, email)
@@ -75,6 +84,7 @@ class Forget_Password_Activity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
+                    Toast.makeText(applicationContext, "การเชื่อมต่อล้มเหลว", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -96,19 +106,27 @@ class Forget_Password_Activity : AppCompatActivity() {
                     }
                     else -> {
                         progressBar.visibility = View.GONE
+                        Toast.makeText(this, "ไม่สามารถส่ง OTP ได้", Toast.LENGTH_LONG).show()
                     }
                 }
             } else {
-                // Parse the responseBody for error message
                 val errorMessage = try {
                     val errorObj = JSONObject(responseBody)
                     errorObj.optString("error", "Unknown error")
                 } catch (e: JSONException) {
                     "Unknown error"
                 }
+
+                if (errorMessage == "Email not found") {
+                    Toast.makeText(this, "ไม่พบอีเมลนี้ กรุณาลองใหม่อีกครั้ง", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "เกิดข้อผิดพลาด: $errorMessage", Toast.LENGTH_LONG).show()
+                }
+
                 progressBar.visibility = View.GONE
             }
         } catch (e: JSONException) {
+            Toast.makeText(this, "เกิดข้อผิดพลาดในการประมวลผลข้อมูล", Toast.LENGTH_LONG).show()
             progressBar.visibility = View.GONE
         }
     }
