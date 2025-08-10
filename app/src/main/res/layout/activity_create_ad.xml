@@ -7,16 +7,17 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="@color/white"
-    tools:context="com.example.reviewhub.CreateAdFragment">
+    tools:context="com.bestpick.reviewhub.CreateAdFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="16dp">
 
         <androidx.appcompat.widget.Toolbar
-            android:layout_marginTop="10dp"
             android:id="@+id/toolbar"
+            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
@@ -36,61 +37,58 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create an ad"
+                android:text="Create an Ad"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_gravity="center" />
         </androidx.appcompat.widget.Toolbar>
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="211dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/package_bg"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:background="@drawable/package_bg">
 
             <ImageView
                 android:id="@+id/imageViewSelectedPhoto"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="#E0E0E0"
+                android:layout_height="match_parent"
                 android:contentDescription="Selected Photo"
                 android:scaleType="centerCrop"
                 android:visibility="gone" />
 
             <Button
                 android:id="@+id/buttonSelectPhoto"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="65dp"
+                android:layout_gravity="center"
                 android:backgroundTint="@color/blue"
                 android:text="SELECT PHOTO"
                 android:textColor="@color/white" />
-
-        </LinearLayout>
+        </FrameLayout>
 
         <Button
-            android:id="@+id/button4"
+            android:id="@+id/changePhotoButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end" android:layout_marginTop="5dp"
-            android:layout_marginEnd="16dp" android:backgroundTint="@color/blue"
-            android:text="change photo" />
+            android:layout_gravity="end"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/blue"
+            android:text="Change Photo"
+            android:visibility="gone"/>
 
         <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add a caption"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add a caption / title"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/editTextCaption"
@@ -120,43 +118,45 @@
         <EditText
             android:id="@+id/editTextURL"
             android:layout_width="match_parent"
-            android:layout_height="75dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/package_bg"
-            android:hint="Enter your url"
+            android:hint="Enter your URL"
             android:inputType="textUri"
             android:padding="12dp"
+            android:minHeight="48dp"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your PromptPay Number"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/black"
             android:textSize="16sp" />
 
         <EditText
-            android:id="@+id/textPay"
+            android:id="@+id/promptPayEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginTop="20dp"
-            android:hint="Your Prompt pay"
+            android:layout_marginTop="8dp"
+            android:hint="e.g. 0812345678"
             android:padding="12dp"
             android:background="@drawable/package_bg"
-            android:inputType="textUri"
+            android:inputType="phone"
+            android:maxLength="10"
+            android:minHeight="48dp"
             android:textSize="16sp"/>
 
         <TextView
-            android:id="@+id/errorTextURL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="* In case of system error"
-            android:layout_marginStart="16dp"
-            android:textColor="@android:color/holo_red_dark"
-            android:textSize="12sp"
-            android:visibility="gone" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="select package"
+            android:text="Select package"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
             android:textColor="@color/black"
@@ -173,84 +173,45 @@
             android:layout_marginTop="16dp">
 
             <RadioButton
-                android:id="@+id/radioPackage1"
+                android:id="@+id/radioButtonPackage1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/package_bg"
                 android:padding="16dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:text="Starter Package\n7 Day\nFor testing advertising"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:button="@null"
-                android:drawablePadding="8dp"
-                android:drawableEnd="@color/cardview_dark_background"
-                android:tag="1" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="350 baht"
-                android:layout_gravity="end"
-                android:layout_marginEnd="24dp"
-                android:layout_marginTop="-40dp"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="16sp"/>
-
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:button="@null" />
 
             <RadioButton
-                android:id="@+id/radioPackage2"
+                android:id="@+id/radioButtonPackage2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/package_bg"
-                android:layout_marginTop="20dp"
                 android:padding="16dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:text="Popular packages\n15 Day\nBest value! Reach more customers"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:button="@null"
-                android:drawablePadding="8dp"
-                android:drawableEnd="@color/cardview_dark_background"
-                android:tag="2" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="690 baht"
-                android:layout_gravity="end"
-                android:layout_marginEnd="24dp"
-                android:layout_marginTop="-40dp"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="16sp"/>
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:button="@null" />
 
             <RadioButton
-                android:id="@+id/radioPackage3"
+                android:id="@+id/radioButtonPackage3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
                 android:background="@drawable/package_bg"
                 android:padding="16dp"
                 android:text="Full package\n30 Day\nFor maximum visibility"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:button="@null"
-                android:drawablePadding="8dp"
-                android:drawableEnd="@color/cardview_dark_background"
-                android:tag="3" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1250 baht"
-                android:layout_gravity="end"
-                android:layout_marginEnd="24dp"
-                android:layout_marginTop="-40dp"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="16sp"/>
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:button="@null" />
 
         </RadioGroup>
 
@@ -276,13 +237,14 @@
             android:focusable="false"
             android:clickable="true"
             android:inputType="none"
+            android:minHeight="48dp"
             android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/errorTextDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="* Select two or more days"
+            android:text="* Please select a valid date."
             android:layout_marginStart="16dp"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="12sp"

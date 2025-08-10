@@ -5,27 +5,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.MediaController
-import android.widget.VideoView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-// Adapter สำหรับแสดงรูปภาพและเล่นวิดีโอใน ViewPager2
 class ImagePagerAdapter(private val mediaUris: List<Uri>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    // ประเภทของ ViewHolder
     private val VIEW_TYPE_IMAGE = 0
     private val VIEW_TYPE_VIDEO = 1
 
-    // ViewHolder สำหรับรูปภาพ
     class ImageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.image_item)
     }
 
-    // ViewHolder สำหรับวิดีโอ
     class VideoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val videoView: VideoView = view.findViewById(R.id.video_item)
+        val playerView: PlayerView = view.findViewById(R.id.player_view)
+        var player: ExoPlayer? = null
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -35,7 +33,6 @@ class ImagePagerAdapter(private val mediaUris: List<Uri>) : RecyclerView.Adapter
         } else {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.video_item_layout, parent, false)
             VideoViewHolder(view)
-
         }
     }
 
@@ -43,19 +40,24 @@ class ImagePagerAdapter(private val mediaUris: List<Uri>) : RecyclerView.Adapter
         val uri = mediaUris[position]
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        // ตรวจสอบประเภทของ ViewHolder
         if (holder is ImageViewHolder) {
-            // ใช้ Glide ในการโหลดรูปภาพ
             Glide.with(holder.imageView.context)
                 .load(uri)
                 .fitCenter()
                 .into(holder.imageView)
         } else if (holder is VideoViewHolder) {
-            // ตั้งค่าวิดีโอใน VideoView
-            holder.videoView.setVideoURI(uri)
-            holder.videoView.setMediaController(MediaController(holder.videoView.context)) // เพิ่ม MediaController
-            holder.videoView.requestFocus()
-            holder.videoView.start() // เริ่มเล่นวิดีโออัตโนมัติ
+            // สร้าง ExoPlayer instance ใหม่
+            val player = ExoPlayer.Builder(holder.playerView.context).build()
+            holder.playerView.player = player
+            holder.player = player // เก็บ reference ไว้เพื่อ release ทีหลัง
+
+            // สร้าง MediaItem จาก URL
+            val mediaItem = MediaItem.fromUri(uri)
+
+            // ตั้งค่า MediaItem ให้กับ Player และเริ่มเตรียมเล่น
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.play() // เริ่มเล่นวิดีโออัตโนมัติ
         }
     }
 
@@ -63,9 +65,24 @@ class ImagePagerAdapter(private val mediaUris: List<Uri>) : RecyclerView.Adapter
         return mediaUris.size
     }
 
-    // ตรวจสอบประเภทของ View
     override fun getItemViewType(position: Int): Int {
-        val uri = mediaUris[position]
-        return if (uri.toString().endsWith(".mp4") || uri.toString().endsWith(".mkv")) VIEW_TYPE_VIDEO else VIEW_TYPE_IMAGE
+        val uriString = mediaUris[position].toString().lowercase()
+        // ตรวจสอบนามสกุลไฟล์วิดีโอที่พบบ่อย
+        return if (uriString.endsWith(".mp4") || uriString.endsWith(".mkv") || uriString.endsWith(".webm") || uriString.endsWith(".3gp")) {
+            VIEW_TYPE_VIDEO
+        } else {
+            VIEW_TYPE_IMAGE
+        }
+    }
+
+    // --- เพิ่มส่วนนี้เข้ามา (สำคัญมาก) ---
+    // คืนทรัพยากร Player เมื่อ View ถูกนำกลับมาใช้ใหม่ (Recycled)
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is VideoViewHolder) {
+            holder.player?.release()
+            holder.player = null
+            holder.playerView.player = null
+        }
     }
 }

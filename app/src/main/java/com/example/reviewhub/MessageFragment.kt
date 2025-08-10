@@ -63,6 +63,13 @@ class MessageFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_message, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+        // --- เพิ่มส่วนนี้เข้ามา ---
+        val backButton: ImageView = view.findViewById(R.id.backButton)
+        backButton.setOnClickListener {
+            findNavController().popBackStack()
+        }
+        // --- จบส่วนที่เพิ่ม ---
+
         recyclerViewUserList = view.findViewById(R.id.recyclerViewUserList)
         buttonRestoreAllChats = view.findViewById(R.id.buttonRestoreAllChats)
         progressBar = view.findViewById(R.id.progress_bar)

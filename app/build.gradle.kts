@@ -99,6 +99,10 @@ dependencies {
     implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
     implementation ("com.github.zerobranch:SwipeLayout:1.3.1")
 
+    implementation ("androidx.media3:media3-exoplayer:1.3.1")
+    implementation ("androidx.media3:media3-ui:1.3.1")
+    implementation ("androidx.media3:media3-datasource-okhttp:1.3.1")
+
 
     // Test Dependencies
     testImplementation(libs.junit)

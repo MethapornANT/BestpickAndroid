@@ -49,6 +49,9 @@
         <action
             android:id="@+id/action_messageFragment_to_anotherUserFragment"
             app:destination="@id/AnotherUserFragment" />
+        <action
+            android:id="@+id/action_messageFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
     </fragment>
 
     <fragment
@@ -81,11 +84,7 @@
             app:destination="@id/AnotherUserFragment" />
         <action
             android:id="@+id/action_profileFragment_to_moreMenuFragment"
-            app:destination="@id/moreMenuFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/moreMenuFragment" />
     </fragment>
 
     <fragment
@@ -142,11 +141,7 @@
         tools:layout="@layout/fragment_more_menu" >
         <action
             android:id="@+id/action_moreMenuFragment_to_createAdFragment"
-            app:destination="@id/createAdFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/createAdFragment" />
         <action
             android:id="@+id/action_moreMenuFragment_to_editprofileFragment"
             app:destination="@id/editprofileFragment" />
@@ -157,15 +152,35 @@
 
     <fragment
         android:id="@+id/createAdFragment"
-        android:name="com.example.reviewhub.CreateAdFragment"
+        android:name="com.bestpick.reviewhub.CreateAdFragment"
         android:label="Create an Ad"
         tools:layout="@layout/activity_create_ad" >
+        <action
+            android:id="@+id/action_createAdFragment_to_adPendingFragment"
+            app:destination="@id/adPendingFragment"
+            app:popUpTo="@id/moreMenuFragment"
+            app:popUpToInclusive="true" />
     </fragment>
-
     <fragment
         android:id="@+id/yourAdsFragment"
         android:name="com.bestpick.reviewhub.YourAdsFragment"
         android:label="Your Ads"
         tools:layout="@layout/fragment_your_ads" />
+    <fragment
+        android:id="@+id/adPendingFragment"
+        android:name="com.bestpick.reviewhub.AdPendingFragment"
+        android:label="Ad Pending"
+        tools:layout="@layout/fragment_ad_pending" >
+        <action
+            android:id="@+id/action_adPendingFragment_to_profileFragment"
+            app:destination="@id/profileFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
 
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.bestpick.reviewhub.ChatFragment"
+        android:label="Chat"
+        tools:layout="@layout/fragment_chat" />
 </navigation>

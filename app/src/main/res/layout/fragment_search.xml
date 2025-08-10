@@ -20,6 +20,17 @@
             android:layout_height="wrap_content"
             android:padding="10dp">
 
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/arrow_back"
+                android:contentDescription="Back"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_gravity="center_vertical|start" />
+
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/search_edit_text"
                 android:layout_width="match_parent"
