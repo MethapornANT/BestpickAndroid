@@ -55,12 +55,10 @@ class MoreMenuFragment : Fragment() {
         }
 
         createAdLayout.setOnClickListener {
-            Toast.makeText(context, "Create an ad clicked! Navigating...", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.action_moreMenuFragment_to_createAdFragment)
         }
 
         yourAdsLayout.setOnClickListener {
-            Toast.makeText(context, "Your ads clicked!", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.action_moreMenuFragment_to_yourAdsFragment)
         }
 
