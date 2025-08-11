@@ -161,11 +161,31 @@
             app:popUpTo="@id/moreMenuFragment"
             app:popUpToInclusive="true" />
     </fragment>
+
     <fragment
         android:id="@+id/yourAdsFragment"
         android:name="com.bestpick.reviewhub.YourAdsFragment"
         android:label="Your Ads"
-        tools:layout="@layout/fragment_your_ads" />
+        tools:layout="@layout/fragment_your_ads">
+
+        <action
+            android:id="@+id/action_yourAdsFragment_to_adDetailFragment"
+            app:destination="@id/adDetailFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/adDetailFragment"
+        android:name="com.bestpick.reviewhub.AdDetailFragment"
+        android:label="Ad Detail"
+        tools:layout="@layout/fragment_ad_detail" >
+
+        <argument
+            android:name="ad_json"
+            app:argType="string" />
+
+    </fragment>
+
     <fragment
         android:id="@+id/adPendingFragment"
         android:name="com.bestpick.reviewhub.AdPendingFragment"
