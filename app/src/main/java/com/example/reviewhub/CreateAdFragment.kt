@@ -329,8 +329,13 @@ class CreateAdFragment : Fragment() {
         if (editTextURL.text.isBlank()) {
             editTextURL.error = "URL cannot be empty"; return false
         }
-        if (editTextPrompay.text.toString().trim().length != 10) {
-            editTextPrompay.error = "Please enter a valid 10-digit Prompay number"; return false
+        val prompay = editTextPrompay.text?.toString()?.filter(Char::isDigit).orEmpty()
+
+        if (!(prompay.length == 10 || prompay.length == 13)) {
+            editTextPrompay.error = "Please enter a valid Prompay number (10 or 13 digits)"
+            return false
+        } else {
+            editTextPrompay.error = null
         }
         if (selectedPackageId == -1) {
             Toast.makeText(context, "Please select an ad package", Toast.LENGTH_SHORT).show(); return false
