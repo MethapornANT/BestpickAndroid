@@ -64,6 +64,9 @@ class AdDetailFragment : Fragment() {
         val imageView = view.findViewById<ImageView>(R.id.adImageView)
         val titleView = view.findViewById<TextView>(R.id.adTitleTextView)
         val statusView = view.findViewById<TextView>(R.id.adStatusTextView)
+        val packageInfoView = view.findViewById<TextView>(R.id.packageInfoTextView)
+        val dateView = view.findViewById<TextView>(R.id.adDateTextView)
+        val datesLabel = view.findViewById<TextView>(R.id.datesLabel)
         val detailMessageView = view.findViewById<TextView>(R.id.adDetailMessageTextView)
         val payButton = view.findViewById<Button>(R.id.payButton)
         val renewButton = view.findViewById<Button>(R.id.renewButton)
@@ -73,10 +76,17 @@ class AdDetailFragment : Fragment() {
         titleView.text = ad.title
         statusView.text = ad.status.replaceFirstChar { it.uppercase() }
 
-        // --- Logic to control UI based on status ---
+        // แสดงข้อมูลแพ็กเกจ
+        val packageName = ad.package_name ?: "N/A"
+        val packagePrice = ad.package_price ?: 0.0
+        packageInfoView.text = "$packageName - %.2f Baht".format(packagePrice)
+
+        // ซ่อน/แสดง UI ตามสถานะ
         payButton.visibility = View.GONE
         renewButton.visibility = View.GONE
         deleteButton.visibility = View.GONE
+        dateView.visibility = View.GONE
+        datesLabel.visibility = View.GONE
 
         val statusColor: Int
         when (ad.status.lowercase()) {
@@ -93,16 +103,28 @@ class AdDetailFragment : Fragment() {
             }
             "active" -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.green)
-                detailMessageView.text = "Your ad is active! It will expire on: ${ad.expiration_date?.substring(0, 10)}"
+                detailMessageView.text = "Your ad is currently active."
+                datesLabel.visibility = View.VISIBLE
+                dateView.visibility = View.VISIBLE
+                dateView.text = "${ad.show_at} to ${ad.expiration_date}"
                 renewButton.visibility = View.VISIBLE
             }
             "paid" -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.purple_200)
-                detailMessageView.text = "We have received your payment. Please wait for an admin to activate your ad."
+                detailMessageView.text = "Payment received. Please wait for an admin to activate your ad."
             }
-            "rejected", "expired" -> {
+            "rejected" -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.red)
-                detailMessageView.text = "This ad is now ${ad.status}."
+                detailMessageView.text = "This ad was rejected. Reason: ${ad.admin_notes ?: "Not specified"}"
+                deleteButton.visibility = View.VISIBLE
+            }
+            "expired" -> {
+                statusColor = ContextCompat.getColor(requireContext(), R.color.grey)
+                detailMessageView.text = "This ad has expired."
+                datesLabel.visibility = View.VISIBLE
+                dateView.visibility = View.VISIBLE
+                dateView.text = "Expired on: ${ad.expiration_date}"
+                renewButton.visibility = View.VISIBLE
             }
             else -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.grey)
@@ -111,22 +133,17 @@ class AdDetailFragment : Fragment() {
         }
         statusView.background?.setTint(statusColor)
 
-        // Setup button clicks
+        // ตั้งค่าการทำงานของปุ่ม
         payButton.setOnClickListener {
-            // แปลง object 'ad' ทั้งก้อนให้เป็น String JSON
-            val adJson = Gson().toJson(ad)
             val bundle = Bundle().apply {
-                putString("ad_json", adJson) // ส่ง String JSON ไปแทน
+                putString("ad_json", Gson().toJson(ad))
             }
             findNavController().navigate(R.id.action_adDetailFragment_to_paymentFragment, bundle)
         }
-        renewButton.setOnClickListener {
-            // TODO: Navigate to renew screen
-        }
-        deleteButton.setOnClickListener {
-            showDeleteConfirmationDialog(ad)
-        }
+        renewButton.setOnClickListener { /* TODO: นำทางไปหน้าต่ออายุ */ }
+        deleteButton.setOnClickListener { showDeleteConfirmationDialog(ad) }
 
+        // โหลดรูปภาพ
         Glide.with(this)
             .load("$rootUrl${ad.image}")
             .placeholder(R.color.grey)
@@ -172,7 +189,7 @@ class AdDetailFragment : Fragment() {
                         Toast.makeText(context, "Ad deleted successfully.", Toast.LENGTH_SHORT).show()
                         findNavController().popBackStack()
                     } else {
-                        val errorMessage = try { JSONObject(responseBody).getString("error") } catch (e: Exception) { "Could not delete ad." }
+                        val errorMessage = try { JSONObject(responseBody).getString("error") } catch (e: Exception) { "Could not delete this ad." }
                         Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_LONG).show()
                     }
                 }

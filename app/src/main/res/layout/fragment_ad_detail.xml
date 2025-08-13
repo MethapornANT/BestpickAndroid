@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/white"
+    tools:context=".AdDetailFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="24dp"
-        tools:context=".AdDetailFragment">
+        android:paddingBottom="24dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -93,17 +94,58 @@
             app:layout_constraintStart_toEndOf="@id/statusLabel"/>
 
         <TextView
+            android:id="@+id/packageLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Package:"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/statusLabel"
+            app:layout_constraintStart_toStartOf="@id/statusLabel"/>
+
+        <TextView
+            android:id="@+id/packageInfoTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginStart="8dp"
+            tools:text="3 Days Boost - 1.0 Baht"
+            app:layout_constraintStart_toEndOf="@id/packageLabel"
+            app:layout_constraintTop_toTopOf="@id/packageLabel"
+            app:layout_constraintBottom_toBottomOf="@id/packageLabel"/>
+
+        <TextView
+            android:id="@+id/datesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Display Dates:"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/packageLabel"
+            app:layout_constraintStart_toStartOf="@id/packageLabel"/>
+
+        <TextView
+            android:id="@+id/adDateTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:layout_marginStart="8dp"
+            tools:text="2025-08-13 to 2025-08-16"
+            app:layout_constraintStart_toEndOf="@id/datesLabel"
+            app:layout_constraintTop_toTopOf="@id/datesLabel"
+            app:layout_constraintBottom_toBottomOf="@id/datesLabel"/>
+
+        <TextView
             android:id="@+id/adDetailMessageTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/statusLabel"
+            app:layout_constraintTop_toBottomOf="@id/datesLabel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Your ad is currently active and will expire on 2025-12-31."/>
+            tools:text="Your ad is currently active."/>
 
         <LinearLayout
             android:id="@+id/actionsContainer"
@@ -146,4 +188,5 @@
                 />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.core.widget.NestedScrollView>
