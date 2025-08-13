@@ -7,5 +7,8 @@ data class UserAd(
     val image: String?,
     val status: String,
     val expiration_date: String?,
-    val created_at: String
+    val created_at: String,
+    val package_name: String?,
+    val package_price: Double?,
+    val package_duration: Int?
 )

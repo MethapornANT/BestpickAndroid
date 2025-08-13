@@ -179,10 +179,12 @@
         android:name="com.bestpick.reviewhub.AdDetailFragment"
         android:label="Ad Detail"
         tools:layout="@layout/fragment_ad_detail" >
-
         <argument
             android:name="ad_json"
             app:argType="string" />
+        <action
+            android:id="@+id/action_adDetailFragment_to_paymentFragment"
+            app:destination="@id/paymentFragment" />
 
     </fragment>
 
@@ -196,6 +198,31 @@
             app:destination="@id/profileFragment"
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.bestpick.reviewhub.PaymentFragment"
+        android:label="Payment"
+        tools:layout="@layout/fragment_payment">
+        <argument
+            android:name="ad_json"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_paymentFragment_to_paymentSuccessFragment"
+            app:destination="@id/paymentSuccessFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentSuccessFragment"
+        android:name="com.bestpick.reviewhub.PaymentSuccessFragment"
+        android:label="Payment Success"
+        tools:layout="@layout/fragment_payment_success">
+        <action
+            android:id="@+id/action_paymentSuccessFragment_to_yourAdsFragment"
+            app:destination="@id/yourAdsFragment"
+            app:popUpTo="@id/yourAdsFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

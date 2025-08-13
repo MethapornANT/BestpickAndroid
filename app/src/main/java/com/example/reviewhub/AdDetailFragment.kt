@@ -83,13 +83,13 @@ class AdDetailFragment : Fragment() {
             "pending" -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.yellow)
                 detailMessageView.text = "Your ad is currently waiting for review by an administrator."
-                deleteButton.visibility = View.VISIBLE // << แสดงปุ่ม Delete
+                deleteButton.visibility = View.VISIBLE
             }
             "approved" -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.blue)
                 detailMessageView.text = "Your ad has been approved. Please complete the payment to make it active."
-                payButton.visibility = View.VISIBLE // << แสดงปุ่ม Pay
-                deleteButton.visibility = View.VISIBLE // << แสดงปุ่ม Delete
+                payButton.visibility = View.VISIBLE
+                deleteButton.visibility = View.VISIBLE
             }
             "active" -> {
                 statusColor = ContextCompat.getColor(requireContext(), R.color.green)
@@ -112,13 +112,25 @@ class AdDetailFragment : Fragment() {
         statusView.background?.setTint(statusColor)
 
         // Setup button clicks
-        payButton.setOnClickListener { /* TODO: Navigate to payment screen */ }
-        renewButton.setOnClickListener { /* TODO: Navigate to renew screen */ }
-        deleteButton.setOnClickListener { showDeleteConfirmationDialog(ad) }
+        payButton.setOnClickListener {
+            // แปลง object 'ad' ทั้งก้อนให้เป็น String JSON
+            val adJson = Gson().toJson(ad)
+            val bundle = Bundle().apply {
+                putString("ad_json", adJson) // ส่ง String JSON ไปแทน
+            }
+            findNavController().navigate(R.id.action_adDetailFragment_to_paymentFragment, bundle)
+        }
+        renewButton.setOnClickListener {
+            // TODO: Navigate to renew screen
+        }
+        deleteButton.setOnClickListener {
+            showDeleteConfirmationDialog(ad)
+        }
 
         Glide.with(this)
             .load("$rootUrl${ad.image}")
             .placeholder(R.color.grey)
+            .error(R.drawable.right)
             .into(imageView)
     }
 
@@ -158,7 +170,7 @@ class AdDetailFragment : Fragment() {
                 activity?.runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(context, "Ad deleted successfully.", Toast.LENGTH_SHORT).show()
-                        findNavController().popBackStack() // กลับไปหน้ารายการ
+                        findNavController().popBackStack()
                     } else {
                         val errorMessage = try { JSONObject(responseBody).getString("error") } catch (e: Exception) { "Could not delete ad." }
                         Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_LONG).show()
