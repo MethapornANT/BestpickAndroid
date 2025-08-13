@@ -7,10 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -33,6 +35,14 @@ class NotificationsFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_notifications, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+        // Toolbar + back
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.navigationIcon = ContextCompat.getDrawable(
+            requireContext(),
+            androidx.appcompat.R.drawable.abc_ic_ab_back_material
+        )
+        toolbar.setNavigationOnClickListener { navigateHome() }
+
         recyclerView = view.findViewById(R.id.recycler_view_posts)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         notificationsAdapter = NotificationsAdapter(notificationList) { n ->
@@ -41,9 +51,10 @@ class NotificationsFragment : Fragment() {
 
             when {
                 (n.post_id ?: -1) > 0 -> {
-                    findNavController().navigate(R.id.action_to_postdetailFragment, Bundle().apply {
-                        putInt("POST_ID", n.post_id!!)
-                    })
+                    findNavController().navigate(
+                        R.id.action_to_postdetailFragment,
+                        Bundle().apply { putInt("POST_ID", n.post_id!!) }
+                    )
                 }
                 (n.ads_id ?: -1) > 0 -> {
                     fetchAdAndNavigate(n.ads_id!!)
@@ -55,6 +66,18 @@ class NotificationsFragment : Fragment() {
         bottomNavigationView = activity?.findViewById(R.id.bottom_navigation)
         fetchNotifications()
         return view
+    }
+
+    private fun navigateHome() {
+        val bnv = bottomNavigationView
+        if (bnv != null) {
+            val homeId = if (bnv.menu.findItem(R.id.homeFragment) != null)
+                R.id.homeFragment else R.id.home
+            bnv.selectedItemId = homeId
+        } else {
+            // fallback กรณีไม่มี BottomNav ใน layout นี้
+            findNavController().popBackStack(R.id.homeFragment, false)
+        }
     }
 
     private fun fetchNotifications() {
@@ -111,9 +134,7 @@ class NotificationsFragment : Fragment() {
                     Log.e("AdFetch", "HTTP error or empty. body=$body")
                     return
                 }
-                val bundle = Bundle().apply {
-                    putString("ad_json", body)
-                }
+                val bundle = Bundle().apply { putString("ad_json", body) }
                 activity?.runOnUiThread {
                     findNavController().navigate(R.id.action_to_adDetailFragment, bundle)
                 }
