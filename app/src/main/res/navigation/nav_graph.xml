@@ -40,6 +40,10 @@
         <action
             android:id="@+id/action_to_postdetailFragment"
             app:destination="@id/postDetailFragment" />
+        <!-- ใหม่: ไปหน้าโฆษณาจาก noti -->
+        <action
+            android:id="@+id/action_to_adDetailFragment"
+            app:destination="@id/adDetailFragment" />
     </fragment>
 
     <fragment
@@ -179,13 +183,18 @@
         android:name="com.bestpick.reviewhub.AdDetailFragment"
         android:label="Ad Detail"
         tools:layout="@layout/fragment_ad_detail" >
+        <!-- เดิม -->
         <argument
             android:name="ad_json"
             app:argType="string" />
+        <!-- ใหม่ รับจาก noti -->
+        <argument
+            android:name="ADS_ID"
+            app:argType="integer"
+            android:defaultValue="-1" />
         <action
             android:id="@+id/action_adDetailFragment_to_paymentFragment"
             app:destination="@id/paymentFragment" />
-
     </fragment>
 
     <fragment

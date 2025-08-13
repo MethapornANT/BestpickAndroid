@@ -1,81 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/notification_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="10dp"
-    android:layout_marginBottom="1dp"
+    android:minHeight="88dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
     android:background="@color/white"
-    android:orientation="vertical">
+    android:foreground="?attr/selectableItemBackground">
 
-    <!-- เพิ่ม LinearLayout ที่มี id = notification_container -->
-    <LinearLayout
-        android:id="@+id/notification_container"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/comment_profile_image"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="16dp"
+        android:scaleType="centerCrop"
+        android:clipToOutline="true"
+        android:background="@drawable/rounded_image"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- เวลา มุมขวาบน -->
+    <TextView
+        android:id="@+id/comment_created_at"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="0dp"
-        android:padding="5dp"
-        android:gravity="center_horizontal"
-        android:paddingBottom="5dp">
+        android:text="13 ส.ค. 2025, 15:37"
+        android:textSize="12sp"
+        android:textColor="@android:color/darker_gray"
+        android:singleLine="true"
+        android:includeFontPadding="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Profile Image -->
-        <ImageView
-            android:id="@+id/comment_profile_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/rounded_image"
-            android:clipToOutline="true"
-            android:scaleType="centerCrop"
-            android:src="@drawable/user" />
+    <!-- ชื่อ 1 บรรทัด ตัด ... ก่อนชนเวลา -->
+    <TextView
+        android:id="@+id/comment_username"
+        android:layout_width="0dp"
+        android:paddingLeft="12dp"
+        android:layout_height="wrap_content"
+        android:text="AnTz"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:includeFontPadding="false"
+        app:layout_constraintStart_toEndOf="@id/comment_profile_image"
+        app:layout_constraintEnd_toStartOf="@id/comment_created_at"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Username and Post Time -->
-        <LinearLayout
-            android:layout_width="99dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:orientation="vertical">
+    <!-- ต้องมี width/height -->
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/top_row_barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="comment_username,comment_created_at" />
 
-            <TextView
-                android:id="@+id/comment_username"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Spider"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+    <!-- เนื้อหา ใต้แถวบนเสมอ ไม่ทับเวลา ถึงริมขวา -->
+    <TextView
+        android:id="@+id/comment_content"
+        android:layout_width="0dp"
+        android:layout_marginLeft="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="15dp"
+        android:layout_height="wrap_content"
+        android:text="โฆษณาของคุณได้รับการตรวจสอบแล้ว กรุณาโอนเงิน…"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/bluetext"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="2dp"
+        android:breakStrategy="balanced"
+        app:layout_constraintStart_toStartOf="@id/comment_username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_row_barrier"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-            <TextView
-                android:id="@+id/comment_created_at"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5 hours ago"
-                android:textColor="@android:color/darker_gray"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/comment_content"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Like your post"
-                android:layout_gravity="center"
-                android:textStyle="bold"
-                android:textColor="@color/bluetext"
-                android:textSize="16sp" />
-
-        </LinearLayout>
-    </LinearLayout>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="#E6E6E6"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

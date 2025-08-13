@@ -17,22 +17,28 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bestpick.reviewhub.models.UserAd
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.source
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
 
 class AdDetailFragment : Fragment() {
 
     private var userAd: UserAd? = null
+    private var adIdArg: Int? = null
     private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            val adJson = it.getString("ad_json")
-            if (adJson != null) {
-                userAd = Gson().fromJson(adJson, UserAd::class.java)
+        arguments?.let { args ->
+            val adJson = args.getString("ad_json")
+            adIdArg = if (args.containsKey("ad_id")) args.getInt("ad_id") else null
+            if (!adJson.isNullOrBlank()) {
+                try { userAd = Gson().fromJson(adJson, UserAd::class.java) } catch (_: JsonSyntaxException) {}
             }
         }
     }
@@ -40,24 +46,67 @@ class AdDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_ad_detail, container, false)
-    }
+    ): View = inflater.inflate(R.layout.fragment_ad_detail, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ImageView>(R.id.backButton).setOnClickListener {
+        view.findViewById<ImageView>(R.id.backButton)?.setOnClickListener {
             findNavController().popBackStack()
         }
 
-        if (userAd == null) {
-            Toast.makeText(context, "Failed to load ad details", Toast.LENGTH_SHORT).show()
-            findNavController().popBackStack()
-            return
+        userAd?.let { bindAdData(view, it) } ?: run {
+            val id = adIdArg
+            if (id == null) {
+                Toast.makeText(context, "No Ad ID provided", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
+            } else {
+                fetchAdById(id) { ad ->
+                    if (!isAdded) return@fetchAdById
+                    if (ad == null) {
+                        Toast.makeText(context, "Failed to load ad details", Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    } else {
+                        userAd = ad
+                        bindAdData(view, ad)
+                    }
+                }
+            }
         }
+    }
 
-        bindAdData(view, userAd!!)
+    private fun fetchAdById(adId: Int, cb: (UserAd?) -> Unit) {
+        val token = requireActivity()
+            .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+            .getString("TOKEN", null)
+
+        if (token.isNullOrEmpty()) { cb(null); return }
+
+        val url = "${getString(R.string.root_url)}/api/my/ads/$adId"
+        val req = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(req).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("AdDetail", "fetch fail", e)
+                activity?.runOnUiThread { cb(null) }
+            }
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!it.isSuccessful) {
+                        Log.e("AdDetail", "HTTP ${it.code}")
+                        activity?.runOnUiThread { cb(null) }
+                        return
+                    }
+                    val body = it.body?.string()
+                    val ad = try { Gson().fromJson(body, UserAd::class.java) } catch (_: Exception) { null }
+                    activity?.runOnUiThread { cb(ad) }
+                }
+            }
+        })
     }
 
     private fun bindAdData(view: View, ad: UserAd) {
@@ -73,15 +122,14 @@ class AdDetailFragment : Fragment() {
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
         val rootUrl = getString(R.string.root_url)
+
         titleView.text = ad.title
         statusView.text = ad.status.replaceFirstChar { it.uppercase() }
 
-        // แสดงข้อมูลแพ็กเกจ
         val packageName = ad.package_name ?: "N/A"
         val packagePrice = ad.package_price ?: 0.0
         packageInfoView.text = "$packageName - %.2f Baht".format(packagePrice)
 
-        // ซ่อน/แสดง UI ตามสถานะ
         payButton.visibility = View.GONE
         renewButton.visibility = View.GONE
         deleteButton.visibility = View.GONE
@@ -133,19 +181,17 @@ class AdDetailFragment : Fragment() {
         }
         statusView.background?.setTint(statusColor)
 
-        // ตั้งค่าการทำงานของปุ่ม
         payButton.setOnClickListener {
-            val bundle = Bundle().apply {
-                putString("ad_json", Gson().toJson(ad))
-            }
+            val bundle = Bundle().apply { putString("ad_json", Gson().toJson(ad)) }
             findNavController().navigate(R.id.action_adDetailFragment_to_paymentFragment, bundle)
         }
-        renewButton.setOnClickListener { /* TODO: นำทางไปหน้าต่ออายุ */ }
+        renewButton.setOnClickListener {
+            Toast.makeText(context, "Renew flow coming soon", Toast.LENGTH_SHORT).show()
+        }
         deleteButton.setOnClickListener { showDeleteConfirmationDialog(ad) }
 
-        // โหลดรูปภาพ
         Glide.with(this)
-            .load("$rootUrl${ad.image}")
+            .load(if ((ad.image ?: "").startsWith("http")) ad.image else "$rootUrl${ad.image}")
             .placeholder(R.color.grey)
             .error(R.drawable.right)
             .into(imageView)
@@ -164,35 +210,73 @@ class AdDetailFragment : Fragment() {
     }
 
     private fun deleteAd(adId: Int) {
-        val sharedPreferences = requireActivity().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-        val token = sharedPreferences.getString("TOKEN", null) ?: return
+        val token = requireActivity()
+            .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+            .getString("TOKEN", null) ?: return
 
         val url = "${getString(R.string.root_url)}/api/my/ads/$adId/delete"
-        val requestBody = "".toRequestBody(null)
-        val request = Request.Builder()
+        val req = Request.Builder()
             .url(url)
-            .put(requestBody)
+            .put("".toRequestBody(null))
             .addHeader("Authorization", "Bearer $token")
             .build()
 
-        client.newCall(request).enqueue(object: Callback {
+        client.newCall(req).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 activity?.runOnUiThread {
                     Toast.makeText(context, "Failed to delete ad: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
-
             override fun onResponse(call: Call, response: Response) {
-                val responseBody = response.body?.string()
+                val body = response.body?.string()
                 activity?.runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(context, "Ad deleted successfully.", Toast.LENGTH_SHORT).show()
                         findNavController().popBackStack()
                     } else {
-                        val errorMessage = try { JSONObject(responseBody).getString("error") } catch (e: Exception) { "Could not delete this ad." }
-                        Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_LONG).show()
+                        val msg = try { JSONObject(body ?: "").optString("error") } catch (_: Exception) { null }
+                        Toast.makeText(context, "Error: ${msg ?: "Could not delete this ad."}", Toast.LENGTH_LONG).show()
                     }
                 }
+            }
+        })
+    }
+
+    // -------- Payment slip helpers (concise EN result) --------
+
+    // อัปโหลดจาก File แบบเดิม แต่เช็คให้ชัด
+    private fun verifySlipFromFile(
+        orderId: Int,
+        imageFile: java.io.File,
+        qrPayload: String,
+        amount: Double?,
+        onDone: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (!imageFile.exists()) {
+            onError("Image file not found"); return
+        }
+        val token = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+            .getString("TOKEN", null) ?: return onError("Unauthorized")
+
+        val url = getString(R.string.root_url) + "/api/verify-slip/$orderId"
+        val media = "image/jpeg".toMediaTypeOrNull()
+        val fileBody = okhttp3.RequestBody.create(media, imageFile)
+
+        val form = okhttp3.MultipartBody.Builder().setType(okhttp3.MultipartBody.FORM)
+            .addFormDataPart("payload", qrPayload)
+            .addFormDataPart("slip", imageFile.name, fileBody)
+            .apply { amount?.let { addFormDataPart("amount", it.toString()) } }
+            .build()
+
+        val req = okhttp3.Request.Builder().url(url).post(form)
+            .addHeader("Authorization", "Bearer $token").build()
+
+        client.newCall(req).enqueue(object: okhttp3.Callback {
+            override fun onFailure(call: okhttp3.Call, e: java.io.IOException) = onError(e.message ?: "Network error")
+            override fun onResponse(call: okhttp3.Call, resp: okhttp3.Response) {
+                val body = resp.body?.string().orEmpty()
+                if (!resp.isSuccessful) onError(body) else onDone(body)
             }
         })
     }

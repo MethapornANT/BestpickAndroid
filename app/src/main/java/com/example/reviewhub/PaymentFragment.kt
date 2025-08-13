@@ -1,7 +1,6 @@
 package com.bestpick.reviewhub
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -10,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,13 +33,11 @@ import java.io.IOException
 
 class PaymentFragment : Fragment() {
 
-    // เปลี่ยนจาก orderId มาเป็น UserAd object เพื่อเก็บข้อมูลทั้งหมด
     private var userAd: UserAd? = null
     private var promptPayPayload: String? = null
     private var selectedSlipUri: Uri? = null
     private val client = OkHttpClient()
 
-    // Views
     private lateinit var packageInfoTextView: TextView
     private lateinit var transferAmountValueTextView: TextView
     private lateinit var qrCodeImageView: ImageView
@@ -66,16 +62,12 @@ class PaymentFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            // รับข้อมูล ad_json ที่ถูกส่งมา แล้วแปลงกลับเป็น Object
             val adJson = it.getString("ad_json")
-            if (adJson != null) {
-                userAd = Gson().fromJson(adJson, UserAd::class.java)
-            }
+            if (adJson != null) userAd = Gson().fromJson(adJson, UserAd::class.java)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // อ้างอิง Layout XML ของคุณ
         return inflater.inflate(R.layout.fragment_payment, container, false)
     }
 
@@ -85,8 +77,8 @@ class PaymentFragment : Fragment() {
         setupClickListeners()
 
         if (userAd != null) {
-            bindData() // แสดงข้อมูล Package ที่ได้รับมา
-            generateQrCode() // สร้าง QR Code จาก order_id
+            bindData()
+            generateQrCode()
         } else {
             Toast.makeText(context, "Error: Ad details not found.", Toast.LENGTH_SHORT).show()
             progressBar.visibility = View.GONE
@@ -100,14 +92,14 @@ class PaymentFragment : Fragment() {
         progressBar = view.findViewById(R.id.progressBar)
         uploadSlipButton = view.findViewById(R.id.uploadSlipButton)
         slipPreviewImageView = view.findViewById(R.id.slipPreviewImageView)
-        confirmButton = view.findViewById(R.id.confirmButton) // FIXED
+        confirmButton = view.findViewById(R.id.confirmButton)
         view.findViewById<ImageView>(R.id.backButton).setOnClickListener { findNavController().popBackStack() }
     }
 
     private fun setupClickListeners() {
         uploadSlipButton.setOnClickListener { openGalleryForSlip() }
         confirmButton.setOnClickListener {
-            if (selectedSlipUri != null && promptPayPayload != null) {
+            if (selectedSlipUri != null && !promptPayPayload.isNullOrBlank()) {
                 uploadSlip()
             } else {
                 Toast.makeText(context, "Please select a slip image first.", Toast.LENGTH_SHORT).show()
@@ -119,11 +111,7 @@ class PaymentFragment : Fragment() {
         val packageName = userAd?.package_name ?: "Unknown Package"
         val packagePrice = userAd?.package_price ?: 0.0
         val packageDuration = userAd?.package_duration ?: 0
-
-        // แสดงชื่อแพ็กเกจและราคาใน CardView
         packageInfoTextView.text = "$packageName\n$packageDuration Day - $packagePrice Baht"
-
-        // แสดงยอดที่ต้องโอน
         transferAmountValueTextView.text = "%.2f Baht".format(packagePrice)
     }
 
@@ -157,7 +145,7 @@ class PaymentFragment : Fragment() {
                     }
                 } else {
                     activity?.runOnUiThread {
-                        val errorMessage = try { JSONObject(responseBody).getString("message") } catch (e: Exception) { "Unknown error" }
+                        val errorMessage = try { JSONObject(responseBody ?: "{}").getString("message") } catch (_: Exception) { "Unknown error" }
                         Toast.makeText(context, "Error generating QR: $errorMessage", Toast.LENGTH_SHORT).show()
                         progressBar.visibility = View.GONE
                     }
@@ -175,16 +163,35 @@ class PaymentFragment : Fragment() {
         confirmButton.isEnabled = false
         confirmButton.text = "Uploading..."
 
-        val slipFile = selectedSlipUri?.let { uriToFile(it, requireContext()) } ?: return
+        val uri = selectedSlipUri
+        if (uri == null) {
+            Toast.makeText(context, "No slip selected", Toast.LENGTH_SHORT).show()
+            confirmButton.isEnabled = true
+            confirmButton.text = "Confirm"
+            return
+        }
 
+        val slipFile = uriToFile(uri, requireContext())
+        if (slipFile == null || !slipFile.exists()) {
+            Toast.makeText(context, "Cannot read slip image", Toast.LENGTH_SHORT).show()
+            confirmButton.isEnabled = true
+            confirmButton.text = "Confirm"
+            return
+        }
+
+        val token = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE).getString("TOKEN", null)
+
+        // ต้องใช้ key "slip_image" ให้ตรงกับ backend
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("slip_image", slipFile.name, slipFile.asRequestBody("image/*".toMediaTypeOrNull()))
-            .addFormDataPart("payload", promptPayPayload!!)
+            .addFormDataPart("slip_image", slipFile.name, slipFile.asRequestBody("image/jpeg".toMediaTypeOrNull()))
+            .addFormDataPart("payload", promptPayPayload ?: "")
             .build()
 
         val uploadUrl = "${getString(R.string.root_url2)}/api/verify-slip/${userAd!!.order_id}"
-        val request = Request.Builder().url(uploadUrl).post(requestBody).build()
+        val reqBuilder = Request.Builder().url(uploadUrl).post(requestBody)
+        if (!token.isNullOrBlank()) reqBuilder.addHeader("Authorization", "Bearer $token")
+        val request = reqBuilder.build()
 
         client.newCall(request).enqueue(object: Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -198,18 +205,12 @@ class PaymentFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
                 activity?.runOnUiThread {
-                    try {
-                        if (response.isSuccessful) {
-                            findNavController().navigate(R.id.action_paymentFragment_to_paymentSuccessFragment)
-                        } else {
-                            val json = JSONObject(responseBody)
-                            val errorMessage = json.optString("message", "An error occurred during verification.")
-                            Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_LONG).show()
-                            confirmButton.isEnabled = true
-                            confirmButton.text = "Confirm"
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "An unexpected error occurred.", Toast.LENGTH_LONG).show()
+                    if (response.isSuccessful) {
+                        findNavController().navigate(R.id.action_paymentFragment_to_paymentSuccessFragment)
+                    } else {
+                        val json = try { JSONObject(responseBody ?: "{}") } catch (_: Exception) { JSONObject() }
+                        val msg = json.optString("message", "Verification failed.")
+                        Toast.makeText(context, "Error: $msg", Toast.LENGTH_LONG).show()
                         confirmButton.isEnabled = true
                         confirmButton.text = "Confirm"
                     }
@@ -220,14 +221,13 @@ class PaymentFragment : Fragment() {
 
     private fun uriToFile(uri: Uri, context: Context): File? {
         return try {
-            val contentResolver = context.contentResolver
-            val fileExtension = contentResolver.getType(uri)?.substringAfterLast('/') ?: "jpg"
-            val file = File(context.cacheDir, "slip_${System.currentTimeMillis()}.$fileExtension")
-            contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(file).use { outputStream -> inputStream.copyTo(outputStream) }
+            val ext = context.contentResolver.getType(uri)?.substringAfterLast('/') ?: "jpg"
+            val file = File(context.cacheDir, "slip_${System.currentTimeMillis()}.$ext")
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(file).use { output -> input.copyTo(output) }
             }
             file
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             null
         }
     }
