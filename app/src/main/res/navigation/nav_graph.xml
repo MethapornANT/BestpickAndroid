@@ -37,6 +37,9 @@
         <action
             android:id="@+id/action_to_postdetailFragment"
             app:destination="@id/postDetailFragment" />
+        <action
+            android:id="@+id/action_to_adDetailFragment"
+            app:destination="@id/adDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/messageFragment"
@@ -47,7 +50,7 @@
             app:destination="@id/AnotherUserFragment" />
         <action
             android:id="@+id/action_messageFragment_to_chatFragment"
-            app:destination="@id/chatFragment" />
+            app:destination="@id/messageFragment" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -117,11 +120,6 @@
             android:id="@+id/action_checkfollowFragment_to_userProfileFragment"
             app:destination="@id/AnotherUserFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/chatFragment"
-        android:name="com.bestpick.reviewhub.ChatFragment"
-        android:label="Chat"
-        tools:layout="@layout/fragment_chat" />
 
     <fragment
         android:id="@+id/moreMenuFragment"
@@ -181,6 +179,11 @@
         <argument
             android:name="ad_json"
             app:argType="string" />
+        <!-- ใหม่ รับจาก noti -->
+        <argument
+            android:name="ADS_ID"
+            app:argType="integer"
+            android:defaultValue="-1" />
         <action
             android:id="@+id/action_adDetailFragment_to_paymentFragment"
             app:destination="@id/paymentFragment" />
