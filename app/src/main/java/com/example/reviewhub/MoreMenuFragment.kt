@@ -70,7 +70,6 @@ class MoreMenuFragment : Fragment() {
             showLogoutConfirmationDialog()
         }
 
-        val searchEditText: AppCompatEditText = view.findViewById(R.id.search_edit_text)
         val allMenuItems = listOf(
             editAccountLayout,
             createAdLayout,
@@ -78,15 +77,6 @@ class MoreMenuFragment : Fragment() {
             deleteAccountLayout,
             logoutLayout
         )
-
-        searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val query = s.toString().lowercase().trim()
-                filterMenuItems(query, allMenuItems)
-            }
-        })
     }
 
     private fun filterMenuItems(query: String, menuItems: List<LinearLayout>) {

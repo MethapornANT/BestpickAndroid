@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:background="@drawable/bgwhite3"
     tools:context=".MoreMenuFragment">
 
     <LinearLayout
@@ -14,7 +15,7 @@
         android:orientation="vertical">
 
         <androidx.appcompat.widget.Toolbar
-            android:layout_width="382dp"
+            android:layout_width="380dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:padding="10dp">
@@ -28,18 +29,6 @@
                 android:contentDescription="Back"
                 android:focusable="true"
                 android:src="@drawable/arrow_back" />
-
-            <androidx.appcompat.widget.AppCompatEditText
-                android:id="@+id/search_edit_text"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/custom_edittext"
-                android:drawableStart="@drawable/baseline_search_home"
-                android:drawablePadding="8dp"
-                android:hint="Search People or Posts"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp" />
         </androidx.appcompat.widget.Toolbar>
 
         <LinearLayout

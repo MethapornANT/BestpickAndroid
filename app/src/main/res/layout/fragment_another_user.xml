@@ -190,7 +190,7 @@
                     android:layout_width="0dp"
                     android:layout_height="45dp"
                     android:layout_weight="1"
-                    android:backgroundTint="@color/blue"
+                    android:backgroundTint="@color/bluetext"
                     android:text="Follow"
                     android:textColor="@color/white" />
 
@@ -200,7 +200,7 @@
                     android:layout_height="45dp"
                     android:layout_weight="0.43"
                     android:layout_marginStart="8dp"
-                    android:backgroundTint="@color/blue"
+                    android:backgroundTint="@color/gray_dark"
                     android:text="Message"
                     android:textColor="@color/white"
                     android:visibility="gone" />

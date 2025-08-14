@@ -833,10 +833,6 @@ class PostDetailFragment : Fragment() {
 
             override fun onResponse(call: Call, response: Response) {
                 (context as? Activity)?.runOnUiThread {
-                    if (!response.isSuccessful) {
-                    } else {
-                        Toast.makeText(context, "Notification sent successfully", Toast.LENGTH_SHORT).show()
-                    }
                 }
             }
         })
@@ -872,10 +868,6 @@ class PostDetailFragment : Fragment() {
 
             override fun onResponse(call: Call, response: Response) {
                 (context as? Activity)?.runOnUiThread {
-                    if (!response.isSuccessful) {
-                    } else {
-                        Toast.makeText(context, "Notification deleted successfully", Toast.LENGTH_SHORT).show()
-                    }
                 }
             }
         })

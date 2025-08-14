@@ -133,7 +133,7 @@ class EditprofileFragment : Fragment() {
         if (username.isEmpty() || bio.isEmpty() || gender.isEmpty() || birthdayStr.isEmpty()) {
             Log.e("SAVE_DEBUG", "ERROR: Validation failed. A field is empty.")
             if (isAdded) {
-                Toast.makeText(requireContext(), "กรุณากรอกข้อมูลให้ครบทุกช่องงับ", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "กรุณากรอกข้อมูลให้ครบทุกช่อง", Toast.LENGTH_SHORT).show()
             }
             return
         }
@@ -199,13 +199,13 @@ class EditprofileFragment : Fragment() {
                 if (isAdded && activity != null) {
                     requireActivity().runOnUiThread {
                         if (response.isSuccessful) {
-                            Toast.makeText(requireContext(), "อัปเดตโปรไฟล์สำเร็จงับ", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "อัปเดตโปรไฟล์สำเร็จ", Toast.LENGTH_SHORT).show()
                             requireActivity().onBackPressed()
                         } else {
                             try {
                                 val jsonResponse = JSONObject(responseData ?: "")
                                 val status = jsonResponse.optString("status", "")
-                                val message = jsonResponse.optString("message", "เกิดข้อผิดพลาดที่ไม่ทราบงับ")
+                                val message = jsonResponse.optString("message", "เกิดข้อผิดพลาดที่ไม่ทราบ")
                                 val suggestion = jsonResponse.optString("suggestion", "")
                                 val errorDetail = jsonResponse.optString("error", "")
 
@@ -213,9 +213,9 @@ class EditprofileFragment : Fragment() {
 
                                 if (status == "warning") {
                                     displayMessage = "กรุณาเปลี่ยนภาพ"
-                                } else if (errorDetail.isNotEmpty() && displayMessage == "เกิดข้อผิดพลาดที่ไม่ทราบงับ") {
+                                } else if (errorDetail.isNotEmpty() && displayMessage == "เกิดข้อผิดพลาดที่ไม่ทราบ") {
                                     displayMessage = errorDetail
-                                } else if (suggestion.isNotEmpty() && displayMessage == "เกิดข้อผิดพลาดที่ไม่ทราบงับ") {
+                                } else if (suggestion.isNotEmpty() && displayMessage == "เกิดข้อผิดพลาดที่ไม่ทราบ") {
                                     displayMessage = suggestion
                                 }
 
@@ -359,7 +359,7 @@ class EditprofileFragment : Fragment() {
                     val formattedDate = SimpleDateFormat(DATE_FORMAT, Locale.US).format(selectedCalendar.time)
                     editText.setText(formattedDate)
                 } else {
-                    Toast.makeText(requireContext(), "ต้องมีอายุอย่างน้อย 13 ปีขึ้นไปงับ", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป", Toast.LENGTH_SHORT).show()
                     editText.setText("")
                 }
             },

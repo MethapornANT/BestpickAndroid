@@ -6,13 +6,13 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="32dp"
-    android:background="@drawable/imgbg">
+    android:background="@drawable/bgwhite1">
 
     <ImageView
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:src="@drawable/right"
-        app:tint="@color/green" />
+        app:tint="@color/teal_200" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -27,15 +27,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Please wait for admin to review and approve your ad."
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:gravity="center"
         android:layout_marginTop="8dp"/>
 
     <Button
         android:id="@+id/confirmButton"
-        android:layout_width="match_parent"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/button"
         android:text="Confirm"
-        android:layout_marginTop="32dp"/>
+        android:layout_marginTop="30dp"/>
 
 </LinearLayout>

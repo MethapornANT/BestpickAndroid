@@ -161,16 +161,23 @@
 
             <Button
                 android:id="@+id/payButton"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button"
+                android:textSize="14sp"
                 android:text="Proceed to Payment"
                 android:visibility="gone"
+                android:layout_gravity="center"
                 tools:visibility="visible"/>
 
             <Button
                 android:id="@+id/renewButton"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button"
+                android:layout_gravity="center"
+                android:textSize="14sp"
+                android:layout_marginTop="15dp"
                 android:text="Renew Ad"
                 android:visibility="gone"
                 tools:visibility="visible"/>
