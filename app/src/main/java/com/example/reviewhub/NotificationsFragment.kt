@@ -7,13 +7,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
 class NotificationsFragment : Fragment() {
@@ -22,6 +26,7 @@ class NotificationsFragment : Fragment() {
     private lateinit var notificationsAdapter: NotificationsAdapter
     private val notificationList = mutableListOf<Notification>()
     private var bottomNavigationView: BottomNavigationView? = null
+    private val http by lazy { OkHttpClient() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,136 +35,163 @@ class NotificationsFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_notifications, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+        // Toolbar + back
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.navigationIcon = ContextCompat.getDrawable(
+            requireContext(),
+            androidx.appcompat.R.drawable.abc_ic_ab_back_material
+        )
+        toolbar.setNavigationOnClickListener { navigateHome() }
+
         recyclerView = view.findViewById(R.id.recycler_view_posts)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        notificationsAdapter = NotificationsAdapter(notificationList) { notification ->
-            // เมื่อผู้ใช้คลิกที่ Notification ให้ทำการอัปเดตสถานะ
-            updatestatus(notification.id)
-            Log.d("NotificationsFragment", "Notification clicked: ${notification.id}")
+        notificationsAdapter = NotificationsAdapter(notificationList) { n ->
+            updatestatus(n.id)
+            Log.d("NotificationsFragment", "click id=${n.id} post=${n.post_id} ads=${n.ads_id}")
+
+            when {
+                (n.post_id ?: -1) > 0 -> {
+                    findNavController().navigate(
+                        R.id.action_to_postdetailFragment,
+                        Bundle().apply { putInt("POST_ID", n.post_id!!) }
+                    )
+                }
+                (n.ads_id ?: -1) > 0 -> {
+                    fetchAdAndNavigate(n.ads_id!!)
+                }
+            }
         }
         recyclerView.adapter = notificationsAdapter
 
-        // ดึง BottomNavigationView จาก Activity แม่
         bottomNavigationView = activity?.findViewById(R.id.bottom_navigation)
-
         fetchNotifications()
         return view
     }
 
-    private fun fetchNotifications() {
-        context?.let { ctx ->
-            val sharedPreferences = ctx.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-            val token = sharedPreferences?.getString("TOKEN", null)
-
-            if (token.isNullOrEmpty()) {
-                Log.e("Notifications", "Token not found")
-                return
-            }
-
-            val url = getString(R.string.root_url) + "/api/notifications"
-            val client = OkHttpClient()
-
-            val request = Request.Builder()
-                .url(url)
-                .get()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    response.body?.string()?.let { jsonResponse ->
-                        val notificationList: List<Notification> = Gson().fromJson(
-                            jsonResponse,
-                            object : TypeToken<List<Notification>>() {}.type
-                        )
-
-                        // กรอง Notification ที่ซ้ำกันออกโดยใช้ `id`
-                        val distinctNotifications = notificationList.distinctBy { it.id }
-                        Log.d("fetchNotifications", "Number of distinct notifications: ${distinctNotifications.size}")
-
-                        showNotifications(distinctNotifications)  // แสดง Notification ที่ไม่ซ้ำกัน
-                    }
-                }
-            })
+    private fun navigateHome() {
+        val bnv = bottomNavigationView
+        if (bnv != null) {
+            val homeId = if (bnv.menu.findItem(R.id.homeFragment) != null)
+                R.id.homeFragment else R.id.home
+            bnv.selectedItemId = homeId
+        } else {
+            // fallback กรณีไม่มี BottomNav ใน layout นี้
+            findNavController().popBackStack(R.id.homeFragment, false)
         }
     }
 
-    private fun updatestatus(notificationId: Int) {
-        val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val token = sharedPreferences?.getString("TOKEN", null)
-        Log.d("CheckStatus", "notificationId: $notificationId")
-        if (token.isNullOrEmpty()) {
-            Log.e("CheckStatus", "Token not found")
-            return
-        }
+    private fun fetchNotifications() {
+        val ctx = context ?: return
+        val token = ctx.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            .getString("TOKEN", null) ?: return
 
-        val client = OkHttpClient()
-        val url = getString(R.string.root_url) + "/api/notifications/$notificationId/read"
-
-        val request = Request.Builder()
+        val url = getString(R.string.root_url) + "/api/notifications"
+        val req = Request.Builder()
             .url(url)
-            .put(RequestBody.create(null, ""))  // Empty body สำหรับ PUT Request
+            .get()
             .addHeader("Authorization", "Bearer $token")
             .build()
 
-        client.newCall(request).enqueue(object : Callback {
+        http.newCall(req).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                Log.e("CheckStatus", "Failed to update read status", e)
+                Log.e("Notifications", "fetch fail", e)
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (response.isSuccessful) {
-                        val responseBody = response.body?.string()
-                        Log.d("CheckStatus", "Notification marked as read. Response: $responseBody")
+                val body = response.body?.string()
+                response.close()
+                if (body.isNullOrEmpty()) return
 
-                        // อัปเดตสถานะ read_status ใน notificationList
-                        val index = notificationList.indexOfFirst { it.id == notificationId }
-                        if (index != -1) {
-                            notificationList[index].read_status = 1  // เปลี่ยน read_status เป็น 1 (อ่านแล้ว)
+                val list: List<Notification> = Gson().fromJson(
+                    body, object : TypeToken<List<Notification>>() {}.type
+                )
+                val distinct = list.distinctBy { it.id }
+                showNotifications(distinct)
+            }
+        })
+    }
 
-                            // อัปเดต UI ใน Main Thread
-                            activity?.runOnUiThread {
-                                notificationsAdapter.notifyItemChanged(index)  // อัปเดตเฉพาะรายการที่เปลี่ยนแปลง
-                            }
+    private fun fetchAdAndNavigate(adId: Int) {
+        val ctx = context ?: return
+        val token = ctx.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            .getString("TOKEN", null) ?: return
 
-                            // อัปเดต Badge
-                            updateBadge()
-                        } else {
-                        }
-                    } else {
-                        Log.e("CheckStatus", "Error: ${response.message} - ${response.body?.string()}")
+        val url = getString(R.string.root_url) + "/api/my/ads/$adId"
+        val req = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        http.newCall(req).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("AdFetch", "fail", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string()
+                if (!response.isSuccessful || body.isNullOrEmpty()) {
+                    Log.e("AdFetch", "HTTP error or empty. body=$body")
+                    return
+                }
+                val bundle = Bundle().apply { putString("ad_json", body) }
+                activity?.runOnUiThread {
+                    findNavController().navigate(R.id.action_to_adDetailFragment, bundle)
+                }
+            }
+        })
+    }
+
+    private fun updatestatus(notificationId: Int) {
+        val token = context?.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            ?.getString("TOKEN", null) ?: return
+
+        val url = getString(R.string.root_url) + "/api/notifications/$notificationId/read"
+        val req = Request.Builder()
+            .url(url)
+            .put("".toRequestBody(null))
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        http.newCall(req).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("CheckStatus", "update fail", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val ok = response.isSuccessful
+                response.close()
+                if (!ok) return
+
+                val index = notificationList.indexOfFirst { it.id == notificationId }
+                if (index != -1) {
+                    notificationList[index].read_status = 1
+                    activity?.runOnUiThread {
+                        notificationsAdapter.notifyItemChanged(index)
+                        updateBadge()
                     }
                 }
             }
         })
     }
 
-    private fun showNotifications(notificationList: List<Notification>) {
+    private fun showNotifications(list: List<Notification>) {
         activity?.runOnUiThread {
-            this.notificationList.clear()
-            this.notificationList.addAll(notificationList)
+            notificationList.clear()
+            notificationList.addAll(list)
             notificationsAdapter.notifyDataSetChanged()
-            Log.d("showNotifications", "Number of notifications to display: ${this.notificationList.size}")
-
-            // อัปเดต Badge หลังจากแสดงการแจ้งเตือน
             updateBadge()
         }
     }
 
     private fun updateBadge() {
-        val unreadCount = notificationList.count { it.read_status == 0 }
-        if (unreadCount > 0) {
-            val badge = bottomNavigationView?.getOrCreateBadge(R.id.notification)
+        val unread = notificationList.count { it.read_status == 0 }
+        val badge = bottomNavigationView?.getOrCreateBadge(R.id.notification)
+        if (unread > 0) {
             badge?.isVisible = true
-            badge?.number = unreadCount
+            badge?.number = unread
         } else {
-            val badge = bottomNavigationView?.getBadge(R.id.notification)
-            badge?.isVisible = false
+            bottomNavigationView?.getBadge(R.id.notification)?.isVisible = false
         }
     }
 }
