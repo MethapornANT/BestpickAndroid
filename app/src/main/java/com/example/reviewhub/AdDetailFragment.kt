@@ -140,7 +140,14 @@ class AdDetailFragment : Fragment() {
             }
             findNavController().navigate(R.id.action_adDetailFragment_to_paymentFragment, bundle)
         }
-        renewButton.setOnClickListener { /* TODO: นำทางไปหน้าต่ออายุ */ }
+        renewButton.setOnClickListener {
+            val adJson = Gson().toJson(ad)
+            val bundle = Bundle().apply {
+                putString("ad_json", adJson)
+            }
+            findNavController().navigate(R.id.action_adDetailFragment_to_renewAdFragment, bundle)
+        }
+
         deleteButton.setOnClickListener { showDeleteConfirmationDialog(ad) }
 
         // โหลดรูปภาพ

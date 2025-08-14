@@ -131,24 +131,26 @@
             android:text="Attach the slip within 24 hours."
             android:textColor="@android:color/darker_gray"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/transfer_amount_label" /> <Button
-        android:id="@+id/uploadSlipButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="#E0E0E0"
-        android:text="Select photo"
-        android:textColor="@android:color/black"
-        android:textAllCaps="false"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/attach_slip_label" />
+            app:layout_constraintTop_toBottomOf="@id/transfer_amount_label" />
+
+        <Button
+            android:id="@+id/uploadSlipButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#E0E0E0"
+            android:text="Select photo"
+            android:textColor="@android:color/black"
+            android:textAllCaps="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/attach_slip_label" />
 
         <ImageView
             android:id="@+id/slipPreviewImageView"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_marginTop="16dp"
-            android:layout_marginLeft="85dp"
+            android:layout_marginStart="85dp"
             android:scaleType="centerCrop"
             android:visibility="gone"
             tools:visibility="visible"

@@ -1,7 +1,6 @@
 package com.bestpick.reviewhub
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -35,13 +34,11 @@ import java.io.IOException
 
 class PaymentFragment : Fragment() {
 
-    // เปลี่ยนจาก orderId มาเป็น UserAd object เพื่อเก็บข้อมูลทั้งหมด
     private var userAd: UserAd? = null
     private var promptPayPayload: String? = null
     private var selectedSlipUri: Uri? = null
     private val client = OkHttpClient()
 
-    // Views
     private lateinit var packageInfoTextView: TextView
     private lateinit var transferAmountValueTextView: TextView
     private lateinit var qrCodeImageView: ImageView
@@ -66,7 +63,6 @@ class PaymentFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            // รับข้อมูล ad_json ที่ถูกส่งมา แล้วแปลงกลับเป็น Object
             val adJson = it.getString("ad_json")
             if (adJson != null) {
                 userAd = Gson().fromJson(adJson, UserAd::class.java)
@@ -75,7 +71,6 @@ class PaymentFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // อ้างอิง Layout XML ของคุณ
         return inflater.inflate(R.layout.fragment_payment, container, false)
     }
 
@@ -85,8 +80,8 @@ class PaymentFragment : Fragment() {
         setupClickListeners()
 
         if (userAd != null) {
-            bindData() // แสดงข้อมูล Package ที่ได้รับมา
-            generateQrCode() // สร้าง QR Code จาก order_id
+            bindData()
+            generateQrCode()
         } else {
             Toast.makeText(context, "Error: Ad details not found.", Toast.LENGTH_SHORT).show()
             progressBar.visibility = View.GONE
@@ -100,7 +95,7 @@ class PaymentFragment : Fragment() {
         progressBar = view.findViewById(R.id.progressBar)
         uploadSlipButton = view.findViewById(R.id.uploadSlipButton)
         slipPreviewImageView = view.findViewById(R.id.slipPreviewImageView)
-        confirmButton = view.findViewById(R.id.confirmButton) // FIXED
+        confirmButton = view.findViewById(R.id.confirmButton)
         view.findViewById<ImageView>(R.id.backButton).setOnClickListener { findNavController().popBackStack() }
     }
 
@@ -110,7 +105,7 @@ class PaymentFragment : Fragment() {
             if (selectedSlipUri != null && promptPayPayload != null) {
                 uploadSlip()
             } else {
-                Toast.makeText(context, "Please select a slip image first.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Please attach the slip first.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -120,10 +115,7 @@ class PaymentFragment : Fragment() {
         val packagePrice = userAd?.package_price ?: 0.0
         val packageDuration = userAd?.package_duration ?: 0
 
-        // แสดงชื่อแพ็กเกจและราคาใน CardView
         packageInfoTextView.text = "$packageName\n$packageDuration Day - $packagePrice Baht"
-
-        // แสดงยอดที่ต้องโอน
         transferAmountValueTextView.text = "%.2f Baht".format(packagePrice)
     }
 
@@ -141,7 +133,6 @@ class PaymentFragment : Fragment() {
                     progressBar.visibility = View.GONE
                 }
             }
-
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
                 if (response.isSuccessful && responseBody != null) {
@@ -194,7 +185,6 @@ class PaymentFragment : Fragment() {
                     confirmButton.text = "Confirm"
                 }
             }
-
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
                 activity?.runOnUiThread {
