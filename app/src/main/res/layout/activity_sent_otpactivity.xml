@@ -168,4 +168,18 @@
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+    <!-- เพิ่ม Loader กลางจอ -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/progressBar"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:visibility="gone"
+        app:lottie_rawRes="@raw/loading"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

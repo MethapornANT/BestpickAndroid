@@ -62,13 +62,19 @@ class SentOTPActivity : AppCompatActivity() {
         otp4 = findViewById(R.id.otp4)
         sentOTPButton = findViewById(R.id.btnsentotp)
         resendButton = findViewById(R.id.resent)
-
+        progressBar = findViewById(R.id.progressBar)
 
         val email = intent.getStringExtra("email") ?: return
         emailTextView.text = email
 
         // Start initial countdown
         startCountdown()
+
+        fun onclickResend(view: View) {
+            val email = intent.getStringExtra("email") ?: return
+            resendOtp(email)
+        }
+
 
         val backButton = findViewById<ImageButton>(R.id.backButton)
         // เพิ่ม OnClickListener สำหรับปุ่ม backButton
