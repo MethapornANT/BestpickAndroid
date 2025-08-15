@@ -35,21 +35,43 @@ class NotificationsAdapter(
         private val container: View = itemView.findViewById(R.id.notification_container)
 
         fun bind(n: Notification, onClick: (Notification) -> Unit) {
-            userName.text = n.sender_name?.takeIf { it.isNotBlank() } ?: "Bestpick"
+            // ชื่อบนหัวการ์ด (คงไว้เหมือนเดิม)
+            val sender = n.sender_name?.takeIf { it.isNotBlank() } ?: "Bestpick"
+            userName.text = sender
+
+            // เวลา
             timeText.text = formatTime(n.created_at)
 
-            val msg = when (n.action_type) {
-                "like" -> "${n.sender_name} liked your post"
-                "follow" -> "${n.sender_name} started following you"
-                "comment" -> "${n.sender_name} commented: ${n.comment_content.orEmpty().trim()}"
-                else -> n.content
+            // --- ข้อความ "ไม่แสดงชื่อผู้ใช้" สำหรับทุก action ---
+            val message = when (n.action_type?.lowercase(Locale.ROOT)) {
+                "like" -> "Liked your post"
+                "follow" -> "Started following you"
+                "comment" -> {
+                    val raw = n.comment_content?.takeIf { it.isNotBlank() }
+                        ?: n.content?.takeIf { it.isNotBlank() }
+                    val trimmed = raw?.trim()?.let { if (it.length > 140) it.take(140) + "…" else it }
+                    if (!trimmed.isNullOrEmpty()) "Commented: $trimmed" else "Commented on your post"
+                }
+                "bookmark" -> "Bookmarked your post"
+                "ads_status_change" -> n.content ?: "Your ad status changed"
+                else -> n.content ?: "Notification"
             }
-            contentText.text = msg
+            contentText.text = message
 
+            // โหลดรูปผู้ส่ง (คง logic เดิม)
             val rootUrl = itemView.context.getString(R.string.root_url) + "/api"
-            val img: Any = if (!n.sender_picture.isNullOrEmpty()) "$rootUrl${n.sender_picture}" else R.drawable.profiletest2
-            Glide.with(itemView).load(img).circleCrop().placeholder(R.drawable.testpic).into(profileImage)
+            val img: Any = if (!n.sender_picture.isNullOrEmpty())
+                "$rootUrl${n.sender_picture}"
+            else
+                R.drawable.profiletest2
 
+            Glide.with(itemView)
+                .load(img)
+                .circleCrop()
+                .placeholder(R.drawable.testpic)
+                .into(profileImage)
+
+            // read/unread background
             val bg = if (n.read_status == 1) R.color.gray_light else R.color.white
             container.setBackgroundColor(ContextCompat.getColor(itemView.context, bg))
 

@@ -1119,8 +1119,4 @@ class PostDetailFragment : Fragment() {
             }
         })
     }
-
-
-
-
 }

@@ -191,7 +191,10 @@ class NotificationsFragment : Fragment() {
             badge?.isVisible = true
             badge?.number = unread
         } else {
-            bottomNavigationView?.getBadge(R.id.notification)?.isVisible = false
+            bottomNavigationView?.getBadge(R.id.notification)?.let {
+                it.isVisible = false
+                it.clearNumber()
+            }
         }
     }
 }
