@@ -1,6 +1,5 @@
 package com.bestpick.reviewhub
 
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -88,7 +87,6 @@ class ChatAdapter(
 
             profileImage.setOnClickListener {
                 Log.d("ChatAdapter", "Clicked on profile image of user: ${chatMessage.senderID} (Nickname: ${chatMessage.nickname})")
-                // เรียก callback เพื่อให้ ChatActivity จัดการการนำทาง
                 onProfileClick(chatMessage.senderID)
             }
         }

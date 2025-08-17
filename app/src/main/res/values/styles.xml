@@ -1,9 +1,6 @@
 <resources>
     <style name="CustomAlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <!-- ใช้พื้นหลังแบบโค้งมน -->
         <item name="android:windowBackground">@drawable/dialog_box</item>
-
-        <!-- ปรับแต่งส่วนอื่นๆ เช่น ปุ่ม -->
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
     </style>
@@ -22,4 +19,8 @@
         <item name="android:textColor">@color/black</item>
     </style>
 
+    <!-- ถ้าอยากมีธีม Light ใช้เฉพาะบาง Activity ให้ทำอนุพันธ์จาก AppTheme แทน (ไม่ซ้ำชื่อ) -->
+    <style name="AppTheme.Light" parent="@style/AppTheme">
+        <!-- ใส่ override เพิ่มได้ตามต้องการ -->
+    </style>
 </resources>

@@ -107,6 +107,7 @@ dependencies {
     implementation ("androidx.media3:media3-ui:1.3.1")
     implementation ("androidx.media3:media3-datasource-okhttp:1.3.1")
 
+    implementation ("com.google.android.material:material:1.12.0")
 
     // Test Dependencies
     testImplementation(libs.junit)

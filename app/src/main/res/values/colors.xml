@@ -22,5 +22,41 @@
     <color name="grey">#BDBDBD</color>
 
 
+        <!-- Brand -->
+        <color name="brand_deep_teal">#23495c</color>
+        <color name="brand_green">#459071</color>
+        <color name="brand_mint">#9bd098</color>
+        <color name="brand_cream">#f1e9d4</color>
+
+        <!-- Material 3 tokens (Light) -->
+        <color name="colorPrimary">#459071</color>
+        <color name="colorOnPrimary">#FFFFFFFF</color>
+        <color name="colorPrimaryContainer">#9bd098</color>
+        <color name="colorOnPrimaryContainer">#0e3a2a</color>
+
+        <color name="colorSecondary">#23495c</color>
+        <color name="colorOnSecondary">#FFFFFFFF</color>
+        <color name="colorSecondaryContainer">#3b6b86</color>
+        <color name="colorOnSecondaryContainer">#FFFFFF</color>
+
+        <color name="colorTertiary">#9bd098</color>
+        <color name="colorOnTertiary">#0f2f1f</color>
+        <color name="colorTertiaryContainer">#d8f1e2</color>
+        <color name="colorOnTertiaryContainer">#0b261a</color>
+
+        <color name="colorSurface">#f1e9d4</color>
+        <color name="colorOnSurface">#1B1B1B</color>
+        <color name="colorBackground">#f1e9d4</color>
+        <color name="colorOnBackground">#1B1B1B</color>
+
+        <color name="colorOutline">#8AA29B</color>
+        <color name="colorError">#B3261E</color>
+        <color name="colorOnError">#FFFFFF</color>
+
+        <!-- Extra for chat -->
+        <color name="chat_incoming_bg">#FFFFFF</color>
+        <color name="chat_outgoing_bg">#d8f1e2</color> <!-- อ่อนกว่าหลัก อ่านง่าย -->
+        <color name="chat_text">@color/colorOnSurface</color>
+
 
 </resources>
