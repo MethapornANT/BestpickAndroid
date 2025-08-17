@@ -22,7 +22,6 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonSyntaxException
-import com.google.gson.JsonNull
 import okhttp3.*
 import java.io.IOException
 
@@ -34,6 +33,9 @@ class SearchFragment : Fragment(), OnItemClickListener {
     private val searchResults = mutableListOf<SearchResult>()
     private lateinit var progressBar: LottieAnimationView
 
+    // NEW: store BottomNavigationView reference so navigateHome can update it
+    private var bottomNavigationView: BottomNavigationView? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,12 +43,12 @@ class SearchFragment : Fragment(), OnItemClickListener {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        // --- เพิ่มส่วนนี้เข้ามา ---
+        // --- back button now uses navigateHome() like NotificationsFragment ---
         val backButton: ImageView = view.findViewById(R.id.backButton)
         backButton.setOnClickListener {
-            findNavController().popBackStack()
+            navigateHome()
         }
-        // --- จบส่วนที่เพิ่ม ---
+        // --- end back button change ---
 
         searchEditText = view.findViewById(R.id.search_edit_text)
         recyclerView = view.findViewById(R.id.recycler_view_search_results)
@@ -71,7 +73,47 @@ class SearchFragment : Fragment(), OnItemClickListener {
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        // Acquire bottom nav reference early (safe to try here)
+        bottomNavigationView = activity?.findViewById(R.id.bottom_navigation)
+
         return view
+    }
+
+    // safe acquire in lifecycle in case activity was recreated
+    override fun onStart() {
+        super.onStart()
+        bottomNavigationView = activity?.findViewById(R.id.bottom_navigation)
+    }
+
+    // navigateHome: mirror behavior from NotificationsFragment (update bottom nav, go to Home)
+    private fun navigateHome() {
+        activity?.runOnUiThread {
+            val navController = findNavController()
+            val bnv = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+            // Try common ids: prefer R.id.home if present, else R.id.homeFragment
+            when {
+                bnv?.menu?.findItem(R.id.home) != null -> bnv.selectedItemId = R.id.home
+                bnv?.menu?.findItem(R.id.homeFragment) != null -> bnv.selectedItemId = R.id.homeFragment
+                else -> Log.w("SearchFragment", "No matching home id in bottom nav menu")
+            }
+
+            // Prefer popping back to existing HomeFragment if present in back stack
+            val popped = try {
+                navController.popBackStack(R.id.homeFragment, false)
+            } catch (t: Throwable) {
+                false
+            }
+
+            if (!popped) {
+                // fallback: navigate to HomeFragment (may create a new instance)
+                try {
+                    navController.navigate(R.id.homeFragment)
+                } catch (t: Throwable) {
+                    Log.w("SearchFragment", "Failed to navigate to homeFragment: ${t.message}")
+                }
+            }
+        }
     }
 
     private fun performSearch(query: String) {
@@ -233,8 +275,15 @@ class SearchFragment : Fragment(), OnItemClickListener {
             findNavController().navigate(R.id.action_searchFragment_to_postDetailFragment, bundle)
         } else {
             if (userId == currentUserId) {
-                val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-                bottomNavigationView?.menu?.findItem(R.id.profile)?.isChecked = true
+                // Update bottom nav to profile and navigate to my profile
+                try {
+                    val bnv = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                    if (bnv?.menu?.findItem(R.id.profile) != null) {
+                        bnv.selectedItemId = R.id.profile
+                    }
+                } catch (t: Throwable) {
+                    Log.w("SearchFragment", "Failed to update bottom nav: ${t.message}")
+                }
                 findNavController().navigate(R.id.action_searchFragment_to_myProfileFragment)
             } else if (userId != -1) {
                 bundle.putInt("USER_ID", userId)
