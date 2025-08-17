@@ -456,7 +456,6 @@ class PostDetailFragment : Fragment() {
                         if (!response.isSuccessful) {
                             Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show()
                             // อัปเดตรายการคอมเมนต์หลังจากลบสำเร็จ
                             if (userId != null) {
                                 fetchPostDetails(postId, token, userId, requireView())
