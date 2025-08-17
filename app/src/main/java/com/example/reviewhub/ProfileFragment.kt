@@ -75,6 +75,7 @@ class ProfileFragment : Fragment() {
         val backButton = view.findViewById<ImageView>(R.id.back_button)
         val bottomNavigationView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
+        // keep existing behavior (left as-is) — highlight profile in bottom nav if present
         bottomNavigationView!!.menu.findItem(R.id.profile).isChecked = true
 
         val checkfollow = view.findViewById<LinearLayout>(R.id.checkfollow)
@@ -86,15 +87,14 @@ class ProfileFragment : Fragment() {
         // isSelfProfile logic:
         // ปกติแล้ว: ถ้าเป็นโปรไฟล์ของตัวเอง จะเห็นปุ่มแก้ไข (Edit) และไม่ต้องมีปุ่มย้อนกลับ (ถ้าอยู่หน้าหลัก)
         //           ถ้าเป็นโปรไฟล์คนอื่น จะไม่เห็นปุ่มแก้ไข แต่ควรมีปุ่มย้อนกลับ
-        // ผมปรับ logic ตามความคาดหวังทั่วไป หากคุณต้องการแบบเดิม ก็สามารถคืนค่าได้
         if (!isSelfProfile) {
             // ถ้าไม่ใช่โปรไฟล์ของตัวเอง (คือโปรไฟล์คนอื่น)
             editProfileButton.visibility = View.GONE // ซ่อนปุ่มแก้ไข
             backButton.visibility = View.VISIBLE // แสดงปุ่มย้อนกลับ
             // ตั้งค่าการทำงานเมื่อกด backButton (สำหรับโปรไฟล์คนอื่น)
             backButton.setOnClickListener {
-                findNavController().popBackStack() // ย้อนกลับไปยัง Fragment ก่อนหน้า
-                // หรือ activity?.onBackPressedDispatcher?.onBackPressed()
+                // เปลี่ยนให้เรียก navigateHome() แบบเดียวกับ NotificationsFragment
+                navigateHome()
             }
         } else {
             // ถ้าเป็นโปรไฟล์ของตัวเอง
@@ -142,6 +142,37 @@ class ProfileFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
+    }
+
+    // New: navigateHome() same behavior as NotificationsFragment
+    private fun navigateHome() {
+        activity?.runOnUiThread {
+            val navController = findNavController()
+            val bnv = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+            // Try common ids: prefer R.id.home, else R.id.homeFragment
+            when {
+                bnv?.menu?.findItem(R.id.home) != null -> bnv.selectedItemId = R.id.home
+                bnv?.menu?.findItem(R.id.homeFragment) != null -> bnv.selectedItemId = R.id.homeFragment
+                else -> Log.w("ProfileFragment", "No matching home id in bottom nav menu")
+            }
+
+            // Prefer popping back to existing HomeFragment if present in back stack
+            val popped = try {
+                navController.popBackStack(R.id.homeFragment, false)
+            } catch (t: Throwable) {
+                false
+            }
+
+            if (!popped) {
+                // fallback: navigate to HomeFragment (may create a new instance)
+                try {
+                    navController.navigate(R.id.homeFragment)
+                } catch (t: Throwable) {
+                    Log.w("ProfileFragment", "Failed to navigate to homeFragment: ${t.message}")
+                }
+            }
+        }
     }
 
     private fun showDeleteAccountDialog() {
@@ -346,9 +377,7 @@ class ProfileFragment : Fragment() {
                     photoUrl = post.optJSONArray("photos")?.let { jsonArray ->
                         List(jsonArray.length()) { index -> jsonArray.getString(index) }
                     },
-                    videoUrl = post.optJSONArray("videos")?.let { jsonArray ->
-                        List(jsonArray.length()) { index -> jsonArray.getString(index) }
-                    },
+                    videoUrl = post.optJSONArray("videos")?.let { jsonArray -> List(jsonArray.length()) { index -> jsonArray.getString(index) } },
                     likeCount = post.optInt("like_count", 0),
                     commentCount = post.optInt("comment_count", 0)
                 )

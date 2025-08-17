@@ -69,16 +69,14 @@ class NotificationsFragment : Fragment() {
     }
 
     private fun navigateHome() {
-        val bnv = bottomNavigationView
-        if (bnv != null) {
-            val homeId = if (bnv.menu.findItem(R.id.homeFragment) != null)
-                R.id.homeFragment else R.id.home
-            bnv.selectedItemId = homeId
-        } else {
-            // fallback กรณีไม่มี BottomNav ใน layout นี้
-            findNavController().popBackStack(R.id.homeFragment, false)
+        activity?.runOnUiThread {
+            val bnv = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+            val homeId = bnv?.menu?.findItem(R.id.homeFragment)?.itemId ?: R.id.home
+            bnv?.selectedItemId = homeId
+            findNavController().navigate(R.id.homeFragment)
         }
     }
+
 
     private fun fetchNotifications() {
         val ctx = context ?: return

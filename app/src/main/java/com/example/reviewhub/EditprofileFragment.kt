@@ -18,8 +18,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.yalantis.ucrop.UCrop
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONObject
@@ -44,6 +47,7 @@ class EditprofileFragment : Fragment() {
     companion object {
         const val PICK_IMAGE_REQUEST = 1
         private const val DATE_FORMAT = "yyyy-MM-dd"
+        private const val UCROP_REQUEST_CODE = UCrop.REQUEST_CROP
     }
 
     override fun onCreateView(
@@ -106,19 +110,69 @@ class EditprofileFragment : Fragment() {
         }
     }
 
+    // -- PICK IMAGE, THEN LAUNCH UCROP FOR FREE CROPPING & RESIZE
     private fun pickImageFromGallery() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
+        val intent = Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
+        }
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            imageUri = data.data
-            Log.d("EditprofileFragment", "Selected image URI: $imageUri")
-            profileImageView.setImageURI(imageUri)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data?.data != null) {
+            val sourceUri = data.data!!
+            startCrop(sourceUri)
+        } else if (requestCode == UCROP_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                val resultUri = UCrop.getOutput(data)
+                if (resultUri != null) {
+                    imageUri = resultUri
+                    profileImageView.setImageURI(imageUri)
+                    Log.d("EditprofileFragment", "Cropped image uri: $imageUri")
+                } else {
+                    Log.w("EditprofileFragment", "UCrop output uri was null")
+                }
+            } else if (resultCode == UCrop.RESULT_ERROR) {
+                val cropError = UCrop.getError(data!!)
+                Log.e("EditprofileFragment", "UCrop error: ${cropError?.message}", cropError)
+                Toast.makeText(requireContext(), "เกิดข้อผิดพลาดในการครอปรูป", Toast.LENGTH_SHORT).show()
+            }
         }
+    }
+
+    private fun startCrop(sourceUri: Uri) {
+        // destination file inside cache
+        val destFileName = "crop_${System.currentTimeMillis()}.jpg"
+        val destUri = Uri.fromFile(File(requireContext().cacheDir, destFileName))
+
+        // UCrop options - free-style crop + reasonable compression + UI tweaks
+        val options = UCrop.Options().apply {
+            setFreeStyleCropEnabled(true)
+            setCompressionQuality(85)
+            setToolbarTitle("ปรับขนาด/ครอปรูป")
+
+            // ดึงสีแบบปลอดภัยจาก context
+            val colorPrimary = ContextCompat.getColor(requireContext(), R.color.white)
+            val colorPrimaryDark = ContextCompat.getColor(requireContext(), R.color.white)
+            val colorAccent = ContextCompat.getColor(requireContext(), R.color.white)
+
+            setToolbarColor(colorPrimary)
+            setStatusBarColor(colorPrimaryDark)
+
+            // ถ้าเมธอดนี้มีในเวอร์ชัน UCrop ที่ใช้ ให้ใช้มัน
+            // ถ้าไม่มีก็ให้คอมเมนต์บรรทัดนี้ออกหรือเปลี่ยนเป็นเมธอดที่มีในไลบรารีของคุณ
+            // setActiveWidgetColor(colorAccent)
+            // alternative: setToolbarWidgetColor(colorAccent) // ลองใช้ถ้ามี
+        }
+
+        // max result size: limit resize (you can change to desired max)
+        val maxSize = 1024
+
+        UCrop.of(sourceUri, destUri)
+            .withOptions(options)
+            .withMaxResultSize(maxSize, maxSize)
+            .start(requireContext(), this)
     }
 
     private fun updateUserProfile(userId: String, token: String?) {
@@ -154,6 +208,7 @@ class EditprofileFragment : Fragment() {
 
         if (imageUri != null) {
             try {
+                // convert content Uri to temporary file (same asก่อนหน้า)
                 val inputStream = requireContext().contentResolver.openInputStream(imageUri!!)
                 val tempFile = File.createTempFile("profile_img_", ".jpg", requireContext().cacheDir)
                 inputStream?.use { input -> tempFile.outputStream().use { output -> input.copyTo(output) } }
@@ -220,11 +275,6 @@ class EditprofileFragment : Fragment() {
                                 }
 
                                 Toast.makeText(requireContext(), displayMessage, Toast.LENGTH_LONG).show()
-
-                                if (status != "warning") {
-                                    // If not a warning, maybe pop back
-                                }
-
                             } catch (e: Exception) {
                                 Log.e("EditprofileFragment", "Error parsing error response: ${e.message}", e)
                                 Toast.makeText(requireContext(), "เกิดข้อผิดพลาด: ${response.message} (ไม่สามารถอ่านรายละเอียดได้)", Toast.LENGTH_LONG).show()
@@ -248,7 +298,6 @@ class EditprofileFragment : Fragment() {
             false
         }
     }
-
 
     private fun fetchUserProfile(view: View, userId: String, token: String?) {
         val rootUrl = getString(R.string.root_url)
@@ -294,7 +343,6 @@ class EditprofileFragment : Fragment() {
 
                                     val formattedBirthdayForUI = formatTimeForUIDisplay(birthdayJson)
                                     birthdayEditText.setText(formattedBirthdayForUI)
-
 
                                     val genderArray = resources.getStringArray(R.array.gender_array)
                                     val genderIndex = genderArray.indexOf(gender)

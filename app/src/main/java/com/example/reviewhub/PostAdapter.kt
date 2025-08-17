@@ -33,7 +33,12 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class PostAdapter(
+    val postList: MutableList<Any>,
+    // ค่า default = action ของ HomeFragment (เดิมของมึง)
+    private val navToPostDetail: Int = R.id.action_postListFragment_to_postDetailFragment,
+    private val navToProfileDetail: Int = R.id.action_postListFragment_to_profiledetailFragment
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val TYPE_POST = 0
     private val TYPE_AD = 1
@@ -157,7 +162,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                 postContent.text = post.content
             }
 
-        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+            val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             val token = sharedPreferences.getString("TOKEN", null)
             val userId = sharedPreferences.getString("USER_ID", null)
             val isUserPost = userId?.toInt() == post.userId
@@ -178,7 +183,8 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     putString("SOURCE", "HomeFragment")
                 }
                 val navController = itemView.findNavController()
-                navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
+                // ใช้ action id ที่ถูกส่งเข้ามา (รองรับได้ทั้ง Home/AnotherUser)
+                navController.navigate(adapter.navToPostDetail, bundle)
             }
 
             postContent.setOnClickListener {
@@ -187,7 +193,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     putString("SOURCE", "HomeFragment")
                 }
                 val navController = itemView.findNavController()
-                navController.navigate(R.id.action_postListFragment_to_postDetailFragment, bundle)
+                navController.navigate(adapter.navToPostDetail, bundle)
             }
 
 
@@ -201,8 +207,8 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
 
 
             if (mediaUrls.isNotEmpty()) {
-                val adapter = PhotoPagerAdapter(mediaUrls)
-                mediaViewPager.adapter = adapter
+                val adapterPager = PhotoPagerAdapter(mediaUrls)
+                mediaViewPager.adapter = adapterPager
                 mediaViewPager.visibility = View.VISIBLE
 
             } else {
@@ -214,8 +220,8 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
             userProfileImage.setOnClickListener {
                 val fragmentManager = (context as? FragmentActivity)?.supportFragmentManager
                 if (fragmentManager != null) {
-                    val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-                    val userid = sharedPreferences.getString("USER_ID", null)
+                    val sharedPreferences2 = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+                    val userid = sharedPreferences2.getString("USER_ID", null)
 
                     if (userid != null && userid.toInt() == post.userId) {
                         // นำทางไปยังโปรไฟล์ของผู้ใช้เอง
@@ -233,7 +239,7 @@ class PostAdapter(private val postList: MutableList<Any>) : RecyclerView.Adapter
                     }
                     // บันทึกการทำงานของ interaction
                     recordInteraction(post.id, "view_profile", null, token!!, context)
-                    navController.navigate(R.id.action_postListFragment_to_profiledetailFragment, bundle)
+                    navController.navigate(adapter.navToProfileDetail, bundle)
                 }
             }
 

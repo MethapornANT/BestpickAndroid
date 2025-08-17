@@ -311,7 +311,12 @@ class AnotherUserFragment : Fragment() {
             )
         }
 
-        recyclerViewPosts.adapter = PostAdapter(postList)
+        recyclerViewPosts.adapter = PostAdapter(
+            postList = postList,
+            navToPostDetail = R.id.action_anotherUserFragment_to_postDetailFragment,
+            navToProfileDetail = R.id.action_anotherUserFragment_to_profiledetailFragment
+        )
+
     }
 
     private fun followUnfollowUser(followingId: Int, token: String) {
