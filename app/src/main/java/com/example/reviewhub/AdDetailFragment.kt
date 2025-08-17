@@ -91,12 +91,12 @@ class AdDetailFragment : Fragment() {
         val statusColor: Int
         when (ad.status.lowercase()) {
             "pending" -> {
-                statusColor = ContextCompat.getColor(requireContext(), R.color.yellow)
+                statusColor = ContextCompat.getColor(requireContext(), R.color.orange)
                 detailMessageView.text = "Your ad is currently waiting for review by an administrator."
                 deleteButton.visibility = View.VISIBLE
             }
             "approved" -> {
-                statusColor = ContextCompat.getColor(requireContext(), R.color.blue)
+                statusColor = ContextCompat.getColor(requireContext(), R.color.skyblue)
                 detailMessageView.text = "Your ad has been approved. Please complete the payment to make it active."
                 payButton.visibility = View.VISIBLE
                 deleteButton.visibility = View.VISIBLE

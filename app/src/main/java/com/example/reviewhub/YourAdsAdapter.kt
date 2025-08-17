@@ -45,11 +45,11 @@ class YourAdsAdapter(
         val statusColor: Int
         when (ad.status.lowercase()) {
             "pending" -> {
-                statusColor = ContextCompat.getColor(context, R.color.yellow)
+                statusColor = ContextCompat.getColor(context, R.color.orange)
                 holder.dateView.text = "Waiting for Admin review"
             }
             "approved" -> {
-                statusColor = ContextCompat.getColor(context, R.color.blue)
+                statusColor = ContextCompat.getColor(context, R.color.skyblue)
                 holder.dateView.text = "Awaiting Payment"
             }
             "active" -> {

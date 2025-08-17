@@ -45,7 +45,7 @@
                 android:paddingEnd="10dp"
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:background="@drawable/status_background"
                 tools:text="Active"
                 tools:backgroundTint="@color/green"/>
