@@ -317,7 +317,8 @@ class PostAdapter(
 
         private fun sharePost(context: Context, post: Post) {
             // URL ที่เป็น http:// สามารถกดได้ และ Android รู้จัก
-            val postUrl = "http://192.168.1.43:4005/posts/${post.id}"
+            val rootUrl = context.getString(R.string.root_url)
+            val postUrl = "$rootUrl/posts/${post.id}"
 
             val shareText = "ลองดูโพสต์นี้จาก ${post.userName} สิ!\n${post.title}\n\n$postUrl"
 

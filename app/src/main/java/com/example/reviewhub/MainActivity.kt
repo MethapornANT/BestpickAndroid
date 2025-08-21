@@ -18,22 +18,21 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okio.IOException
+import java.io.IOException
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var navController: NavController
-    private var lastClickedItemId = -1
-    private var lastClickedTime: Long = 0
 
-    // เพิ่มตัวแปรเพื่อเก็บตำแหน่งแท็บปัจจุบันของ HomeFragment (0 = For You, 1 = Following)
-    private var currentHomeTabPosition: Int = 0
+    // เก็บ timestamp ของการ "reselect" ล่าสุดต่อ menu item (ใช้จับ double-reselect)
+    private val lastReselectedTs = mutableMapOf<Int, Long>()
+    private val RESELECTION_DOUBLE_TAP_MS = 500L // ปรับถ้าอยากให้เร็ว/ช้ากว่านี้
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -72,43 +71,100 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // ------------------ selection handling (ปกติ) ------------------
         bottomNavigationView.setOnItemSelectedListener { item ->
-            val currentTime = System.currentTimeMillis()
-
-            // ตรวจสอบว่ากำลังอยู่บน HomeFragment หรือไม่
-            val isCurrentlyOnHomeFragment = navController.currentDestination?.id == R.id.homeFragment
-
-            // กรณี Double-tap Home (ปุ่มล่าง)
-            if (item.itemId == R.id.home && lastClickedItemId == item.itemId && (currentTime - lastClickedTime) < 500) {
-                if (isCurrentlyOnHomeFragment) {
-                    Log.d("MainActivity", "Double-tap Home detected. Forcing refresh on current HomeFragment tab.")
-                    // เมื่อ Double-tap Home ให้บังคับ refresh เฉพาะแท็บปัจจุบันใน HomeFragment
-                    refreshHomeFragment(forceRefreshFromBottomNavDoubleTap = true)
-                }
-            } else {
-                // กรณีเลือกเมนูที่ไม่ใช่ Home หรือเลือก Home ครั้งแรก
-                when (item.itemId) {
-                    R.id.home -> {
-                        // ถ้ากำลังจะ navigate ไป HomeFragment และไม่ได้เป็นการ Double-tap
-                        // ให้ NavController จัดการ ถ้า HomeFragment อยู่ใน Back Stack แล้ว
-                        // จะไม่สร้าง instance ใหม่ (ซึ่งทำให้ isForYouDataLoaded/isFollowingDataLoaded ยังคงค่าเดิม)
-                        // HomeFragment จะตรวจสอบว่าต้องโหลดข้อมูลใหม่หรือไม่เอง
+            when (item.itemId) {
+                R.id.home -> {
+                    // ถ้าไม่อยู่บน Home ให้ navigate ไป
+                    if (navController.currentDestination?.id != R.id.homeFragment) {
                         navController.navigate(R.id.homeFragment)
+                    } else {
+                        // ถ้าอยู่แล้ว ให้เลื่อนขึ้นบนสุด (แต่ไม่รีเฟรช)
+                        val nhf = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                        nhf?.childFragmentManager?.fragments?.forEach { f ->
+                            if (f is HomeFragment) {
+                                f.view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
+                            }
+                        }
                     }
-                    R.id.search -> navController.navigate(R.id.searchFragment)
-                    R.id.profile -> navController.navigate(R.id.profileFragment)
-                    R.id.add -> navController.navigate(R.id.addPostFragment)
-                    R.id.notification -> navController.navigate(R.id.notificationsFragment)
+                }
+                R.id.search -> {
+                    if (navController.currentDestination?.id != R.id.searchFragment) {
+                        navController.navigate(R.id.searchFragment)
+                    }
+                }
+                R.id.profile -> {
+                    if (navController.currentDestination?.id != R.id.profileFragment) {
+                        navController.navigate(R.id.profileFragment)
+                    }
+                }
+                R.id.add -> {
+                    if (navController.currentDestination?.id != R.id.addPostFragment) {
+                        navController.navigate(R.id.addPostFragment)
+                    }
+                }
+                R.id.notification -> {
+                    if (navController.currentDestination?.id != R.id.notificationsFragment) {
+                        navController.navigate(R.id.notificationsFragment)
+                    }
+                }
+                else -> {
+                    try {
+                        navController.navigate(item.itemId)
+                    } catch (e: Exception) {
+                        Log.w("MainActivity", "Navigation fallback failed: ${e.message}")
+                    }
                 }
             }
-
-            lastClickedItemId = item.itemId
-            lastClickedTime = currentTime
-
             true
         }
 
+        // ------------------ reselection handling (สำคัญ) ------------------
+        // กดที่ไอเท็มที่ถูกเลือกอยู่แล้วจะมาเข้า listener นี้
+        // เราจะใช้ logic นี้:
+        // - ถ้า reselect ครั้งแรก (หรือช้าเกิน threshold) -> scroll-to-top (ไม่รีเฟรช)
+        // - ถ้า reselect สองครั้งภายใน RESELECTION_DOUBLE_TAP_MS -> บังคับรีเฟรช
+        bottomNavigationView.setOnItemReselectedListener { item ->
+            val now = System.currentTimeMillis()
+            val last = lastReselectedTs[item.itemId] ?: 0L
+            val isDouble = (now - last) <= RESELECTION_DOUBLE_TAP_MS
+
+            if (item.itemId == R.id.home) {
+                val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                navHost?.childFragmentManager?.fragments?.forEach { fragment ->
+                    if (fragment is HomeFragment) {
+                        if (isDouble) {
+                            // Double-reselect -> รีเฟรชแท็บปัจจุบัน
+                            val selectedTabPos = fragment.view?.findViewById<TabLayout>(R.id.tab_layout)?.selectedTabPosition ?: 0
+                            when (selectedTabPos) {
+                                0 -> fragment.refreshPosts(forceRefreshForYou = true)
+                                1 -> fragment.refreshPosts(forceRefreshFollowing = true)
+                                else -> fragment.refreshPosts(forceRefreshForYou = true)
+                            }
+                            // feedback เล็กน้อย: scroll-top ด้วย (ไม่จำเป็นแต่ UX ดี)
+                            fragment.view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
+                        } else {
+                            // Single reselect -> scroll to top only (no refresh)
+                            fragment.view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
+                        }
+                    }
+                }
+            } else {
+                // กรณี reselection สำหรับ tab อื่น: ให้ scroll-to-top เป็น default
+                val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
+                navHost?.childFragmentManager?.fragments?.forEach { fragment ->
+                    fragment.view?.findViewById<RecyclerView>(R.id.recycler_view_posts)?.smoothScrollToPosition(0)
+                }
+            }
+
+            // update timestamp
+            lastReselectedTs[item.itemId] = now
+        }
+
+        // -------------------------------------------------------------------
+
         handleNavigationIntent(intent)
+        handleDeepLink(intent)
     }
 
     private fun handleDeepLink(intent: Intent) {
@@ -144,20 +200,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshHomeFragment(forceRefreshFromBottomNavDoubleTap: Boolean) {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
-        navHostFragment?.childFragmentManager?.fragments?.forEach { fragment ->
-            if (fragment is HomeFragment) {
-                Log.d("MainActivity", "Attempting to refresh HomeFragment. forceRefreshFromBottomNavDoubleTap: $forceRefreshFromBottomNavDoubleTap")
-
-                // เรียก refreshPosts ของ HomeFragment โดยตรง
-                // HomeFragment จะมี Logic ตัดสินใจเองว่าจะเรียก API แบบ ?refresh=true หรือไม่
-                // โดยอิงจาก forceRefreshFromBottomNavDoubleTap และสถานะ isLoaded ของตัวเอง
-                fragment.refreshPosts(forceRefreshFromBottomNavDoubleTap)
-            }
-        }
-    }
-
     private fun fetchAndShowBadge() {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("TOKEN", null)
@@ -177,11 +219,11 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
                 e.printStackTrace()
             }
 
-            override fun onResponse(call: Call, response: Response) {
+            override fun onResponse(call: okhttp3.Call, response: Response) {
                 response.body?.string()?.let { jsonResponse ->
                     try {
                         val notificationList: List<Notification> = Gson().fromJson(
