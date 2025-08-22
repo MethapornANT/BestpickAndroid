@@ -1,3 +1,4 @@
+// NotificationsFragment.kt
 package com.bestpick.reviewhub
 
 import android.content.Context.MODE_PRIVATE
@@ -46,18 +47,35 @@ class NotificationsFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view_posts)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         notificationsAdapter = NotificationsAdapter(notificationList) { n ->
+            // mark read
             updatestatus(n.id)
-            Log.d("NotificationsFragment", "click id=${n.id} post=${n.post_id} ads=${n.ads_id}")
+            Log.d("NotificationsFragment", "click id=${n.id} post=${n.post_id} ads=${n.ads_id} action=${n.action_type}")
 
             when {
                 (n.post_id ?: -1) > 0 -> {
+                    // go to post detail
                     findNavController().navigate(
                         R.id.action_to_postdetailFragment,
                         Bundle().apply { putInt("POST_ID", n.post_id!!) }
                     )
                 }
                 (n.ads_id ?: -1) > 0 -> {
+                    // go to ad detail
                     fetchAdAndNavigate(n.ads_id!!)
+                }
+                n.action_type?.lowercase() == "follow" -> {
+                    // follow notification - navigate to the follower's profile (AnotherUserFragment)
+                    val followerId = extractUserIdFromContent(n.content ?: "") ?: extractUserIdFromContent(n.sender_name ?: "")
+                    if (followerId != null && followerId > 0) {
+                        val bundle = Bundle().apply { putInt("USER_ID", followerId) }
+                        // navigate by destination id (fragment id) to be safe
+                        findNavController().navigate(R.id.AnotherUserFragment, bundle)
+                    } else {
+                        Log.w("NotificationsFragment", "Cannot extract followerId from notification content: ${n.content}")
+                    }
+                }
+                else -> {
+                    // unknown click type - do nothing
                 }
             }
         }
@@ -194,5 +212,12 @@ class NotificationsFragment : Fragment() {
                 it.clearNumber()
             }
         }
+    }
+
+    // Try to extract numeric user id from notification content, returns null if not found
+    private fun extractUserIdFromContent(content: String): Int? {
+        if (content.isBlank()) return null
+        val m = Regex("""\d+""").find(content)
+        return m?.value?.toIntOrNull()
     }
 }

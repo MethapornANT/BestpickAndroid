@@ -26,6 +26,8 @@ import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
@@ -45,6 +47,9 @@ class AnotherUserFragment : Fragment() {
     private lateinit var loadingIndicator: LottieAnimationView
     private var targetUserId: Int = -1
     private var currentMatchId: Int = -1
+
+    // ถ้า backend ทำ notify follow อยู่แล้ว ให้ตั้งเป็น false
+    private val ENABLE_FOLLOW_NOTIF_FALLBACK = true
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -358,9 +363,13 @@ class AnotherUserFragment : Fragment() {
                         if (isFollowing) {
                             updateFollowerCount(1) // Increment follower count
                             recordInteraction(followingId, "follow", null, token, requireContext())
+                            // create follow notification (fallback if backend doesn't handle it)
+                            createFollowNotification(userId, followingId, token)
                         } else {
                             updateFollowerCount(-1) // Decrement follower count
                             recordInteraction(followingId, "unfollow", null, token, requireContext())
+                            // delete follow notification (fallback)
+                            deleteFollowNotification(followingId, token)
                         }
                     }
                 }
@@ -458,4 +467,46 @@ class AnotherUserFragment : Fragment() {
             }
         })
     }
+
+    // ====== Notification helpers (fallback client-side) ======
+    private fun createFollowNotification(followerId: Int, followingId: Int, token: String) {
+        if (!ENABLE_FOLLOW_NOTIF_FALLBACK) return
+        val url = getString(R.string.root_url) + "/api/notifications"
+        val body = FormBody.Builder()
+            .add("user_id", followingId.toString())            // ผู้รับคือคนถูกตาม
+            .add("action_type", "follow")
+            .add("content", "User $followerId started following you")
+            .build()
+
+        val req = Request.Builder()
+            .url(url)
+            .post(body)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(req).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) { /* เงียบไว้พอ */ }
+            override fun onResponse(call: Call, response: Response) { response.close() }
+        })
+    }
+
+    private fun deleteFollowNotification(followingId: Int, token: String) {
+        if (!ENABLE_FOLLOW_NOTIF_FALLBACK) return
+        val url = getString(R.string.root_url) + "/api/notifications"
+        val media = "application/json; charset=utf-8".toMediaType()
+        val json = """{"user_id":$followingId,"post_id":null,"action_type":"follow"}"""
+        val body = json.toRequestBody(media)
+
+        val req = Request.Builder()
+            .url(url)
+            .delete(body)
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        client.newCall(req).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) { /* เงียบไว้พอ */ }
+            override fun onResponse(call: Call, response: Response) { response.close() }
+        })
+    }
+
 }

@@ -6,6 +6,7 @@ data class Notification(
     val post_id: Int?,
     val action_type: String,
     val content: String,
+    val post_content_snippet: String?,
     var read_status: Int,
     val created_at: String,
     val sender_name: String?,

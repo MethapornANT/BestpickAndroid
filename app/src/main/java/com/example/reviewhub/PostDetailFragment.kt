@@ -669,6 +669,24 @@ class PostDetailFragment : Fragment() {
                                 view.findViewById<TextView>(R.id.like_count).text = ": $likeCount"
                                 view.findViewById<TextView>(R.id.comment_count).text = "$commentCount Comments"
 
+                                // make like_count clickable -> open LikeListFragment with POST_ID
+                                val likeCountTextView = view.findViewById<TextView>(R.id.like_count)
+                                likeCountTextView.text = ": $likeCount"
+
+// enable click to open like list
+                                likeCountTextView.isClickable = true
+                                likeCountTextView.setOnClickListener {
+                                    val bundle = Bundle().apply { putInt("POST_ID", postId) }
+                                    try {
+                                        // Navigate to likeListFragment (ต้องประกาศ destination นี้ใน nav_graph.xml)
+                                        findNavController().navigate(R.id.likeListFragment, bundle)
+                                    } catch (e: IllegalArgumentException) {
+                                        Log.e("PostDetailFragment", "Navigation to likeListFragment failed: ${e.message}")
+                                        Toast.makeText(requireContext(), "Cannot open likes (missing nav entry)", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+
+
                                 checkFollowStatus(userId, followingId, token)
 
                                 if (userId == followingId) {

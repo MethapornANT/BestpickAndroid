@@ -125,6 +125,21 @@
     </fragment>
 
     <fragment
+        android:id="@+id/likeListFragment"
+        android:name="com.bestpick.reviewhub.LikeListFragment"
+        android:label="Likes"
+        tools:layout="@layout/fragment_like_list" >
+        <argument
+            android:name="POST_ID"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
+    <action
+        android:id="@+id/action_postDetailFragment_to_likeListFragment"
+        app:destination="@id/likeListFragment" />
+
+
+    <fragment
         android:id="@+id/moreMenuFragment"
         android:name="com.bestpick.reviewhub.MoreMenuFragment"
         android:label="More Options"
