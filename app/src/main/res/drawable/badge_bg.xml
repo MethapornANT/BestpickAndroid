@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <size android:width="16dp" android:height="16dp"/>
+    <!-- AA0060B0 : AA = alpha (00..FF). ตัวอย่างนี้ใช้ 99 (ประมาณ 60% opacity) -->
+    <solid android:color="#99004985"/>
+</shape>

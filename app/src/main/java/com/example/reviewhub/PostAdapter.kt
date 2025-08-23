@@ -14,6 +14,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -22,6 +24,8 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import android.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
@@ -32,6 +36,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.math.max
 
 class PostAdapter(
     val postList: MutableList<Any>,
@@ -106,10 +111,16 @@ class PostAdapter(
         private val userProfileImage: ImageView = itemView.findViewById(R.id.user_profile_image)
         private val mediaViewPager: ViewPager2 = itemView.findViewById(R.id.media_view_pager)
         private val likeButton: ImageView = itemView.findViewById(R.id.like_button)
+        private val commentButton: ImageView = itemView.findViewById(R.id.comment_button)
         private val reportButton: ImageView = itemView.findViewById(R.id.report)
         private val bookmarkButton: ImageView = itemView.findViewById(R.id.bookmark_button)
-
         private val shareButton: ImageView = itemView.findViewById(R.id.share_button)
+
+        // badge textviews (หาไอดีจาก layout ที่ผมส่งไว้)
+        private val likeCountText: TextView = itemView.findViewById(R.id.like_count)
+        private val commentCountText: TextView = itemView.findViewById(R.id.comment_count)
+        private val bookmarkCountText: TextView = itemView.findViewById(R.id.bookmark_count)
+        private val shareCountText: TextView = itemView.findViewById(R.id.share_count)
 
         var isLiked = false
         var isFollowing = false
@@ -129,19 +140,43 @@ class PostAdapter(
             val mediaUrls = photoUrls + videoUrls
             val displayTime = post.updated ?: post.time
 
+            // helper navigation function (makes comment & media click behave same as See more)
+            fun navigateToPostDetail() {
+                val bundle = Bundle().apply {
+                    putInt("POST_ID", post.id)
+                    putString("SOURCE", "HomeFragment")
+                }
+                val navController = itemView.findNavController()
+                navController.navigate(adapter.navToPostDetail, bundle)
+            }
+
             shareButton.setOnClickListener {
-                // เพิ่มโค้ดส่วนนี้เข้ามา
                 val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
                 val token = sharedPreferences.getString("TOKEN", null)
                 if (token != null) {
                     recordInteraction(post.id, "share", null, token, context)
                 }
+                // optimistic UI increment
+                val curr = shareCountText.text.toString().toIntOrNull() ?: 0
+                shareCountText.text = (curr + 1).toString()
+                postMetricIncrement(context, post.id, "share", 1, token)
                 sharePost(context, post)
             }
 
             postTime.text = formatTime(displayTime)
             userName.text = post.userName
             title.text = post.title
+
+            // set initial badge counts (safe fallback to 0)
+            val likes = post.likeCount ?: 0
+            val comments = post.commentCount ?: 0
+            val bookmarks = post.bookmarkCount ?: 0
+            val shares = post.shareCount ?: 0
+
+            likeCountText.text = likes.toString()
+            commentCountText.text = comments.toString()
+            bookmarkCountText.text = bookmarks.toString()
+            shareCountText.text = shares.toString()
 
             // แก้ไขส่วน postContent
             if (post.content.length > 40) {
@@ -178,24 +213,17 @@ class PostAdapter(
             }
 
             title.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putInt("POST_ID", post.id)
-                    putString("SOURCE", "HomeFragment")
-                }
-                val navController = itemView.findNavController()
-                // ใช้ action id ที่ถูกส่งเข้ามา (รองรับได้ทั้ง Home/AnotherUser)
-                navController.navigate(adapter.navToPostDetail, bundle)
+                navigateToPostDetail()
             }
 
             postContent.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putInt("POST_ID", post.id)
-                    putString("SOURCE", "HomeFragment")
-                }
-                val navController = itemView.findNavController()
-                navController.navigate(adapter.navToPostDetail, bundle)
+                navigateToPostDetail()
             }
 
+            // Comment button: เปิดหน้าโพสต์ (ไม่เพิ่ม count ที่นี่)
+            commentButton.setOnClickListener {
+                navigateToPostDetail()
+            }
 
             // Load profile image using the full URL
             Glide.with(context)
@@ -207,7 +235,10 @@ class PostAdapter(
 
 
             if (mediaUrls.isNotEmpty()) {
-                val adapterPager = PhotoPagerAdapter(mediaUrls)
+                // pass lambda so clicking any media item acts like See more detail..
+                val adapterPager = PhotoPagerAdapter(mediaUrls) {
+                    navigateToPostDetail()
+                }
                 mediaViewPager.adapter = adapterPager
                 mediaViewPager.visibility = View.VISIBLE
 
@@ -251,22 +282,27 @@ class PostAdapter(
 
             bookmarkButton.setOnClickListener {
                 isBookmark = !isBookmark
+                val current = bookmarkCountText.text.toString().toIntOrNull() ?: 0
                 if (isBookmark) {
                     bookmarkButton.setImageResource(R.drawable.bookmarkclick)
+                    bookmarkCountText.text = (current + 1).toString()
                     if (token != null && userId != null) {
                         // Call the bookmark API to add the post to bookmarks
                         bookmarkPost(post.id, token, context)
+                        postMetricIncrement(context, post.id, "bookmark", 1, token)
                     }
                 } else {
                     bookmarkButton.setImageResource(R.drawable.bookmark)
+                    bookmarkCountText.text = max(0, current - 1).toString()
                     if (token != null && userId != null) {
                         // Call the unbookmark API to remove the post from bookmarks
                         bookmarkPost(post.id, token, context)
+                        postMetricIncrement(context, post.id, "bookmark", -1, token)
                     }
                 }
             }
 
-// Initial check for bookmark status when the view is created
+            // Initial check for bookmark status when the view is created
             if (token != null) {
                 checkBookmarkStatus(post.id, token, context) { isBookmarked ->
                     isBookmark = isBookmarked
@@ -274,28 +310,29 @@ class PostAdapter(
                 }
             }
 
-
-
             likeButton.setOnClickListener {
                 isLiked = !isLiked
+                val current = likeCountText.text.toString().toIntOrNull() ?: 0
                 if (isLiked) {
                     likeButton.setImageResource(R.drawable.heartclick)
+                    likeCountText.text = (current + 1).toString()
                     if (token != null && userId != null) {
                         likeUnlikePost(post.id, userId.toInt(), token, context)
                         sendNotification(post.id, userId.toInt(), "like", token, context)
                         recordInteraction(post.id, "like", null, token, context)
+                        postMetricIncrement(context, post.id, "like", 1, token)
                     }
                 } else {
                     likeButton.setImageResource(R.drawable.heart)
+                    likeCountText.text = max(0, current - 1).toString()
                     if (token != null && userId != null) {
                         likeUnlikePost(post.id, userId.toInt(), token, context)
                         deleteNotification(post.id, userId.toInt(), "like", token, context) // เพิ่มฟังก์ชันลบแจ้งเตือน
                         recordInteraction(post.id, "unlike", null, token, context)
+                        postMetricIncrement(context, post.id, "like", -1, token)
                     }
                 }
             }
-
-
 
             // กำหนดการคลิกปุ่มติดตาม/เลิกติดตาม
             follower.setOnClickListener {
@@ -348,10 +385,11 @@ class PostAdapter(
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.body?.string()?.let { jsonResponse ->
+                    val jsonResponse = response.body?.string()
+                    jsonResponse?.let {
                         try {
                             // สร้าง JSONObject เพียงครั้งเดียวและตรวจสอบว่ามีคีย์ "isLiked" หรือไม่
-                            val jsonObject = JSONObject(jsonResponse)
+                            val jsonObject = JSONObject(it)
 
                             if (jsonObject.has("isLiked")) {
                                 val isLiked = jsonObject.getBoolean("isLiked")
@@ -396,17 +434,10 @@ class PostAdapter(
 
                 override fun onResponse(call: Call, response: Response) {
                     val jsonResponse = response.body?.string()
-                    val message = JSONObject(jsonResponse).getString("message")
-
-                    response.use {
-                        if (!response.isSuccessful) {
-                            (context as? Activity)?.runOnUiThread {
-
-                            }
-                        } else {
-                            (context as? Activity)?.runOnUiThread {
-
-                            }
+                    if (!jsonResponse.isNullOrEmpty()) {
+                        try {
+                            val message = JSONObject(jsonResponse).optString("message", "")
+                        } catch (e: JSONException) {
                         }
                     }
                 }
@@ -630,7 +661,9 @@ class PostAdapter(
                             }
                         } else {
                             val jsonResponse = response.body?.string()
-                            val message = JSONObject(jsonResponse).getString("message")
+                            try {
+                                val message = JSONObject(jsonResponse).getString("message")
+                            } catch (e: Exception) {}
                             (context as? Activity)?.runOnUiThread {
 
                             }
@@ -734,10 +767,6 @@ class PostAdapter(
             popupMenu.show()
         }
 
-
-
-
-
         private fun deletePost(postId: Int, context: Context) {
             val client = OkHttpClient()
             val sharedPreferences = context.getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
@@ -797,6 +826,7 @@ class PostAdapter(
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    val bodyStr = response.body?.string()
                     response.use {
                         if (!response.isSuccessful) {
                             (context as? Activity)?.runOnUiThread {
@@ -846,7 +876,6 @@ class PostAdapter(
             })
         }
 
-
         private fun checkBookmarkStatus(postId: Int, token: String, context: Context, callback: (Boolean) -> Unit) {
             val client = OkHttpClient()
             val url = "${context.getString(R.string.root_url)}/api/posts/$postId/bookmark/status"
@@ -865,9 +894,10 @@ class PostAdapter(
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.body?.string()?.let { jsonResponse ->
+                    val jsonResponse = response.body?.string()
+                    jsonResponse?.let {
                         try {
-                            val jsonObject = JSONObject(jsonResponse)
+                            val jsonObject = JSONObject(it)
                             val isBookmarked = jsonObject.getBoolean("isBookmarked")
 
                             // Update the UI in Main Thread
@@ -876,6 +906,88 @@ class PostAdapter(
                             }
                         } catch (e: JSONException) {
                             (context as? Activity)?.runOnUiThread {
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        // ---------------- PhotoPagerAdapter (no XML layout needed) ----------------
+        class PhotoPagerAdapter(
+            private val items: List<Pair<String, String>>,
+            private val onItemClick: () -> Unit
+        ) : RecyclerView.Adapter<PhotoPagerAdapter.VH>() {
+
+            inner class VH(val container: FrameLayout, val imageView: ImageView) : RecyclerView.ViewHolder(container)
+
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+                val ctx = parent.context
+                val frame = FrameLayout(ctx)
+                frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+
+                val imageView = ImageView(ctx)
+                imageView.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+                frame.addView(imageView)
+
+                return VH(frame, imageView)
+            }
+
+            override fun onBindViewHolder(holder: VH, position: Int) {
+                val url = items[position].first
+                Glide.with(holder.imageView.context)
+                    .load(url)
+                    .placeholder(R.drawable.user)
+                    .error(R.drawable.ic_error)
+                    .into(holder.imageView)
+
+                holder.imageView.setOnClickListener {
+                    onItemClick()
+                }
+            }
+
+            override fun getItemCount(): Int = items.size
+        }
+
+        // ---------------- Metric API helper (OkHttp) ----------------
+        private fun postMetricIncrement(context: Context, postId: Int, action: String, delta: Int = 1, token: String? = null) {
+            // POST ${root_url}/api/posts/{postId}/metrics  body: { action: "like", delta: 1 }
+            val client = OkHttpClient()
+            val root = context.getString(R.string.root_url)
+            val url = "$root/api/posts/$postId/metrics"
+
+            val json = JSONObject().apply {
+                put("action", action)
+                put("delta", delta)
+            }
+
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val body = json.toString().toRequestBody(mediaType)
+            val builder = Request.Builder()
+                .url(url)
+                .post(body)
+
+            token?.let { builder.addHeader("Authorization", "Bearer $it") }
+
+            client.newCall(builder.build()).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    // network fail: for robust UX you could rollback optimistic UI here
+                    Log.e("PostMetric", "Failed to post metric: ${e.message}")
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        Log.e("PostMetric", "Metric API returned ${response.code}: ${response.message}")
+                    } else {
+                        // optionally parse and sync counts with server response
+                        val resp = response.body?.string()
+                        resp?.let {
+                            try {
+                                val j = JSONObject(it)
+                                val metrics = j.optJSONObject("metrics")
+                                // if backend returns counts, you can update UI via runOnUiThread
+                            } catch (e: Exception) {
                             }
                         }
                     }

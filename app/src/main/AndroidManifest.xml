@@ -35,9 +35,6 @@
         tools:ignore="AppLinkUrlError"
         tools:targetApi="31">
         <activity
-            android:name="com.example.reviewhub.LikeAdapter"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"

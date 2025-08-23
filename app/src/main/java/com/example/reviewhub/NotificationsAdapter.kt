@@ -105,7 +105,7 @@ class NotificationsAdapter(
             } catch (_: Exception) {
                 ""
             }
-            val img: Any = if (!n.sender_picture.isNullOrEmpty()) "$rootUrl${n.sender_picture}" else R.drawable.profiletest2
+            val img: Any = if (!n.sender_picture.isNullOrEmpty()) "$rootUrl${n.sender_picture}" else R.mipmap.ic_launcher_round
 
             Glide.with(itemView)
                 .load(img)
