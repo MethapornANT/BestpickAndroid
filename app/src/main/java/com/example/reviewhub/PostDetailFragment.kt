@@ -607,7 +607,8 @@ class PostDetailFragment : Fragment() {
                         val commentCount = jsonObject.getInt("comment_count")
                         val username = jsonObject.getString("username")
                         followingId = jsonObject.getInt("user_id")
-                        val time = jsonObject.getString("updated_at")
+                        val time = jsonObject.getString("created_at")
+                        Log.d("PostDetailFragment", "Original Time String: $time")
                         val profileImage = jsonObject.getString("picture")
                         val profileUrl = getString(R.string.root_url) +api+ profileImage
                         val productname = jsonObject.getString("ProductName")
@@ -713,6 +714,7 @@ class PostDetailFragment : Fragment() {
                                         updatePageIndicators(position)
                                     }
                                 })
+                                Log.d("PostDetailFragment", "Formatted Time: ${formatTime(time)}")
                             }
                         }
                     }
@@ -979,24 +981,27 @@ class PostDetailFragment : Fragment() {
             val createdAt: TextView = view.findViewById(R.id.comment_created_at)
         }
     }
-
-
-
     private fun formatTime(timeString: String): String {
-        return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-                timeZone = TimeZone.getTimeZone("UTC") // ตั้งค่า inputFormat เป็น UTC
-            }
-            val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
-                timeZone = TimeZone.getTimeZone("Asia/Bangkok") // ตั้งค่า outputFormat เป็น Asia/Bangkok
-            }
-            val date = inputFormat.parse(timeString ?: "")
-            date?.let { outputFormat.format(it) } ?: "N/A"
-
-        } catch (e: Exception) {
-            timeString
+        val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("Asia/Bangkok")
         }
+        val patterns = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ssX",
+            "yyyy-MM-dd HH:mm:ss"
+        )
+        for (p in patterns) {
+            try {
+                val inf = SimpleDateFormat(p, Locale.getDefault()).apply {
+                    timeZone = if (p.contains("'T'")) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
+                }
+                val d = inf.parse(timeString)
+                if (d != null) return outputFormat.format(d)
+            } catch (_: Exception) {}
+        }
+        return timeString
     }
+
 
     private fun recordInteraction(postId: Int? = null, actionType: String, content: String? = null, token: String, context: Context) {
         val client = OkHttpClient()

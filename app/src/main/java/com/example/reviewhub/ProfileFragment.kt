@@ -12,12 +12,11 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
-// import android.widget.PopupMenu // ไม่จำเป็นต้องใช้แล้วถ้าเปลี่ยนไป navigate แทน
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController // สำคัญมาก: สำหรับการนำทาง
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -355,8 +354,6 @@ class ProfileFragment : Fragment() {
         val token = sharedPreferences.getString("TOKEN", null)
         val userId = sharedPreferences.getString("USER_ID", null)?.toInt()
 
-
-
         for (i in 0 until bookmarks.length()) {
             val post = bookmarks.getJSONObject(i)
             val postId = post.optInt("post_id", -1)
@@ -467,6 +464,4 @@ class ProfileFragment : Fragment() {
             timeString // Return original string if parsing fails
         }
     }
-
-
 }

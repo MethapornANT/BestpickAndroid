@@ -138,7 +138,7 @@ class PostAdapter(
             val videoUrls = post.videoUrl?.map { Pair(baseUrl + it, "video") } ?: emptyList()
             Log.d("VideoUrls", "Video URLs: $videoUrls")
             val mediaUrls = photoUrls + videoUrls
-            val displayTime = post.updated ?: post.time
+            val displayTime = post.time
 
             // helper navigation function (makes comment & media click behave same as See more)
             fun navigateToPostDetail() {
@@ -530,20 +530,25 @@ class PostAdapter(
             })
         }
 
-
         private fun formatTime(timeString: String): String {
-            return try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault()).apply {
-                    timeZone = TimeZone.getTimeZone("UTC") // The time is in UTC
-                }
-                val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
-                    timeZone = TimeZone.getTimeZone("Asia/Bangkok") // Convert to Asia/Bangkok time
-                }
-                val date = inputFormat.parse(timeString)
-                date?.let { outputFormat.format(it) } ?: "N/A"
-            } catch (e: Exception) {
-                timeString // Return original string if parsing fails
+            val outputFormat = SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("Asia/Bangkok")
             }
+            val patterns = listOf(
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ssX",
+                "yyyy-MM-dd HH:mm:ss"
+            )
+            for (p in patterns) {
+                try {
+                    val inf = SimpleDateFormat(p, Locale.getDefault()).apply {
+                        timeZone = if (p.contains("'T'")) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
+                    }
+                    val d = inf.parse(timeString)
+                    if (d != null) return outputFormat.format(d)
+                } catch (_: Exception) {}
+            }
+            return timeString
         }
 
         private fun deleteNotification(postId: Int, userId: Int, actionType: String, token: String, context: Context) {
