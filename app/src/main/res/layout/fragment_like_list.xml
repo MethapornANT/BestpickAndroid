@@ -3,8 +3,7 @@
     android:id="@+id/LikeListFragmentRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/bgwhite3">
+    android:orientation="vertical">
 
     <!-- Top toolbar: back + centered title -->
     <androidx.appcompat.widget.Toolbar

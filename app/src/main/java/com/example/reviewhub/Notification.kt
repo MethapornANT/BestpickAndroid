@@ -5,7 +5,7 @@ data class Notification(
     val receiver_id: Int,
     val post_id: Int?,
     val action_type: String,
-    val content: String,
+    var content: String,                // <- จะถูกแทนที่เป็น pretty text ตอน showNotifications
     val post_content_snippet: String?,
     var read_status: Int,
     val created_at: String,
@@ -15,4 +15,3 @@ data class Notification(
     val comment_content: String?,
     val ads_id: Int? = null
 )
-

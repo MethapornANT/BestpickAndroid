@@ -57,6 +57,7 @@ class NotificationsAdapter(
 
             // Build the message WITHOUT repeating the sender name
             val messageText = when (n.action_type?.lowercase(Locale.getDefault())) {
+                "share" -> "$sender แชร์โพสต์ของคุณ"   // แสดงผลที่สั่ง
                 "like" -> "ถูกใจโพสต์ของคุณ"
                 "follow" -> "เริ่มติดตามคุณ"
                 "comment" -> {
@@ -116,7 +117,14 @@ class NotificationsAdapter(
             val bg = if (n.read_status == 1) R.color.gray_light else R.color.white
             container.setBackgroundColor(ContextCompat.getColor(itemView.context, bg))
 
-            itemView.setOnClickListener { onClick(n) }
+            // คลิกแล้วอัพเดตสถานะอ่านในทันที + ส่งต่อให้ Fragment เรียก API
+            itemView.setOnClickListener {
+                if (n.read_status == 0) {
+                    n.read_status = 1
+                    container.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.gray_light))
+                }
+                onClick(n)
+            }
         }
 
         // ---------- helpers ----------

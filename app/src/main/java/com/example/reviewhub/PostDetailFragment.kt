@@ -118,12 +118,10 @@ class PostDetailFragment : Fragment() {
                 if (isLiked) {
                     // หากกดไลค์แล้ว ให้ unlike
                     likeUnlikePost(postId, userId, token)
-                    deleteNotification(postId, userId, null,"like", token, requireContext())
                     recordInteraction(postId, "unlike", null, token, requireContext())
                 } else {
                     // หากยังไม่ไลค์ ให้กดไลค์
                     likeUnlikePost(postId, userId, token)
-                    sendNotification(postId, userId, null,"like", token, requireContext())
                     recordInteraction(postId, "like", null, token, requireContext())
                 }
             }

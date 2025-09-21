@@ -1,4 +1,3 @@
-// NotificationsFragment.kt
 package com.bestpick.reviewhub
 
 import android.content.Context.MODE_PRIVATE
@@ -47,7 +46,7 @@ class NotificationsFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view_posts)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         notificationsAdapter = NotificationsAdapter(notificationList) { n ->
-            // mark read
+            // mark read (เหมือนแจ้งเตือนอื่นๆ)
             updatestatus(n.id)
             Log.d("NotificationsFragment", "click id=${n.id} post=${n.post_id} ads=${n.ads_id} action=${n.action_type}")
 
@@ -68,7 +67,6 @@ class NotificationsFragment : Fragment() {
                     val followerId = extractUserIdFromContent(n.content ?: "") ?: extractUserIdFromContent(n.sender_name ?: "")
                     if (followerId != null && followerId > 0) {
                         val bundle = Bundle().apply { putInt("USER_ID", followerId) }
-                        // navigate by destination id (fragment id) to be safe
                         findNavController().navigate(R.id.AnotherUserFragment, bundle)
                     } else {
                         Log.w("NotificationsFragment", "Cannot extract followerId from notification content: ${n.content}")
@@ -94,7 +92,6 @@ class NotificationsFragment : Fragment() {
             findNavController().navigate(R.id.homeFragment)
         }
     }
-
 
     private fun fetchNotifications() {
         val ctx = context ?: return
@@ -165,7 +162,8 @@ class NotificationsFragment : Fragment() {
         val url = getString(R.string.root_url) + "/api/notifications/$notificationId/read"
         val req = Request.Builder()
             .url(url)
-            .put("".toRequestBody(null))
+            // เปลี่ยนจาก PUT → POST ให้เข้ากับ backend ใหม่
+            .post("".toRequestBody(null))
             .addHeader("Authorization", "Bearer $token")
             .build()
 

@@ -10,7 +10,7 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <!-- Header: avatar + name + time + follow + report -->
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -104,161 +104,85 @@
         android:layout_marginTop="5dp"
         android:contentDescription="media pager" />
 
+    <!-- Action row (ไม่มีตัวนับแล้ว) -->
     <LinearLayout
         android:id="@+id/action_row"
         android:layout_width="match_parent"
         android:layout_height="64dp"
-    android:orientation="horizontal"
-    android:layout_marginTop="12dp"
-    android:gravity="center_vertical"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    android:paddingTop="6dp">
-
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="6dp"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
         android:clipChildren="false"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:paddingTop="6dp">
 
-        <ImageView
-            android:id="@+id/like_button"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:contentDescription="Like"
-            android:src="@drawable/heart"
-            android:layout_gravity="center" />
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+            <ImageView
+                android:id="@+id/like_button"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:contentDescription="Like"
+                android:src="@drawable/heart"
+                android:layout_gravity="center" />
+        </FrameLayout>
 
-        <TextView
-            android:id="@+id/like_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:minWidth="16dp"
-            android:minHeight="16dp"
-            android:padding="0dp"
-            android:gravity="center"
-            android:text="0"
-            android:textColor="@android:color/white"
-            android:textSize="7sp"
-            android:textStyle="bold"
-            android:background="@drawable/badge_bg"
-            android:translationX="-6dp"
-            android:translationY="0dp"/>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+            <ImageView
+                android:id="@+id/comment_button"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:contentDescription="Comment"
+                android:src="@drawable/ic_comment"
+                android:layout_gravity="center" />
+        </FrameLayout>
 
-    </FrameLayout>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+            <ImageView
+                android:id="@+id/bookmark_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Bookmark"
+                android:src="@drawable/bookmark"
+                android:layout_gravity="center" />
+        </FrameLayout>
 
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="6dp"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        android:clipChildren="false"
-        android:clipToPadding="false">
-
-        <ImageView
-            android:id="@+id/comment_button"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
-            android:contentDescription="Comment"
-            android:src="@drawable/ic_comment"
-            android:layout_gravity="center" />
-
-        <TextView
-            android:id="@+id/comment_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:minWidth="16dp"
-            android:minHeight="16dp"
-            android:padding="0dp"
-            android:gravity="center"
-            android:text="0"
-            android:textColor="@android:color/white"
-            android:textSize="7sp"
-            android:textStyle="bold"
-            android:background="@drawable/badge_bg"
-            android:translationX="-6dp"
-            android:translationY="0dp"/>
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="6dp"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        android:clipChildren="false"
-        android:clipToPadding="false">
-
-        <ImageView
-            android:id="@+id/bookmark_button"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:contentDescription="Bookmark"
-            android:src="@drawable/bookmark"
-            android:layout_gravity="center" />
-
-        <TextView
-            android:id="@+id/bookmark_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:minWidth="16dp"
-            android:minHeight="16dp"
-            android:padding="0dp"
-            android:gravity="center"
-            android:text="0"
-            android:textColor="@android:color/white"
-            android:textSize="7sp"
-            android:textStyle="bold"
-            android:background="@drawable/badge_bg"
-            android:translationX="-6dp"
-            android:translationY="0dp"/>
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="6dp"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        android:clipChildren="false"
-        android:clipToPadding="false">
-
-        <ImageView
-            android:id="@+id/share_button"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:contentDescription="Share"
-            android:src="@drawable/share"
-            android:layout_gravity="center" />
-
-        <TextView
-            android:id="@+id/share_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:minWidth="16dp"
-            android:minHeight="16dp"
-            android:padding="0dp"
-            android:gravity="center"
-            android:text="0"
-            android:textColor="@android:color/white"
-            android:textSize="7sp"
-            android:textStyle="bold"
-            android:background="@drawable/badge_bg"
-            android:translationX="-6dp"
-            android:translationY="0dp"/>
-
-    </FrameLayout>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="6dp"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+            <ImageView
+                android:id="@+id/share_button"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:contentDescription="Share"
+                android:src="@drawable/share"
+                android:layout_gravity="center" />
+        </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>
-
-    </LinearLayout>
