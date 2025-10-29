@@ -83,14 +83,40 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add a caption / title"
+            android:text="Add a Title"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:textColor="@color/black"
             android:textSize="16sp" />
 
+        <!-- NEW: Title -->
         <EditText
-            android:id="@+id/editTextCaption"
+            android:id="@+id/editTextTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/package_bg"
+            android:hint="Enter your title here"
+            android:inputType="textCapSentences"
+            android:maxLines="1"
+            android:padding="12dp"
+            android:minHeight="48dp"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add a Caption"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <!-- NEW: Content -->
+        <EditText
+            android:id="@+id/editTextContent"
             android:layout_width="match_parent"
             android:layout_height="75dp"
             android:layout_marginStart="16dp"
@@ -98,7 +124,7 @@
             android:layout_marginEnd="16dp"
             android:background="@drawable/package_bg"
             android:gravity="top|start"
-            android:hint="Enter your caption here"
+            android:hint="Enter your content here"
             android:inputType="textMultiLine"
             android:maxLines="5"
             android:minLines="3"

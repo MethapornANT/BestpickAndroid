@@ -11,13 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -27,7 +21,6 @@ import com.google.gson.reflect.TypeToken
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
-import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -52,7 +45,8 @@ class CreateAdFragment : Fragment() {
     private lateinit var editTextSelectDate: EditText
     private lateinit var errorTextDate: TextView
     private lateinit var buttonNext: Button
-    private lateinit var editTextCaption: EditText
+    private lateinit var editTextTitle: EditText          // CHANGED
+    private lateinit var editTextContent: EditText        // NEW
     private lateinit var editTextURL: EditText
     private lateinit var buttonSelectPhoto: Button
     private lateinit var buttonChangePhoto: Button
@@ -60,17 +54,18 @@ class CreateAdFragment : Fragment() {
     private lateinit var editTextPrompay: EditText
 
     // --- Activity Result Launcher ---
-    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                selectedImageUri = uri
-                imageViewSelectedPhoto.setImageURI(uri)
-                imageViewSelectedPhoto.visibility = View.VISIBLE
-                buttonSelectPhoto.visibility = View.GONE
-                buttonChangePhoto.visibility = View.VISIBLE
+    private val pickImageLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    selectedImageUri = uri
+                    imageViewSelectedPhoto.setImageURI(uri)
+                    imageViewSelectedPhoto.visibility = View.VISIBLE
+                    buttonSelectPhoto.visibility = View.GONE
+                    buttonChangePhoto.visibility = View.VISIBLE
+                }
             }
         }
-    }
 
     // --- Fragment Lifecycle ---
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -90,7 +85,8 @@ class CreateAdFragment : Fragment() {
         editTextSelectDate = view.findViewById(R.id.editTextSelectDate)
         errorTextDate = view.findViewById(R.id.errorTextDate)
         buttonNext = view.findViewById(R.id.buttonNext)
-        editTextCaption = view.findViewById(R.id.editTextCaption)
+        editTextTitle = view.findViewById(R.id.editTextTitle)          // CHANGED
+        editTextContent = view.findViewById(R.id.editTextContent)      // NEW
         editTextURL = view.findViewById(R.id.editTextURL)
         buttonSelectPhoto = view.findViewById(R.id.buttonSelectPhoto)
         buttonChangePhoto = view.findViewById(R.id.changePhotoButton)
@@ -130,7 +126,9 @@ class CreateAdFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("CreateAdFragment", "Failed to fetch ad packages", e)
-                activity?.runOnUiThread { Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show() }
+                activity?.runOnUiThread {
+                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -143,20 +141,23 @@ class CreateAdFragment : Fragment() {
                         activity?.runOnUiThread { displayAdPackages(packages) }
                     } catch (e: Exception) {
                         Log.e("CreateAdFragment", "Error parsing ad packages JSON", e)
-                        activity?.runOnUiThread { Toast.makeText(context, "Error parsing server data", Toast.LENGTH_SHORT).show() }
+                        activity?.runOnUiThread {
+                            Toast.makeText(context, "Error parsing server data", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } else {
                     Log.e("CreateAdFragment", "Server error: ${response.code} ${response.message}")
-                    activity?.runOnUiThread { Toast.makeText(context, "Failed to fetch packages", Toast.LENGTH_SHORT).show() }
+                    activity?.runOnUiThread {
+                        Toast.makeText(context, "Failed to fetch packages", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         })
     }
 
     private fun createOrder() {
-        if (isCreatingOrder) {
-            return
-        }
+        if (isCreatingOrder) return
+
         isCreatingOrder = true
         buttonNext.isEnabled = false
         buttonNext.text = "Creating..."
@@ -182,7 +183,8 @@ class CreateAdFragment : Fragment() {
             return
         }
 
-        val caption = editTextCaption.text.toString().trim()
+        val title = editTextTitle.text.toString().trim()          // CHANGED
+        val content = editTextContent.text.toString().trim()      // NEW
         val url = editTextURL.text.toString().trim()
         val prompayNumber = editTextPrompay.text.toString().trim()
         val adStartDateString = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(selectedStartDate!!.time)
@@ -191,8 +193,8 @@ class CreateAdFragment : Fragment() {
             .setType(MultipartBody.FORM)
             .addFormDataPart("user_id", userId)
             .addFormDataPart("package_id", selectedPackageId.toString())
-            .addFormDataPart("title", caption)
-            .addFormDataPart("content", caption)
+            .addFormDataPart("title", title)                      // CHANGED
+            .addFormDataPart("content", content)                  // CHANGED
             .addFormDataPart("link", url)
             .addFormDataPart("prompay_number", prompayNumber)
             .addFormDataPart("ad_start_date", adStartDateString)
@@ -226,8 +228,6 @@ class CreateAdFragment : Fragment() {
                             val jsonResponse = JSONObject(responseBody)
                             val orderId = jsonResponse.optInt("order_id", -1)
                             if (orderId != -1) {
-                                // **นี่คือส่วนที่แก้ไข**
-                                // เมื่อสำเร็จ จะนำทางไปยังหน้า AdPendingFragment
                                 findNavController().navigate(R.id.action_createAdFragment_to_adPendingFragment)
                             } else {
                                 Toast.makeText(context, "Failed to get Order ID from server.", Toast.LENGTH_SHORT).show()
@@ -263,18 +263,19 @@ class CreateAdFragment : Fragment() {
         val marginBottomInPixels = (16 * resources.displayMetrics.density).toInt()
 
         packages.forEach { adPackage ->
-            val radioButton = (LayoutInflater.from(context).inflate(R.layout.item_radio_button_package, radioGroupPackages, false) as RadioButton).apply {
-                text = "${adPackage.name}\n${adPackage.durationDays} Days - ${adPackage.price} Baht"
-                tag = adPackage.id
-                id = View.generateViewId()
+            val radioButton =
+                (LayoutInflater.from(context).inflate(R.layout.item_radio_button_package, radioGroupPackages, false) as RadioButton).apply {
+                    text = "${adPackage.name}\n${adPackage.durationDays} Days - ${adPackage.price} Baht"
+                    tag = adPackage.id
+                    id = View.generateViewId()
 
-                val params = RadioGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                params.bottomMargin = marginBottomInPixels
-                layoutParams = params
-            }
+                    val params = RadioGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    params.bottomMargin = marginBottomInPixels
+                    layoutParams = params
+                }
             radioGroupPackages.addView(radioButton)
         }
 
@@ -323,14 +324,16 @@ class CreateAdFragment : Fragment() {
         if (selectedImageUri == null) {
             Toast.makeText(context, "Please select a photo", Toast.LENGTH_SHORT).show(); return false
         }
-        if (editTextCaption.text.isBlank()) {
-            editTextCaption.error = "Caption cannot be empty"; return false
+        if (editTextTitle.text.isBlank()) {                 // CHANGED
+            editTextTitle.error = "Title cannot be empty"; return false
+        }
+        if (editTextContent.text.isBlank()) {               // NEW
+            editTextContent.error = "Content cannot be empty"; return false
         }
         if (editTextURL.text.isBlank()) {
             editTextURL.error = "URL cannot be empty"; return false
         }
         val prompay = editTextPrompay.text?.toString()?.filter(Char::isDigit).orEmpty()
-
         if (!(prompay.length == 10 || prompay.length == 13)) {
             editTextPrompay.error = "Please enter a valid Prompay number (10 or 13 digits)"
             return false
@@ -351,9 +354,11 @@ class CreateAdFragment : Fragment() {
 
     private fun validatePackageDuration(): Boolean {
         return if (selectedPackageDurationDays > 0 && selectedPackageDurationDays < 2) {
-            errorTextDate.text = "* Selected package duration must be 2 days or more."; errorTextDate.visibility = View.VISIBLE; false
+            errorTextDate.text = "* Selected package duration must be 2 days or more."
+            errorTextDate.visibility = View.VISIBLE
+            false
         } else {
-            if(errorTextDate.text.contains("duration")) { errorTextDate.visibility = View.GONE }
+            if (errorTextDate.text.contains("duration")) { errorTextDate.visibility = View.GONE }
             true
         }
     }
