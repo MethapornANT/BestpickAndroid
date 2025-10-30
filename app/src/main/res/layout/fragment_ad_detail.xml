@@ -71,7 +71,23 @@
             app:layout_constraintTop_toBottomOf="@id/adImageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="ชื่องานโฆษณาที่ยาวมากๆ เพื่อทดสอบการแสดงผล" />
+            tools:text="ชื่องานโฆษณา" />
+
+        <!-- เพิ่ม TextView ใต้ Title สำหรับ content -->
+        <TextView
+            android:id="@+id/adContentTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:lineSpacingExtra="2dp"
+            app:layout_constraintTop_toBottomOf="@id/adTitleTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="รายละเอียดคอนเทนต์ของโฆษณาแสดงที่นี่" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/detailsCard"
@@ -82,7 +98,7 @@
             android:layout_marginEnd="16dp"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
-            app:layout_constraintTop_toBottomOf="@id/adTitleTextView"
+            app:layout_constraintTop_toBottomOf="@id/adContentTextView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -228,8 +244,7 @@
                 android:textColor="@color/red"
                 android:layout_marginTop="8dp"
                 android:visibility="gone"
-                tools:visibility="visible"
-                />
+                tools:visibility="visible"/>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

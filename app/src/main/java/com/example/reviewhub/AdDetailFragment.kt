@@ -72,9 +72,20 @@ class AdDetailFragment : Fragment() {
         val renewButton = view.findViewById<Button>(R.id.renewButton)
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
+        // ✅ เพิ่ม: อ้างอิง TextView สำหรับ content ที่อยู่ใต้ Title
+        val contentView = view.findViewById<TextView>(R.id.adContentTextView)
+
         val rootUrl = getString(R.string.root_url)
         titleView.text = ad.title
         statusView.text = ad.status.replaceFirstChar { it.uppercase() }
+
+        // ✅ ตั้งค่า content (ถ้าว่างซ่อน view)
+        if (ad.content.isNullOrBlank()) {
+            contentView.visibility = View.GONE
+        } else {
+            contentView.visibility = View.VISIBLE
+            contentView.text = ad.content
+        }
 
         // แสดงข้อมูลแพ็กเกจ
         val packageName = ad.package_name ?: "N/A"

@@ -4,6 +4,7 @@ data class UserAd(
     val id: Int,
     val order_id: Int,
     val title: String,
+    val content: String,
     val image: String?,
     val status: String,
     val show_at: String?,
