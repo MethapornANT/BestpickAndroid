@@ -150,7 +150,6 @@
                 android:id="@+id/bookmark_button"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginLeft="190dp"
                 android:layout_gravity="center"
                 android:src="@drawable/bookmark" />
 
