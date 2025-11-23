@@ -56,11 +56,16 @@ class AddPostFragment : Fragment() {
         ProductNameEditText = view.findViewById(R.id.ProductNameEditText)
 
         selectMediaButton.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK)
+            // แก้จาก ACTION_PICK เป็น ACTION_GET_CONTENT เพื่อบังคับเปิดตัวเลือกไฟล์/รูปภาพ
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+
+            // ตั้งค่า type เป็น */* เพื่อให้รับได้ทั้งภาพและวิดีโอ (ตาม MIME_TYPES ด้านล่าง)
             intent.type = "*/*"
             intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*"))
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-            startActivityForResult(intent, 1)
+
+            // ใช้ createChooser เพื่อความชัวร์
+            startActivityForResult(Intent.createChooser(intent, "Select Media"), 1)
         }
         fetchCategories()
         viewPager.adapter = ImagePagerAdapter(selectedMedia)

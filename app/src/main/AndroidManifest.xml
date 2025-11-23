@@ -64,7 +64,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- ตัวอย่าง local IP + port ตามที่มึงใช้ -->
                 <data android:scheme="http"
-                    android:host="192.168.1.38"
+                    android:host="192.168.1.37"
                     android:port="4005"
                     android:pathPrefix="/posts/" />
             </intent-filter>
